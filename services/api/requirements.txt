@@ -1,0 +1,10 @@
+# Licences recorded in docs/DEPENDENCIES.md
+Django==5.2.19
+django-ninja==1.7.3
+django-allauth[headless]==65.21.1
+django-environ==0.14.0
+psycopg[binary]==3.3.8
+anthropic==2.5.0
+sentry-sdk==2.73.0
+uvicorn==0.54.0
+django-rq==4.2.0

@@ -31,3 +31,7 @@ Thumbs.db
 
 # Never commit real family data
 private-data/
+
+# Django
+services/api/db.sqlite3
+services/api/staticfiles/

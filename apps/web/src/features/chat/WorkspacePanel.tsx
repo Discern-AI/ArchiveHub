@@ -3,10 +3,13 @@ import type { AttachedRecord } from "../../lib/chat";
 import { BasketTab } from "../workspace/BasketTab";
 import { EvidenceTab } from "../workspace/EvidenceTab";
 import { ExplorerTab } from "../workspace/ExplorerTab";
+import { InterviewTab } from "../interview/InterviewTab";
+import type { Interview } from "../interview/useInterview";
 
-export type WorkspaceTab = "explorer" | "evidence" | "basket";
+export type WorkspaceTab = "explorer" | "evidence" | "basket" | "interview";
 
 const TABS: [WorkspaceTab, string][] = [
+  ["interview", "Interview"],
   ["explorer", "Explorer"],
   ["evidence", "Evidence"],
   ["basket", "Basket"],
@@ -20,6 +23,7 @@ export function WorkspacePanel({
   projectId,
   dispute,
   onAsk,
+  interview,
 }: {
   tab: WorkspaceTab;
   onTab: (tab: WorkspaceTab) => void;
@@ -27,7 +31,10 @@ export function WorkspacePanel({
   projectId: string | null;
   dispute: Dispute | null;
   onAsk: (record: AttachedRecord) => void;
+  /** Present while an interview is running or has notes to show. */
+  interview?: Interview | null;
 }) {
+  const tabs = TABS.filter(([key]) => key !== "interview" || interview);
   return (
     <aside
       id="workspace-panel"
@@ -45,7 +52,7 @@ export function WorkspacePanel({
         </button>
       </div>
       <div role="tablist" aria-label="Workspace views" className="flex gap-1 border-b border-line">
-        {TABS.map(([key, label]) => (
+        {tabs.map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -61,6 +68,13 @@ export function WorkspacePanel({
         ))}
       </div>
       <div role="tabpanel" id={`ws-panel-${tab}`} aria-labelledby={`ws-tab-${tab}`}>
+        {tab === "interview" && interview && (
+          <InterviewTab
+            notes={interview.notes}
+            sessionId={interview.session?.id ?? null}
+            onStatus={interview.setNoteStatus}
+          />
+        )}
         {tab === "explorer" && <ExplorerTab projectId={projectId} onAsk={onAsk} />}
         {tab === "evidence" && <EvidenceTab dispute={dispute} projectId={projectId} />}
         {tab === "basket" && <BasketTab projectId={projectId} />}

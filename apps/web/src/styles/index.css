@@ -85,12 +85,50 @@ a:hover {
   animation: ah-caret 1s step-end infinite;
 }
 
+/* Live interview: a finished line lifts out of the bottom bar and fades as it rises, while
+   the same line settles into the chat. */
+@keyframes ah-rise {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-56px);
+  }
+}
+.ah-rise {
+  animation: ah-rise 0.8s ease-in forwards;
+}
+@keyframes ah-settle {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ah-settle {
+  animation: ah-settle 0.6s ease-out 0.3s both;
+}
+@keyframes ah-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.ah-pulse {
+  animation: ah-pulse 1.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
     transition-duration: 0.01ms !important;
   }
 }

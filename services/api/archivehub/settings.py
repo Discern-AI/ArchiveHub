@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "archive",
     "genealogy",
     "assistant",
+    "interviews",
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,16 @@ ANTHROPIC_EFFORT = env("ANTHROPIC_EFFORT", default="medium")
 ANTHROPIC_MAX_TOKENS = env.int("ANTHROPIC_MAX_TOKENS", default=64000)
 # Seconds between words from the fake provider, to see streaming work offline.
 ASSISTANT_FAKE_DELAY = env.float("ASSISTANT_FAKE_DELAY", default=0.0)
+
+# Live interviews (WP5, ADR-028). "whisper" runs faster-whisper on this server
+# (pip install -r requirements-speech.txt); "fake" needs nothing and is used in tests.
+SPEECH_PROVIDER = env("SPEECH_PROVIDER", default="whisper")
+SPEECH_MODEL = env("SPEECH_MODEL", default="small.en")  # finished lines
+SPEECH_LIVE_MODEL = env("SPEECH_LIVE_MODEL", default="base.en")  # provisional live words
+SPEECH_DEVICE = env("SPEECH_DEVICE", default="cpu")
+SPEECH_COMPUTE_TYPE = env("SPEECH_COMPUTE_TYPE", default="int8")
+INTERVIEW_MODEL = env("INTERVIEW_MODEL", default=ANTHROPIC_MODEL)
+INTERVIEW_MAX_MINUTES = env.int("INTERVIEW_MAX_MINUTES", default=120)
 
 SENTRY_DSN = env("SENTRY_DSN", default="")
 if SENTRY_DSN:

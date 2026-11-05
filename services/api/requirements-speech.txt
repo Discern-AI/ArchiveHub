@@ -1,0 +1,4 @@
+# Local speech recognition for live interviews (ADR-028). Optional: without it,
+# set SPEECH_PROVIDER=fake. Licences in docs/DEPENDENCIES.md.
+-r requirements.txt
+faster-whisper==1.2.1

@@ -12,3 +12,5 @@ truststore==0.10.5
 pypdf==6.21.4
 defusedxml==0.7.1
 pillow==13.0.0
+channels==4.3.2
+websockets==17.4

@@ -1,4 +1,6 @@
+import { Link } from "react-router";
 import type { Dispute, Message } from "../../lib/api";
+import type { TranscriptLine } from "../../lib/interview";
 
 const STATUS_NOTE: Partial<Record<Message["status"], string>> = {
   incomplete: "This reply was cut off before it finished.",
@@ -45,8 +47,11 @@ export function MessageList({
   messages,
   activity,
   onCompare,
+  liveLines,
 }: {
   messages: Message[];
+  /** Finished lines of an interview in progress; they settle here from the bottom bar. */
+  liveLines?: TranscriptLine[];
   /** What the assistant is doing right now, e.g. "Searching records". */
   activity?: string | null;
   onCompare?: (d: Dispute) => void;
@@ -67,7 +72,13 @@ export function MessageList({
             {m.content}
             {m.sources && m.sources.length > 0 && (
               <span className="mt-1 block text-[13px] text-muted">
-                About: {m.sources.map((s) => s.label).join(", ")}
+                About:{" "}
+                {m.sources.map((s, i) => (
+                  <span key={s.n}>
+                    {i > 0 && ", "}
+                    {s.url?.startsWith("/") ? <Link to={s.url}>{s.label}</Link> : s.label}
+                  </span>
+                ))}
               </span>
             )}
           </div>
@@ -116,6 +127,16 @@ export function MessageList({
             )}
           </div>
         ),
+      )}
+      {liveLines && liveLines.length > 0 && (
+        <div className="flex max-w-[80%] flex-col gap-1.5 self-end" aria-label="Interview so far">
+          {liveLines.map((l) => (
+            <p key={l.line} className="ah-settle m-0 rounded-xl bg-tint-strong px-3.5 py-2.5">
+              <span className="sr-only">{l.speaker}: </span>
+              {l.text}
+            </p>
+          ))}
+        </div>
       )}
     </div>
   );

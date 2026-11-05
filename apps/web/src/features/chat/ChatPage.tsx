@@ -1,8 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { api, type Dispute, type Message } from "../../lib/api";
 import { streamReply, type AttachedRecord } from "../../lib/chat";
+import type { FinishResult } from "../../lib/interview";
+import { InterviewBar } from "../interview/InterviewBar";
+import { InterviewStartDialog } from "../interview/InterviewStartDialog";
+import { useInterview } from "../interview/useInterview";
 import { Composer } from "./Composer";
 import { MessageList } from "./MessageList";
 import { StarterPrompts } from "./StarterPrompts";
@@ -26,7 +30,10 @@ export function ChatPage() {
   const [attached, setAttached] = useState<AttachedRecord | null>(null);
   // The chat this page created itself: its messages are already in state, so don't reload.
   const [createdId, setCreatedId] = useState<string | null>(null);
+  const [startOpen, setStartOpen] = useState(false);
+  const [starting, setStarting] = useState(false);
   const abort = useRef<AbortController | null>(null);
+  const currentChat = useRef(chatId);
   const bottom = useRef<HTMLDivElement>(null);
 
   const ownChat = !!chatId && chatId === createdId;
@@ -70,6 +77,59 @@ export function ChatPage() {
     bottom.current?.scrollIntoView?.({ block: "end" });
   }, [messages]);
 
+  useEffect(() => {
+    currentChat.current = chatId;
+  }, [chatId]);
+
+  // "End and send" puts the transcript and response into the interview's chat.
+  const onInterviewSent = useCallback(
+    (result: FinishResult) => {
+      if (result.session.chat_id === currentChat.current) {
+        setMessages((ms) => {
+          const known = new Set(ms.map((m) => m.id));
+          return [...ms, ...result.messages.filter((m) => !known.has(m.id))];
+        });
+      }
+      void qc.invalidateQueries({ queryKey: ["messages", result.session.chat_id] });
+      void qc.invalidateQueries({ queryKey: ["chats"] });
+    },
+    [qc],
+  );
+  const interview = useInterview(onInterviewSent);
+  const interviewing = interview.phase !== "idle";
+
+  // Moving to another chat mid-interview ends it; everything recorded is kept and sent.
+  const { end: endInterview, phase: interviewPhase, session: interviewSession } = interview;
+  useEffect(() => {
+    const live = interviewPhase === "recording" || interviewPhase === "paused";
+    if (live && interviewSession && interviewSession.chat_id !== chatId) endInterview();
+  }, [chatId, interviewPhase, interviewSession, endInterview]);
+
+  async function ensureChat(): Promise<string> {
+    if (chatId) return chatId;
+    const created = await api.createChat(projectId);
+    setCreatedId(created.id);
+    qc.setQueryData(["chat", created.id], created);
+    currentChat.current = created.id;
+    navigate(`/chat/${created.id}`, { replace: true });
+    return created.id;
+  }
+
+  async function beginInterview(narrator: string, interviewer: string) {
+    setStarting(true);
+    setError(null);
+    try {
+      const id = await ensureChat();
+      setStartOpen(false);
+      if (!window.matchMedia?.("(max-width: 767px)").matches) setPanel("interview");
+      await interview.start(id, narrator, interviewer);
+    } catch (e) {
+      setError((e as Error).message || "The interview couldn't start.");
+    } finally {
+      setStarting(false);
+    }
+  }
+
   const update = (id: string, patch: Partial<Message>) =>
     setMessages((ms) => ms.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
@@ -89,14 +149,7 @@ export function ChatPage() {
     ]);
 
     try {
-      let id = chatId;
-      if (!id) {
-        const created = await api.createChat(projectId);
-        id = created.id;
-        setCreatedId(id);
-        qc.setQueryData(["chat", id], created);
-        navigate(`/chat/${id}`, { replace: true });
-      }
+      const id = await ensureChat();
       abort.current = new AbortController();
       let soFar = "";
       for await (const ev of streamReply(id, text, abort.current.signal, record)) {
@@ -142,7 +195,8 @@ export function ChatPage() {
   }
 
   const loading = !!chatId && !ownChat && history.isPending;
-  const showStarters = messages.length === 0 && !loading && !history.isError;
+  const showStarters = messages.length === 0 && !loading && !history.isError && !interviewing;
+  const shownError = error ?? (interviewing ? null : interview.error);
 
   return (
     <div className="flex min-h-0 flex-1">
@@ -164,15 +218,20 @@ export function ChatPage() {
           <p className="mx-auto text-warning">Couldn't load this conversation.</p>
         )}
         {showStarters && <StarterPrompts onPick={send} />}
-        {messages.length > 0 && (
-          <MessageList messages={messages} activity={activity} onCompare={compare} />
+        {(messages.length > 0 || interview.lines.length > 0) && (
+          <MessageList
+            messages={messages}
+            activity={activity}
+            onCompare={compare}
+            liveLines={interviewing ? interview.lines : undefined}
+          />
         )}
         <div ref={bottom} />
 
         <div className="sticky bottom-0 mt-auto bg-page pt-3 pb-4">
-          {error && (
+          {shownError && (
             <p role="alert" className="mx-auto mb-2 max-w-[760px] text-sm font-medium text-warning">
-              {error}
+              {shownError}
             </p>
           )}
           {attached && (
@@ -189,7 +248,11 @@ export function ChatPage() {
               </button>
             </div>
           )}
-          <Composer onSend={send} busy={busy} />
+          {interviewing ? (
+            <InterviewBar interview={interview} />
+          ) : (
+            <Composer onSend={send} busy={busy} onInterview={() => setStartOpen(true)} />
+          )}
         </div>
       </div>
       {panel && (
@@ -200,6 +263,14 @@ export function ChatPage() {
           projectId={projectId}
           dispute={dispute}
           onAsk={askAbout}
+          interview={interview.session || interview.notes.length ? interview : null}
+        />
+      )}
+      {startOpen && (
+        <InterviewStartDialog
+          busy={starting}
+          onStart={(narrator, interviewer) => void beginInterview(narrator, interviewer)}
+          onCancel={() => setStartOpen(false)}
         />
       )}
     </div>

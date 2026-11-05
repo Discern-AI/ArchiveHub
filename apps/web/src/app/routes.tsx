@@ -8,6 +8,7 @@ import { ProjectPage } from "../features/projects/ProjectPage";
 import { ComingSoon } from "../components/ComingSoon";
 import { ArchivePage } from "../features/archive/ArchivePage";
 import { FamilyPage, PersonPage } from "../features/family/FamilyPages";
+import { InterviewPage } from "../features/interview/InterviewPage";
 
 function RequireAuth() {
   const session = useSession();
@@ -41,6 +42,7 @@ export function AppRoutes() {
           <Route path="archive" element={<ArchivePage />} />
           <Route path="projects/:projectId/people" element={<FamilyPage />} />
           <Route path="projects/:projectId/people/:personId" element={<PersonPage />} />
+          <Route path="interviews/:interviewId" element={<InterviewPage />} />
           <Route path="homepage" element={<ComingSoon title="Homepage" pkg="WP7" />} />
           <Route path="profile" element={<ComingSoon title="Profile" pkg="WP8" />} />
           <Route path="settings" element={<ComingSoon title="Settings" pkg="a later package" />} />

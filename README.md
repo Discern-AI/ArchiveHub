@@ -2,7 +2,9 @@
 
 A chat-first platform where people preserve family and local history, research the past, publish their work and find the people who can help. Piloting in Newbury and West Berkshire.
 
-**Status:** WP4 (Record). Upload family papers to a private Archive, read them (handwriting and OCR only after you confirm), import a GEDCOM family tree, correct it and export it. See [docs/WP4.md](docs/WP4.md), [WP3](docs/WP3.md) and [WP2](docs/WP2.md).
+**Status:** WP5 (Live guided interview). Press the microphone in a chat to record an interview: words appear as you speak, people, places, dates and questions appear at the side, and "End and send" puts the transcript and a response into the chat. See [docs/WP5.md](docs/WP5.md), [WP4](docs/WP4.md), [WP3](docs/WP3.md) and [WP2](docs/WP2.md).
+
+For interviews, install speech recognition: `pip install -r requirements-speech.txt` (about 600 MB of models download on first use). Or set `SPEECH_PROVIDER=fake` to try it offline.
 
 Optional: install [Tesseract](https://github.com/tesseract-ocr/tesseract) for printed-text OCR. Without it, OCR jobs say so and charge nothing.
 
@@ -38,6 +40,8 @@ python manage.py load_reference_data   # source directory + checked Cheap Street
 # Optional: old OS map names (see docs/WP3.md for the download)
 python manage.py import_old_map_names --zip var/downloads/gb1900/GB1900_final_raw_dump_july_2018.zip
 python manage.py createsuperuser   # optional: for /admin
+# Optional: compare speech engines on consented recordings (docs/WP5.md)
+python manage.py speech_spike --dir var/speech-spike --engine whisper:base.en --engine whisper:small.en
 uvicorn archivehub.asgi:application --reload --port 8000
 ```
 
@@ -51,7 +55,7 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5173>, create an account and start a chat. Vite forwards `/api`, `/_allauth` and `/admin` to the API on port 8000, so everything is same-origin.
+Open <http://localhost:5173>, create an account and start a chat. Vite forwards `/api`, `/ws`, `/_allauth` and `/admin` to the API on port 8000, so everything is same-origin.
 
 ### Database
 

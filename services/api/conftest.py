@@ -9,6 +9,7 @@ def _test_settings(settings, tmp_path):
     settings.ASSISTANT_PROVIDER = "fake"
     settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     settings.JOBS_BACKEND = "sync"
+    settings.SPEECH_PROVIDER = "fake"
     settings.MEDIA_ROOT = str(tmp_path / "media")
 
 

@@ -31,6 +31,13 @@ Filled in as packages are installed. Columns: package · version · licence · p
 | defusedxml | 0.7.1 | PSF | Safe parsing of Word documents | 4 |
 | Pillow | 13.0.0 | MIT-CMU (HPND) | Image checks, previews, EXIF removal | 4 |
 | Tesseract (optional binary) | — | Apache-2.0 | OCR when installed; not installed yet | 4 |
+| channels | 4.3.2 | BSD-3 | WebSockets for live interviews | 5 |
+| websockets | 17.4 | BSD-3 | WebSocket protocol for uvicorn | 5 |
+| daphne (dev) | 4.2.3 | BSD-3 | Needed by Channels' test helpers only | 5 |
+| faster-whisper (optional, `requirements-speech.txt`) | 1.2.1 | MIT | Speech-to-text for interviews (ADR-028) | 5 |
+| ctranslate2, onnxruntime, numpy, tokenizers, huggingface-hub | 4.8.5, 1.31.1, 2.5.4, 0.23.3, 2.4.0 | MIT, MIT, BSD-3, Apache-2.0, Apache-2.0 | faster-whisper's runtime | 5 |
+| av (PyAV) | 19.0.2 | BSD-3; its wheels bundle FFmpeg (LGPL) — **check** the bundled build before production | Audio decoding for faster-whisper (spike only; live audio is raw PCM) | 5 |
+| Systran faster-whisper small.en / base.en (model weights) | — | MIT (converted from OpenAI Whisper, MIT) | Downloaded from Hugging Face on first use | 5 |
 | GB1900 final raw gazetteer data dump (data) | July 2018 | CC0 1.0 | Hosted "Old map names" dataset; must not be named GB1900 (ADR-021) | 3 |
 | postgis/postgis image + postgresql-16-pgvector | 16-3.5 | GPL-2.0 (PostGIS, separate service) / PostgreSQL | Dev/CI database | 1 |
 | valkey image | 8 | BSD-3 | Dev job queue | 1 |

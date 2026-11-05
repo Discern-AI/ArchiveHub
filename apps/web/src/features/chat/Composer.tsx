@@ -3,7 +3,16 @@ import { useState, type KeyboardEvent } from "react";
 const iconButton =
   "flex size-11 shrink-0 items-center justify-center rounded-lg bg-tint text-ink disabled:cursor-not-allowed disabled:opacity-50";
 
-export function Composer({ onSend, busy }: { onSend: (text: string) => void; busy: boolean }) {
+export function Composer({
+  onSend,
+  busy,
+  onInterview,
+}: {
+  onSend: (text: string) => void;
+  busy: boolean;
+  /** Opens the guided interview. */
+  onInterview?: () => void;
+}) {
   const [text, setText] = useState("");
 
   const send = () => {
@@ -57,10 +66,11 @@ export function Composer({ onSend, busy }: { onSend: (text: string) => void; bus
       </button>
       <button
         type="button"
-        disabled
-        aria-label="Start a guided interview (arrives in a later version)"
-        title="Guided interviews arrive in a later version"
-        className={iconButton}
+        disabled={!onInterview || busy}
+        onClick={onInterview}
+        aria-label="Start a guided interview"
+        title="Start a guided interview"
+        className={`${iconButton} cursor-pointer`}
       >
         <svg
           aria-hidden="true"

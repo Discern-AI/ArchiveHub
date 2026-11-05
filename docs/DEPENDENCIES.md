@@ -6,9 +6,30 @@
 
 Filled in as packages are installed. Columns: package · version · licence · purpose · added in.
 
-| Package | Licence | Purpose | WP |
-|---|---|---|---|
-| _(none yet)_ | | | |
+| Package | Version | Licence | Purpose | WP |
+|---|---|---|---|---|
+| Django | 5.2.19 | BSD-3 | Backend framework | 1 |
+| django-ninja | 1.7.3 | MIT | JSON API | 1 |
+| django-allauth[headless] | 65.21.1 | MIT | Accounts for the React app | 1 |
+| django-environ | 0.14.0 | MIT | Settings from environment | 1 |
+| psycopg[binary] | 3.3.8 | LGPL-3.0 | Postgres driver (unmodified library) | 1 |
+| anthropic | 2.5.0 | MIT | Claude API | 1 |
+| sentry-sdk | 2.73.0 | MIT | Error monitoring (off unless `SENTRY_DSN` set) | 1 |
+| uvicorn | 0.54.0 | BSD-3 | ASGI server | 1 |
+| django-rq | 4.2.0 | BSD-2 | Background jobs (installed; used from WP2) | 1 |
+| ruff, pytest, pytest-django, pytest-asyncio, factory-boy | — | MIT / MIT / BSD-3 / Apache-2.0 / MIT | Dev: lint, tests | 1 |
+| react, react-dom | 18.3.1 | MIT | Frontend | 1 |
+| react-router | 7.18.5 | MIT | Routing | 1 |
+| @tanstack/react-query | 5.106.1 | MIT | Server state | 1 |
+| vite, @vitejs/plugin-react | 8.3.6, 6.2.1 | MIT | Dev: build | 1 |
+| typescript | 6.0.3 | Apache-2.0 | Dev: types | 1 |
+| tailwindcss, @tailwindcss/vite | 4.3.4 | MIT | Styling | 1 |
+| vitest, jsdom, @testing-library/* | — | MIT | Dev: tests | 1 |
+| eslint, typescript-eslint, eslint-plugin-react-hooks, prettier | — | MIT | Dev: lint/format | 1 |
+| postgis/postgis image + postgresql-16-pgvector | 16-3.5 | GPL-2.0 (PostGIS, separate service) / PostgreSQL | Dev/CI database | 1 |
+| valkey image | 8 | BSD-3 | Dev job queue | 1 |
+
+**Known advisories (5 Nov 2026):** `npm audit` reports 10 moderate advisories in ESLint's dependency chain (`minimatch`), dev-only; production dependencies report none. Fixing needs a breaking ESLint change — revisit when typescript-eslint updates.
 
 ## Planned — core stack
 

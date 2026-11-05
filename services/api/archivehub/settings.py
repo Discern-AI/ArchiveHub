@@ -121,6 +121,8 @@ ASSISTANT_PROVIDER = env("ASSISTANT_PROVIDER", default="anthropic")
 ANTHROPIC_MODEL = env("ANTHROPIC_MODEL", default="claude-opus-5-5")
 ANTHROPIC_EFFORT = env("ANTHROPIC_EFFORT", default="medium")
 ANTHROPIC_MAX_TOKENS = env.int("ANTHROPIC_MAX_TOKENS", default=64000)
+# Seconds between words from the fake provider, to see streaming work offline.
+ASSISTANT_FAKE_DELAY = env.float("ASSISTANT_FAKE_DELAY", default=0.0)
 
 SENTRY_DSN = env("SENTRY_DSN", default="")
 if SENTRY_DSN:

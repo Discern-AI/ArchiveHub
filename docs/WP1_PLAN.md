@@ -1,4 +1,21 @@
-# WP1 — Foundation: proposed plan
+# WP1 — Foundation: plan
+
+## As built (5 Nov 2026)
+
+Differences from the plan below:
+
+- **SQLite by default** for zero-setup local development; Postgres via `DATABASE_URL`. CI tests against Postgres + PostGIS. (No Docker on the development machine yet, so `infra/docker-compose.yml` is untested locally.)
+- **Typed API client is hand-written** (`apps/web/src/lib/api.ts`) rather than generated from OpenAPI; generation can come once the API grows in WP2.
+- **Single settings module** driven by environment variables, instead of base/dev/test/prod files.
+- **Streaming chat is a plain async Django view**, not a Ninja endpoint, so it can return server-sent events. Run under uvicorn (ASGI); Django's `runserver` would buffer it.
+- **Assistant history is append-only and never trimmed**, so earlier reasoning and the prompt cache stay valid. Long conversations will need server-side compaction later.
+- **Leaving a chat mid-reply stops the reply** and saves it as incomplete.
+
+Gate status: sign-up, sign-in, projects and a saved, streamed chat work end to end with the offline test assistant. The real Claude call is untested until an API key is added.
+
+---
+
+## Original plan
 
 **Goal (gate):** a user can sign in, create a project and hold a saved, streamed chat.
 **Out of scope:** history tables, connectors, uploads, Explorer, interviews, publishing, payments (WP2+).

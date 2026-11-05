@@ -1,0 +1,28 @@
+# Local services for development. The API and web app run natively (see README).
+# Start with:  docker compose -f infra/docker-compose.yml up -d
+# Then set DATABASE_URL=postgres://archivehub:archivehub@localhost:5432/archivehub
+
+services:
+  db:
+    build: ./db
+    environment:
+      POSTGRES_USER: archivehub
+      POSTGRES_PASSWORD: archivehub # local development only
+      POSTGRES_DB: archivehub
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archivehub"]
+      interval: 5s
+      retries: 10
+
+  # Valkey (BSD-3) is Redis-protocol compatible; RQ jobs start using it in WP2.
+  queue:
+    image: valkey/valkey:8-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  db-data:

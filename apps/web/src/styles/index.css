@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* Design tokens taken from the prototype's palette (prototype-reference/). */
+@theme {
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-serif: "Spectral", Georgia, serif;
+
+  --color-page: #f3f5f2;
+  --color-surface: #ffffff;
+  --color-ink: #14322c;
+  --color-muted: #52635e;
+  --color-line: #c9d3ce;
+  --color-line-soft: #e4eae6;
+  --color-control: #8a9c96;
+  --color-accent: #1f5c4d;
+  --color-accent-strong: #14322c;
+  --color-tint: #e8eeea;
+  --color-tint-strong: #dde7e2;
+  --color-selected: #e8f0ec;
+  --color-warning: #a14a12;
+  --color-warning-strong: #8a3d0d;
+  --color-focus: #b86e12;
+  --color-bar: #0e2621;
+  --color-rail: #14322c;
+  --color-rail-active: #2b5148;
+  --color-rail-ink: #e6efeb;
+  --color-rail-label: #b5c8c2;
+  --color-live: #b3261e;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--color-accent);
+}
+a:hover {
+  color: var(--color-accent-strong);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+::placeholder {
+  color: var(--color-muted);
+}
+
+@keyframes ah-appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ah-caret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.ah-appear {
+  animation: ah-appear 0.35s ease-out both;
+}
+.ah-caret {
+  animation: ah-caret 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

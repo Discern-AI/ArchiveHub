@@ -114,7 +114,7 @@ class FakeProvider:
             last = " ".join(b.get("text", "") for b in last if isinstance(b, dict))
         reply = f"(Test assistant) You said: {last}"
         for word in reply.split(" "):
-            await asyncio.sleep(0)
+            await asyncio.sleep(settings.ASSISTANT_FAKE_DELAY)
             yield TextDelta(word + " ")
         text = reply + " "
         yield FinalReply(

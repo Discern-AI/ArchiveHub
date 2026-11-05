@@ -1,0 +1,33 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Local data and uploads
+media/
+storage/
+*.sqlite3
+dump.rdb
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+
+# Never commit real family data
+private-data/

@@ -153,11 +153,16 @@ def remove_from_basket(request: HttpRequest, project_id: UUID, item_id: UUID):
 # --- Evidence and decisions --------------------------------------------------------
 
 
-def _subject(subject_type: str, subject_id: UUID):
+def _subject(subject_type: str, subject_id: UUID, user):
     model = SUBJECT_MODELS.get(subject_type)
     if model is None:
         raise HttpError(422, "Unknown subject type.")
-    return get_object_or_404(model, pk=subject_id)
+    obj = get_object_or_404(model, pk=subject_id)
+    # People from a family tree are private to their project.
+    project_id = getattr(obj, "project_id", None)
+    if project_id and not visible_projects(user).filter(pk=project_id).exists():
+        raise HttpError(404, "Not Found")
+    return obj
 
 
 @router.get("/evidence/{subject_type}/{subject_id}")
@@ -169,7 +174,7 @@ def evidence(
     project_id: UUID | None = None,
 ) -> dict[str, Any]:
     """Every claim on one question, with evidence, plus the project's decision if any."""
-    subject = _subject(subject_type, subject_id)
+    subject = _subject(subject_type, subject_id, request.user)
     claims = queries.claims_about(request.user, subject, predicate).get(predicate, [])
     if not claims:
         # Predicates are matched case-insensitively; fall back to the stored spelling.
@@ -205,10 +210,10 @@ def evidence(
                 "note": c.note,
                 "evidence": [
                     {
-                        "record_title": e.record.title,
-                        "record_key": e.record.key,
-                        "source": e.record.source.name,
-                        "url": e.record.url,
+                        "record_title": e.title,
+                        "record_key": e.ref,
+                        "source": e.source_name,
+                        "url": e.url,
                         "what_it_says": e.note,
                         "stance": e.stance,
                         "suggested_weight": e.suggested_weight or None,
@@ -236,7 +241,7 @@ class DecisionIn(Schema):
 def save_decision(request: HttpRequest, project_id: UUID, payload: DecisionIn) -> dict[str, Any]:
     """Record what this project uses. 'Use' doesn't mean 'true'; nothing is deleted."""
     project = get_object_or_404(editable_projects(request.user), pk=project_id)
-    subject = _subject(payload.subject_type, payload.subject_id)
+    subject = _subject(payload.subject_type, payload.subject_id, request.user)
     if bool(payload.chosen_id) == payload.keep_disputed:
         raise HttpError(422, "Choose one answer, or keep it disputed.")
     chosen = None

@@ -108,6 +108,22 @@ Python's OpenSSL built an expired certificate chain from the Windows store for w
 **Status:** Accepted · 2026-11-05
 The Explorer pages 25 records at a time with server-side keyset cursors (stable across millions of rows). A virtualised infinite-scroll table (TanStack Virtual) is deferred until a dataset needs continuous scrolling; the cursor API already supports it.
 
+## ADR-024 — Jobs: thread locally, inline in tests, RQ in production
+**Status:** Accepted · 2026-11-05
+Processing runs through one `enqueue` function with three backends: `thread` (local development without Redis), `sync` (tests, deterministic) and `rq` (production on Redis/Valkey). Jobs that use credits are created as "waiting for your go-ahead" with an estimate and only run after explicit confirmation.
+
+## ADR-025 — Our own GEDCOM reader; unknown counts as living
+**Status:** Accepted · 2026-11-05
+A small parser in `genealogy/gedcom.py` (GEDCOM 5.5.1/7 line format) avoids GPL libraries (ADR-010). Every imported fact becomes a claim whose evidence is the file and the GEDCOM record; corrections are new claims beside it. A person with no recorded death or burial who may have been born within the last 110 years (or has no birth date) is treated as living, so private, and never shown to the assistant.
+
+## ADR-026 — Say plainly what isn't installed
+**Status:** Accepted · 2026-11-05
+No malware scanner, OCR engine or PDF rasteriser is installed yet. Uploads record "No malware scanner is configured on this server yet"; OCR fails with "isn't installed" and charges nothing. Files stay private and are only served back as downloads (`nosniff`, sandboxed CSP), never rendered inline. A scanner (e.g. ClamAV) must be in place before any public launch.
+
+## ADR-027 — Credits are estimated and recorded, not yet charged
+**Status:** Accepted · 2026-11-05
+Jobs record their estimate and the credits used. The credit balance and ledger come in WP8; until then nothing is deducted. The confirmation step is already in place so the behaviour won't change for users when charging starts.
+
 ## ADR-017 — Prototype kept as reference only
 **Status:** Accepted · 2026-11-05
 The prototype lives untouched in `prototype-reference/`. It's the visual reference; its scripted replies and sample data are not architecture. The real app is built in `apps/web` and replaces simulated flows one at a time.

@@ -70,11 +70,13 @@ export function ProjectPage() {
           ))}
         </section>
         <section className={card}>
-          <h2 className="m-0 text-lg font-semibold">Files, evidence and next steps</h2>
-          <p className="m-0 text-muted">
-            Files, disputed claims and suggested next steps will collect here as those parts of
-            ArchiveHub arrive.
-          </p>
+          <h2 className="m-0 text-lg font-semibold">Files and family</h2>
+          <Link to={`/archive?project=${p.id}`} className="flex min-h-11 items-center font-medium">
+            Open this project's Archive
+          </Link>
+          <Link to={`/projects/${p.id}/people`} className="flex min-h-11 items-center font-medium">
+            Family tree
+          </Link>
         </section>
       </div>
 

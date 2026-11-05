@@ -27,6 +27,10 @@ Filled in as packages are installed. Columns: package · version · licence · p
 | vitest, jsdom, @testing-library/* | — | MIT | Dev: tests | 1 |
 | eslint, typescript-eslint, eslint-plugin-react-hooks, prettier | — | MIT | Dev: lint/format | 1 |
 | truststore | 0.10.5 | MIT | TLS verification via the OS trust store (ADR-022) | 3 |
+| pypdf | 6.21.4 | BSD-3 | PDF text layers and page counts | 4 |
+| defusedxml | 0.7.1 | PSF | Safe parsing of Word documents | 4 |
+| Pillow | 13.0.0 | MIT-CMU (HPND) | Image checks, previews, EXIF removal | 4 |
+| Tesseract (optional binary) | — | Apache-2.0 | OCR when installed; not installed yet | 4 |
 | GB1900 final raw gazetteer data dump (data) | July 2018 | CC0 1.0 | Hosted "Old map names" dataset; must not be named GB1900 (ADR-021) | 3 |
 | postgis/postgis image + postgresql-16-pgvector | 16-3.5 | GPL-2.0 (PostGIS, separate service) / PostgreSQL | Dev/CI database | 1 |
 | valkey image | 8 | BSD-3 | Dev job queue | 1 |

@@ -86,6 +86,24 @@ def replayable_content(blocks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return before + blocks[last_fallback + 1 :]
 
 
+def classify_error(exc: Exception) -> ProviderError:
+    """Map an Anthropic SDK error onto a ProviderError the user can understand."""
+    import anthropic as a
+
+    if isinstance(exc, a.AuthenticationError | a.PermissionDeniedError):
+        return ProviderError("config", str(exc))
+    if isinstance(exc, a.RateLimitError):
+        return ProviderError("busy", str(exc))
+    if isinstance(exc, a.APIConnectionError):
+        return ProviderError("unreachable", str(exc))
+    if isinstance(exc, a.APIStatusError):
+        if "credit balance" in str(exc).lower():
+            return ProviderError("billing", str(exc))
+        if exc.status_code in (429, 503, 529):
+            return ProviderError("busy", str(exc))
+    return ProviderError("unknown", str(exc))
+
+
 class AnthropicProvider:
     """Claude via the official SDK, streamed, with a manual tool loop."""
 
@@ -98,19 +116,7 @@ class AnthropicProvider:
         self.client = anthropic.AsyncAnthropic()
 
     def _classify(self, exc: Exception) -> ProviderError:
-        a = self.anthropic
-        if isinstance(exc, a.AuthenticationError | a.PermissionDeniedError):
-            return ProviderError("config", str(exc))
-        if isinstance(exc, a.RateLimitError):
-            return ProviderError("busy", str(exc))
-        if isinstance(exc, a.APIConnectionError):
-            return ProviderError("unreachable", str(exc))
-        if isinstance(exc, a.APIStatusError):
-            if "credit balance" in str(exc).lower():
-                return ProviderError("billing", str(exc))
-            if exc.status_code in (429, 503, 529):
-                return ProviderError("busy", str(exc))
-        return ProviderError("unknown", str(exc))
+        return classify_error(exc)
 
     async def stream_reply(
         self, history: list[dict[str, Any]], toolkit: ToolKit

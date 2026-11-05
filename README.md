@@ -2,7 +2,9 @@
 
 A chat-first platform where people preserve family and local history, research the past, publish their work and find the people who can help. Piloting in Newbury and West Berkshire.
 
-**Status:** WP3 (Archive Explorer and evidence panel). Browse sources beside the chat, save records to a project, ask the assistant about a record, and compare disputed sources. See [docs/WP3.md](docs/WP3.md) and [docs/WP2.md](docs/WP2.md).
+**Status:** WP4 (Record). Upload family papers to a private Archive, read them (handwriting and OCR only after you confirm), import a GEDCOM family tree, correct it and export it. See [docs/WP4.md](docs/WP4.md), [WP3](docs/WP3.md) and [WP2](docs/WP2.md).
+
+Optional: install [Tesseract](https://github.com/tesseract-ocr/tesseract) for printed-text OCR. Without it, OCR jobs say so and charge nothing.
 
 ## Documentation
 

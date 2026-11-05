@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "history",
     "connectors",
     "explorer",
+    "archive",
+    "genealogy",
     "assistant",
 ]
 
@@ -118,6 +120,17 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# The Archive. Local files in development; R2 via django-storages in production.
+MEDIA_ROOT = env("MEDIA_ROOT", default=str(BASE_DIR / "var" / "media"))
+MEDIA_URL = "/media-not-served/"  # originals are only ever served through permission checks
+ARCHIVE_MAX_UPLOAD_MB = env.int("ARCHIVE_MAX_UPLOAD_MB", default=50)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+# Background jobs: "thread" (local, no Redis), "sync" (tests), "rq" (production, Redis).
+JOBS_BACKEND = env("JOBS_BACKEND", default="thread")
+HANDWRITING_CREDITS_PER_PAGE = env.int("HANDWRITING_CREDITS_PER_PAGE", default=2)
+OCR_CREDITS_PER_PAGE = env.int("OCR_CREDITS_PER_PAGE", default=1)
 
 # Assistant (see assistant/providers.py). "fake" needs no API key and is used in tests.
 ASSISTANT_PROVIDER = env("ASSISTANT_PROVIDER", default="anthropic")

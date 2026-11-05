@@ -223,7 +223,16 @@ class Person(BaseModel):
     """A person across records. Living people are private by default (ADR-015)."""
 
     key = models.SlugField(max_length=80, unique=True, null=True, blank=True)
+    # People from a family tree belong to that project and are private to it.
+    project = models.ForeignKey(
+        "projects.Project", null=True, blank=True, on_delete=models.CASCADE, related_name="people"
+    )
+    source_file = models.ForeignKey(
+        "archive.FileAsset", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    external_id = models.CharField(max_length=40, blank=True, help_text="e.g. GEDCOM @I12@")
     name = models.CharField(max_length=200)
+    sex = models.CharField(max_length=1, blank=True)
     alt_names = models.JSONField(default=list, blank=True)
     birth_text = models.CharField(max_length=100, blank=True)
     death_text = models.CharField(max_length=100, blank=True)
@@ -322,7 +331,18 @@ class Stance(models.TextChoices):
 
 class AssertionEvidence(BaseModel):
     assertion = models.ForeignKey(Assertion, on_delete=models.CASCADE, related_name="evidence")
-    record = models.ForeignKey(SourceRecord, on_delete=models.PROTECT, related_name="evidence")
+    # Evidence is either a source record or one of the project's own files.
+    record = models.ForeignKey(
+        SourceRecord, null=True, blank=True, on_delete=models.PROTECT, related_name="evidence"
+    )
+    file = models.ForeignKey(
+        "archive.FileAsset",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="evidence",
+    )
+    location = models.CharField(max_length=100, blank=True, help_text="Where in the file")
     stance = models.CharField(max_length=10, choices=Stance.choices, default=Stance.SUPPORTS)
     note = models.TextField(blank=True, help_text="What the record says, in our words")
     suggested_weight = models.CharField(max_length=12, blank=True)
@@ -332,8 +352,28 @@ class AssertionEvidence(BaseModel):
     class Meta:
         verbose_name_plural = "assertion evidence"
         constraints = [
-            models.UniqueConstraint(fields=["assertion", "record"], name="unique_evidence")
+            models.UniqueConstraint(fields=["assertion", "record"], name="unique_evidence"),
+            models.CheckConstraint(
+                condition=models.Q(record__isnull=False) | models.Q(file__isnull=False),
+                name="evidence_has_a_source",
+            ),
         ]
+
+    @property
+    def title(self) -> str:
+        return self.record.title if self.record else f"{self.file.name} ({self.location})"
+
+    @property
+    def url(self) -> str:
+        return self.record.url if self.record else ""
+
+    @property
+    def source_name(self) -> str:
+        return self.record.source.name if self.record else "Your file"
+
+    @property
+    def ref(self) -> str:
+        return self.record.key if self.record else f"file:{self.file_id}:{self.location}"
 
 
 class Decision(BaseModel):

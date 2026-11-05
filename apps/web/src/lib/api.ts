@@ -198,6 +198,126 @@ export interface Evidence {
   } | null;
 }
 
+// --- Archive and family --------------------------------------------------------
+
+export interface Folder {
+  id: string;
+  name: string;
+}
+
+export interface Job {
+  id: string;
+  kind: string;
+  status: "awaiting_confirmation" | "queued" | "running" | "done" | "failed" | "cancelled";
+  estimate_credits: number;
+  credits_used: number;
+  error: string;
+  result: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface ArchiveFile {
+  id: string;
+  name: string;
+  folder_id: string | null;
+  kind: string;
+  size: number;
+  status: string;
+  status_detail: string;
+  scan_note: string;
+  page_count: number | null;
+  has_preview: boolean;
+  created_at: string;
+}
+
+export interface ArchiveFileDetail extends ArchiveFile {
+  sha256: string;
+  metadata: Record<string, unknown>;
+  texts: { id: string; method: string; engine: string; note: string; text: string }[];
+  jobs: Job[];
+  can_process: { kind: string; label: string }[];
+}
+
+export interface PersonBrief {
+  id: string;
+  name: string;
+  living: boolean;
+  birth: string;
+  death: string;
+}
+
+export interface PersonDetail extends PersonBrief {
+  parents: PersonBrief[];
+  partners: PersonBrief[];
+  children: PersonBrief[];
+  facts: {
+    question: string;
+    disputed: boolean;
+    answers: {
+      id: string;
+      value: string;
+      status: string;
+      method: string;
+      note: string;
+      in_use: boolean;
+      evidence: { title: string; url: string; what_it_says: string }[];
+    }[];
+  }[];
+}
+
+export async function uploadFile(
+  projectId: string,
+  file: File,
+  folderId?: string | null,
+): Promise<ArchiveFile> {
+  const form = new FormData();
+  form.append("file", file);
+  if (folderId) form.append("folder_id", folderId);
+  const res = await fetch(`/api/v1/projects/${projectId}/files`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "X-CSRFToken": await csrfToken(), Accept: "application/json" },
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(res.status, data?.detail ?? `Upload failed (${res.status})`);
+  return data as ArchiveFile;
+}
+
+export const archiveApi = {
+  folders: (projectId: string) => request<Folder[]>("GET", `/api/v1/projects/${projectId}/folders`),
+  createFolder: (projectId: string, name: string) =>
+    request<Folder>("POST", `/api/v1/projects/${projectId}/folders`, { name }),
+  files: (projectId: string, folderId?: string | null) =>
+    request<ArchiveFile[]>(
+      "GET",
+      `/api/v1/projects/${projectId}/files${folderId ? `?folder_id=${folderId}` : ""}`,
+    ),
+  file: (id: string) => request<ArchiveFileDetail>("GET", `/api/v1/files/${id}`),
+  deleteFile: (id: string) => request<void>("DELETE", `/api/v1/files/${id}`),
+  requestJob: (fileId: string, kind: string) =>
+    request<Job>("POST", `/api/v1/files/${fileId}/jobs`, { kind }),
+  confirmJob: (jobId: string) => request<Job>("POST", `/api/v1/jobs/${jobId}/confirm`),
+  cancelJob: (jobId: string) => request<Job>("POST", `/api/v1/jobs/${jobId}/cancel`),
+  people: (projectId: string, q = "") =>
+    request<PersonBrief[]>(
+      "GET",
+      `/api/v1/projects/${projectId}/people${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+    ),
+  person: (projectId: string, personId: string) =>
+    request<PersonDetail>("GET", `/api/v1/projects/${projectId}/people/${personId}`),
+  addClaim: (
+    projectId: string,
+    personId: string,
+    body: { predicate: string; value: string; status: string; note: string },
+  ) =>
+    request<{ id: string }>(
+      "POST",
+      `/api/v1/projects/${projectId}/people/${personId}/claims`,
+      body,
+    ),
+};
+
 export const ACCESS_LABELS: Record<ExplorerSource["access_type"], string> = {
   hosted: "Hosted here",
   live_api: "Searched live",

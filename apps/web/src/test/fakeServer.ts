@@ -33,7 +33,14 @@ export function installFetch(routes: Record<string, Handler>) {
     calls.push({
       method,
       path: url.pathname + url.search,
-      body: init.body ? JSON.parse(String(init.body)) : undefined,
+      body:
+        init.body instanceof FormData
+          ? Object.fromEntries(
+              Array.from(init.body.entries()).map(([k, v]) => [k, v instanceof File ? v.name : v]),
+            )
+          : init.body
+            ? JSON.parse(String(init.body))
+            : undefined,
       headers: new Headers(init.headers),
     });
     const handler = routes[`${method} ${url.pathname}`];

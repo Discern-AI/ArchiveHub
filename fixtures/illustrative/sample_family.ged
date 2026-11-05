@@ -1,0 +1,58 @@
+0 HEAD
+1 SOUR ArchiveHubTestData
+1 GEDC
+2 VERS 5.5.1
+1 CHAR UTF-8
+1 NOTE SYNTHETIC TEST DATA. Every person here is fictional.
+0 @I1@ INDI
+1 NAME Arthur /Sample/
+1 SEX M
+1 BIRT
+2 DATE ABT 1921
+2 PLAC Newbury, Berkshire, England
+1 DEAT
+2 DATE 14 MAR 1988
+2 PLAC Reading, Berkshire, England
+1 OCCU Publican
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME Edith /Fictional/
+1 SEX F
+1 BIRT
+2 DATE 1923
+1 DEAT
+2 DATE BET 1990 AND 1992
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Alice /Sample/
+1 SEX F
+1 BIRT
+2 DATE 2 FEB 1950
+2 PLAC Newbury, Berkshire, England
+1 FAMC @F1@
+0 @I4@ INDI
+1 NAME Tom /Sample/
+1 SEX M
+1 BIRT
+2 DATE BEF 1953
+1 NOTE Remembered as a keen
+2 CONC  cyclist.
+1 FAMC @F1@
+0 @I5@ INDI
+1 NAME Walter /Sample/
+1 SEX M
+1 BIRT
+2 DATE 1890
+1 FAMS @F2@
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 MARR
+2 DATE 1946
+2 PLAC Newbury
+1 CHIL @I3@
+1 CHIL @I4@
+0 @F2@ FAM
+1 HUSB @I5@
+1 CHIL @I1@
+0 TRLR

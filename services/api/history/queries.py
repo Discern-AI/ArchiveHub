@@ -65,7 +65,7 @@ class Subject:
     alt_names: list[str] = field(default_factory=list)
 
 
-def find_subjects(name: str, limit: int = 5) -> list[Subject]:
+def find_subjects(name: str, user=None, limit: int = 5) -> list[Subject]:
     q = terms(name)
     if not q:
         return []
@@ -73,7 +73,11 @@ def find_subjects(name: str, limit: int = 5) -> list[Subject]:
     for model, kind in ((Organisation, "organisation"), (Place, "place"), (Person, "person")):
         qs = model.objects.all()
         if model is Person:
-            qs = qs.exclude(living_status="living")  # never surface living people here
+            # Only shared people and people in projects this user can see; never living people.
+            visible = Q(project__isnull=True)
+            if user is not None and user.is_authenticated:
+                visible |= Q(project__in=visible_projects(user))
+            qs = qs.filter(visible).exclude(living_status="living")
         for obj in qs:
             names = [obj.name, *obj.alt_names]
             n = score(names, q)
@@ -109,7 +113,9 @@ def claims_about(user, subject_obj, predicate: str | None = None) -> dict[str, l
     qs = visible_assertions(user).filter(subject_type=ct, subject_id=subject_obj.pk)
     if predicate:
         qs = qs.filter(predicate__iexact=predicate)
-    qs = qs.prefetch_related("evidence__record__source").order_by("predicate", "year_from")
+    qs = qs.prefetch_related("evidence__record__source", "evidence__file").order_by(
+        "predicate", "year_from"
+    )
     grouped: dict[str, list[Assertion]] = defaultdict(list)
     for a in qs:
         grouped[a.predicate].append(a)

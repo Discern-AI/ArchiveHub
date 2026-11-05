@@ -5,9 +5,11 @@ from accounts.models import User
 
 
 @pytest.fixture(autouse=True)
-def _test_settings(settings):
+def _test_settings(settings, tmp_path):
     settings.ASSISTANT_PROVIDER = "fake"
     settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+    settings.JOBS_BACKEND = "sync"
+    settings.MEDIA_ROOT = str(tmp_path / "media")
 
 
 def make_user(email: str) -> User:

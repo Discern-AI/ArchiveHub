@@ -159,8 +159,16 @@ def allowed_jobs(f: FileAsset) -> list[str]:
 # --- Running jobs --------------------------------------------------------------------
 
 
-def run_job(job_id) -> None:
+def run_job_in_worker(job_id) -> None:
+    """Entry point for worker threads and RQ: they own their database connection."""
     close_old_connections()
+    try:
+        run_job(job_id)
+    finally:
+        close_old_connections()
+
+
+def run_job(job_id) -> None:
     job = ProcessingJob.objects.select_related("file").filter(id=job_id).first()
     if job is None or job.status != JobStatus.QUEUED:
         return
@@ -189,7 +197,6 @@ def run_job(job_id) -> None:
     if job.status == JobStatus.FAILED and f.status == FileStatus.CHECKED:
         f.status, f.status_detail = FileStatus.FAILED, job.error
         f.save()
-    close_old_connections()
 
 
 def _extract(f: FileAsset) -> dict:

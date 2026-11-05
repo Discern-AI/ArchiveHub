@@ -1,38 +1,888 @@
 [
-  {"key": "gb1900", "name": "GB1900 Gazetteer", "kind": "dataset", "holder": "GB1900 project / Vision of Britain", "url": "https://www.visionofbritain.org.uk/data/", "description": "Place names transcribed by volunteers from the six-inch Ordnance Survey maps of around 1900.", "coverage_area": "Great Britain", "period_from": 1888, "period_to": 1913, "record_types": ["place names", "maps"], "tags": ["places", "maps", "street names"], "access_type": "external_only", "cost": "free", "licence": "Raw Dump CC0; Complete and Abridged CC BY-SA", "conditions": "Commercial use allowed.", "storage_policy": "full_copy", "status_label": "downloadable_dataset", "tier": "A", "review_status": "page_read", "plan": "First hosted dataset and map search (WP3)."},
-  {"key": "wikidata", "name": "Wikidata", "kind": "database", "holder": "Wikimedia Foundation", "url": "https://www.wikidata.org/", "description": "Structured data about people, places and organisations. Useful context, not genealogical proof.", "coverage_area": "Worldwide", "record_types": ["people", "places", "organisations"], "tags": ["entities"], "access_type": "external_only", "cost": "free", "licence": "Confirm current terms", "status_label": "potential_integration", "tier": "A", "review_status": "not_checked", "plan": "Entity matching and context, once terms are confirmed."},
-  {"key": "tna-discovery", "name": "The National Archives: Discovery", "kind": "catalogue", "holder": "The National Archives (UK)", "url": "https://discovery.nationalarchives.gov.uk/", "description": "Catalogue descriptions of records held by The National Archives and thousands of other archives. Descriptions, not the documents themselves.", "coverage_area": "UK", "record_types": ["catalogue descriptions", "military", "legal", "government"], "tags": ["archives", "catalogue"], "access_type": "external_only", "cost": "free", "api_status": "API access requested by email", "licence": "Open Government Licence cited on one page", "conditions": "API terms say not to cache or store content.", "storage_policy": "none", "status_label": "potential_integration", "tier": "A", "review_status": "page_read", "plan": "Live search only, once access is approved."},
-  {"key": "europeana", "name": "Europeana", "kind": "aggregator", "holder": "Europeana Foundation", "url": "https://www.europeana.eu/", "description": "European cultural heritage objects: photographs, artworks, papers, film and sound from many institutions.", "coverage_area": "Europe", "record_types": ["photographs", "objects", "documents", "film"], "tags": ["photos", "museums"], "access_type": "external_only", "cost": "free", "api_status": "API key required (personal or project)", "conditions": "Rights vary item by item.", "status_label": "potential_integration", "tier": "A", "review_status": "not_checked", "plan": "Connector once key type and attribution terms are confirmed."},
-  {"key": "openhistoricalmap", "name": "OpenHistoricalMap", "kind": "map", "holder": "OpenHistoricalMap community", "url": "https://www.openhistoricalmap.org/", "description": "Time-aware map data: roads, buildings and boundaries with start and end dates.", "coverage_area": "Worldwide (patchy)", "record_types": ["maps"], "tags": ["maps", "time map"], "access_type": "external_only", "cost": "free", "licence": "Confirm licence", "status_label": "potential_integration", "tier": "A", "review_status": "not_checked", "plan": "Test for the time map; check Newbury coverage."},
-  {"key": "familysearch", "name": "FamilySearch", "kind": "database", "holder": "FamilySearch International", "url": "https://www.familysearch.org/", "description": "Global genealogical indexes and images, and a shared family tree. Free account needed.", "coverage_area": "Worldwide", "record_types": ["births", "marriages", "deaths", "census", "parish registers", "family trees"], "tags": ["genealogy"], "access_type": "external_only", "cost": "free", "api_status": "Developer programme; partners need a business plan", "conditions": "Access varies by collection.", "status_label": "external_only", "tier": "B/C", "review_status": "partly_checked", "plan": "Link out; apply for API access early."},
-  {"key": "vision-of-britain", "name": "A Vision of Britain through Time", "kind": "website", "holder": "University of Portsmouth", "url": "https://www.visionofbritain.org.uk/", "description": "Historical statistics, boundaries and place descriptions; recommends NLS maps for historic OS mapping.", "coverage_area": "Great Britain", "period_from": 1801, "record_types": ["statistics", "boundaries", "place descriptions"], "tags": ["places", "statistics"], "access_type": "external_only", "cost": "free", "conditions": "Statistics open; boundaries limit commercial use; parish boundaries commercially licensed.", "status_label": "external_only", "tier": "B/D", "review_status": "page_read", "plan": "Later context layer."},
-  {"key": "free-uk-genealogy", "name": "Free UK Genealogy (FreeBMD, FreeCEN, FreeREG)", "kind": "database", "holder": "Free UK Genealogy CIO", "url": "https://www.freeukgenealogy.org.uk/", "description": "Volunteer transcriptions: civil birth, marriage and death indexes for England and Wales (FreeBMD), census (FreeCEN) and parish registers (FreeREG). Coverage is partial and varies by county and year.", "coverage_area": "England and Wales (partial)", "period_from": 1538, "record_types": ["births", "marriages", "deaths", "census", "parish registers"], "tags": ["genealogy", "parish", "census"], "access_type": "external_only", "cost": "free", "licence": "ODbL stated, but sharing hasn't started", "conditions": "Commercial use not directly addressed.", "status_label": "external_only", "tier": "A/B", "review_status": "page_read", "plan": "Link out, then contact them."},
-  {"key": "icem", "name": "Integrated Census Microdata (I-CeM)", "kind": "dataset", "holder": "University of Essex / UK Data Service", "url": "https://www.essex.ac.uk/research-projects/integrated-census-microdata", "description": "About 230 million census person records, 1851–1921.", "coverage_area": "Great Britain", "period_from": 1851, "period_to": 1921, "record_types": ["census"], "tags": ["census"], "access_type": "external_only", "cost": "free", "conditions": "Names and addresses need a special licence; commercial use not addressed.", "status_label": "external_only", "tier": "C/D", "review_status": "page_read", "plan": "Research use only until cleared."},
-  {"key": "gro", "name": "General Register Office", "kind": "official service", "holder": "HM Passport Office", "url": "https://www.gro.gov.uk/gro/content/certificates/", "description": "Official birth, marriage and death certificates and indexes for England and Wales. Certificates are paid.", "coverage_area": "England and Wales", "period_from": 1837, "record_types": ["births", "marriages", "deaths"], "tags": ["genealogy", "certificates"], "access_type": "external_only", "cost": "paid", "status_label": "external_only", "tier": "B/C", "review_status": "not_checked", "plan": "Link out and explain how to order."},
-  {"key": "findmypast", "name": "Findmypast", "kind": "database", "holder": "Findmypast Ltd", "url": "https://www.findmypast.co.uk/", "description": "Subscription site with census (including the 1921 census), parish, military and newspaper records.", "coverage_area": "UK and Ireland", "record_types": ["census", "parish registers", "military", "newspapers"], "tags": ["genealogy", "newspapers"], "access_type": "external_only", "cost": "paid", "conditions": "Licensing conversation needed.", "status_label": "external_only", "tier": "C", "review_status": "partly_checked", "plan": "Link out; explore a partnership."},
-  {"key": "ancestry", "name": "Ancestry", "kind": "database", "holder": "Ancestry.com", "url": "https://www.ancestry.co.uk/", "description": "Subscription site with census, parish, military records and user family trees.", "coverage_area": "Worldwide", "record_types": ["census", "parish registers", "military", "family trees"], "tags": ["genealogy"], "access_type": "external_only", "cost": "paid", "status_label": "external_only", "tier": "C", "review_status": "not_checked", "plan": "Directory only; users can import their own GEDCOM exports."},
-  {"key": "scotlandspeople", "name": "ScotlandsPeople", "kind": "official service", "holder": "National Records of Scotland", "url": "https://www.scotlandspeople.gov.uk/", "description": "Scottish births, marriages, deaths, census and other records. Pay per record.", "coverage_area": "Scotland", "record_types": ["births", "marriages", "deaths", "census"], "tags": ["genealogy"], "access_type": "external_only", "cost": "paid", "status_label": "external_only", "tier": "C", "review_status": "not_checked", "plan": "Link out."},
-  {"key": "british-newspaper-archive", "name": "British Newspaper Archive", "kind": "database", "holder": "Findmypast / British Library", "url": "https://www.britishnewspaperarchive.co.uk/", "description": "Very large collection of digitised British and Irish newspapers. Subscription.", "coverage_area": "UK and Ireland", "period_from": 1700, "record_types": ["newspapers"], "tags": ["newspapers"], "access_type": "external_only", "cost": "paid", "conditions": "Run by Findmypast, a potential competitor.", "status_label": "external_only", "tier": "C", "review_status": "partly_checked", "plan": "Link out, then ask about licensing."},
-  {"key": "lwmdb", "name": "Living with Machines newspaper metadata (LwMDB)", "kind": "dataset", "holder": "Lancaster University / Living with Machines", "url": "https://www.lancaster.ac.uk/", "description": "Metadata on 19th-century newspapers (titles, places, dates), not the articles.", "coverage_area": "UK", "period_from": 1800, "period_to": 1900, "record_types": ["newspaper metadata"], "tags": ["newspapers"], "access_type": "external_only", "cost": "free", "licence": "Code MIT; data licence to confirm", "status_label": "potential_integration", "tier": "B", "review_status": "page_read", "plan": "Newspaper discovery by place and title."},
-  {"key": "newbury-weekly-news", "name": "Newbury Weekly News archive", "kind": "newspaper", "holder": "Newbury Weekly News / local libraries", "description": "Back issues of the local newspaper. Access through the publisher and local libraries; not online here.", "coverage_area": "Newbury and West Berkshire", "record_types": ["newspapers"], "tags": ["newspapers", "newbury", "local"], "access_type": "external_only", "cost": "unknown", "status_label": "external_only", "review_status": "not_checked", "plan": "A valuable local partnership: contact the publisher."},
-  {"key": "berkshire-record-office", "name": "Berkshire Record Office", "kind": "archive", "holder": "Berkshire Record Office", "description": "County archive holding local records, including licensing records for pubs, parish registers and local authority papers. Mostly visited in person; catalogue online.", "coverage_area": "Berkshire", "record_types": ["licensing records", "parish registers", "local government", "maps"], "tags": ["archives", "local", "pubs", "licensing"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "partly_checked", "plan": "Contact as a launch partner."},
-  {"key": "west-berkshire-museum", "name": "West Berkshire Museum", "kind": "museum", "holder": "West Berkshire Council", "description": "Local museum in Newbury with objects and photographs. Credited as the source of some historic pub photos online.", "coverage_area": "Newbury and West Berkshire", "record_types": ["photographs", "objects"], "tags": ["photos", "local", "museum"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "not_checked", "plan": "Contact as a launch partner."},
-  {"key": "pub-wiki", "name": "Pub Wiki (pubwiki.co.uk)", "kind": "website", "holder": "Kevan Wilding", "url": "https://pubwiki.co.uk/", "description": "Pub histories compiled from census returns and trade directories, with licensee lists by year.", "coverage_area": "England (strong for Berkshire)", "period_from": 1796, "period_to": 1970, "record_types": ["licensee lists", "trade directories", "census summaries"], "tags": ["pubs", "local", "directories"], "access_type": "hosted", "cost": "free", "licence": "All rights reserved (stated on pages)", "conditions": "Reuse not confirmed. We store our own short factual claims with links (ADR-018).", "storage_policy": "reference_only", "status_label": "checked_reference", "review_status": "page_read", "last_checked": "2026-11-05", "plan": "Link and invite the owner as a contributor."},
-  {"key": "closed-pubs", "name": "Closed Pubs (closedpubs.co.uk)", "kind": "website", "holder": "Closed Pubs", "url": "https://www.closedpubs.co.uk/", "description": "Listings and photographs of pubs that have closed, by county.", "coverage_area": "UK", "record_types": ["pub listings", "photographs"], "tags": ["pubs", "photos", "lost pubs"], "access_type": "hosted", "cost": "free", "conditions": "Reuse not confirmed; photos credited to third parties. We store our own short factual claims with links (ADR-018).", "storage_policy": "reference_only", "status_label": "checked_reference", "review_status": "page_read", "last_checked": "2026-11-05", "plan": "Link and invite as a contributor."},
-  {"key": "nicks-blog", "name": "Nickbits local history blog", "kind": "website", "holder": "Nick Young", "url": "https://nickbits.co.uk/", "description": "Local history research on Newbury pubs, drawing on newspapers and census returns.", "coverage_area": "Newbury", "record_types": ["local history research"], "tags": ["pubs", "local", "blog", "newbury"], "access_type": "hosted", "cost": "free", "conditions": "Reuse not confirmed. We store our own short factual claims with links (ADR-018).", "storage_policy": "reference_only", "status_label": "checked_reference", "review_status": "page_read", "last_checked": "2026-11-05", "plan": "Invite as an early historian."},
-  {"key": "historic-england-archive", "name": "Historic England Archive", "kind": "archive", "holder": "Historic England", "url": "https://historicengland.org.uk/images-books/archive/", "description": "Building records and historic photographs of England.", "coverage_area": "England", "record_types": ["photographs", "building records"], "tags": ["buildings", "photos"], "access_type": "external_only", "cost": "free", "conditions": "Check image rights item by item.", "status_label": "external_only", "review_status": "partly_checked", "plan": "Link; check image rights item by item."},
-  {"key": "nls-maps", "name": "National Library of Scotland maps", "kind": "map", "holder": "National Library of Scotland", "url": "https://maps.nls.uk/", "description": "Extensive digitised historic Ordnance Survey maps for the whole of Great Britain, including town plans.", "coverage_area": "Great Britain", "period_from": 1840, "record_types": ["maps"], "tags": ["maps", "ordnance survey"], "access_type": "external_only", "cost": "free", "conditions": "Map images have conditions; terms not checked.", "status_label": "external_only", "tier": "B/C", "review_status": "not_checked", "plan": "Priority check for time-map layers."},
-  {"key": "heritage-gateway", "name": "Heritage Gateway", "kind": "portal", "holder": "Historic England and partners", "url": "https://www.heritagegateway.org.uk/", "description": "Search across local and national historic environment records.", "coverage_area": "England", "record_types": ["listed buildings", "historic environment records"], "tags": ["buildings"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "tier": "B", "review_status": "not_checked", "plan": "Directory."},
-  {"key": "wikimedia-commons", "name": "Wikimedia Commons", "kind": "media library", "holder": "Wikimedia Foundation", "url": "https://commons.wikimedia.org/", "description": "Openly licensed images and media, each file with its own licence.", "coverage_area": "Worldwide", "record_types": ["photographs", "maps", "documents"], "tags": ["photos"], "access_type": "external_only", "cost": "free", "conditions": "Per-file licences and attribution.", "status_label": "potential_integration", "tier": "A/B", "review_status": "not_checked", "plan": "Photo connector showing each file's licence."},
-  {"key": "internet-archive", "name": "Internet Archive", "kind": "library", "holder": "Internet Archive", "url": "https://archive.org/", "description": "Digitised books, film, audio and archived websites. Rights vary by item.", "coverage_area": "Worldwide", "record_types": ["books", "film", "audio", "web archives"], "tags": ["books", "directories", "film"], "access_type": "external_only", "cost": "free", "conditions": "Item-level rights.", "status_label": "potential_integration", "tier": "B", "review_status": "not_checked", "plan": "Connector respecting item-level rights."},
-  {"key": "british-history-online", "name": "British History Online", "kind": "library", "holder": "Institute of Historical Research", "url": "https://www.british-history.ac.uk/", "description": "Primary and secondary sources for British history, including the Victoria County History.", "coverage_area": "Britain and Ireland", "record_types": ["published histories", "primary sources"], "tags": ["books", "local history"], "access_type": "external_only", "cost": "mixed", "status_label": "external_only", "tier": "B", "review_status": "not_checked", "plan": "Directory; assess permissions."},
-  {"key": "cwgc", "name": "Commonwealth War Graves Commission", "kind": "database", "holder": "CWGC", "url": "https://www.cwgc.org/", "description": "Records of Commonwealth war dead from the two World Wars and their graves and memorials.", "coverage_area": "Worldwide", "period_from": 1914, "period_to": 1947, "record_types": ["war dead", "cemeteries"], "tags": ["military"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "not_checked", "plan": "Directory, then check data access."},
-  {"key": "lives-of-the-first-world-war", "name": "Lives of the First World War", "kind": "website", "holder": "Imperial War Museums", "url": "https://livesofthefirstworldwar.iwm.org.uk/", "description": "Life stories of people who served in the First World War.", "coverage_area": "UK and Commonwealth", "period_from": 1914, "period_to": 1918, "record_types": ["military", "life stories"], "tags": ["military"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "not_checked", "plan": "Directory and possible links."},
-  {"key": "iwm-collections", "name": "Imperial War Museums collections", "kind": "museum", "holder": "Imperial War Museums", "url": "https://www.iwm.org.uk/collections", "description": "Photographs, oral histories, film and objects about conflict since 1914.", "coverage_area": "UK and worldwide", "period_from": 1914, "record_types": ["photographs", "oral history", "film"], "tags": ["military", "oral history"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "not_checked", "plan": "Catalogue and permissions."},
-  {"key": "a-street-near-you", "name": "A Street Near You", "kind": "website", "holder": "A Street Near You", "url": "https://astreetnearyou.org/", "description": "First World War records mapped to the places people lived.", "coverage_area": "UK", "period_from": 1914, "period_to": 1918, "record_types": ["military"], "tags": ["military", "maps"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "not_checked", "plan": "Design reference and possible partner."},
-  {"key": "old-bailey-online", "name": "Old Bailey Online", "kind": "database", "holder": "Old Bailey Proceedings Online", "url": "https://www.oldbaileyonline.org/", "description": "Proceedings of London's central criminal court, 1674–1913.", "coverage_area": "London", "period_from": 1674, "period_to": 1913, "record_types": ["criminal trials"], "tags": ["legal", "crime"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "not_checked", "plan": "Later specialist connector."},
-  {"key": "archives-hub", "name": "Archives Hub", "kind": "catalogue", "holder": "Jisc", "url": "https://archiveshub.jisc.ac.uk/", "description": "Descriptions of archive collections held by UK universities and other institutions.", "coverage_area": "UK", "record_types": ["catalogue descriptions"], "tags": ["archives", "catalogue"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "tier": "B", "review_status": "not_checked", "plan": "Evaluate interfaces."},
-  {"key": "historic-hansard", "name": "Historic Hansard", "kind": "database", "holder": "UK Parliament", "url": "https://api.parliament.uk/historic-hansard/", "description": "UK parliamentary debates, useful for mentions of people, places and events.", "coverage_area": "UK", "period_from": 1803, "period_to": 2005, "record_types": ["parliamentary debates"], "tags": ["government"], "access_type": "external_only", "cost": "free", "status_label": "external_only", "review_status": "not_checked", "plan": "Later."},
-  {"key": "bfi", "name": "British Film Institute archive", "kind": "archive", "holder": "BFI", "url": "https://www.bfi.org.uk/", "description": "Historic film and television, some playable on BFI Player.", "coverage_area": "UK", "record_types": ["film"], "tags": ["film"], "access_type": "external_only", "cost": "mixed", "status_label": "external_only", "review_status": "not_checked", "plan": "Outbound links only."},
-  {"key": "ordnance-survey-opendata", "name": "Ordnance Survey OpenData", "kind": "dataset", "holder": "Ordnance Survey", "url": "https://osdatahub.os.uk/", "description": "Modern UK reference geography. Not historical.", "coverage_area": "Great Britain", "record_types": ["maps", "place names"], "tags": ["maps", "modern"], "access_type": "external_only", "cost": "free", "status_label": "potential_integration", "tier": "A", "review_status": "not_checked", "plan": "Modern context only."}
+  {
+    "key": "gb1900",
+    "name": "GB1900 Gazetteer",
+    "kind": "dataset",
+    "holder": "GB1900 project / Vision of Britain",
+    "url": "https://www.visionofbritain.org.uk/data/",
+    "description": "Place names transcribed by volunteers from the six-inch Ordnance Survey maps of around 1900.",
+    "coverage_area": "Great Britain",
+    "period_from": 1888,
+    "period_to": 1913,
+    "record_types": [
+      "place names",
+      "maps"
+    ],
+    "tags": [
+      "places",
+      "maps",
+      "street names"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "licence": "Raw Dump CC0; Complete and Abridged CC BY-SA",
+    "conditions": "We use the Raw Dump (CC0). Works derived from it must not use the name GB1900; cite the 'GB1900 final raw gazetteer data dump'. Complete/Abridged versions are CC BY-SA (share-alike), not used.",
+    "storage_policy": "full_copy",
+    "status_label": "downloadable_dataset",
+    "tier": "A",
+    "review_status": "page_read",
+    "plan": "Hosted as 'Old map names (OS six-inch, c.1900)', Newbury and West Berkshire first (WP3).",
+    "last_checked": "2026-11-05"
+  },
+  {
+    "key": "wikidata",
+    "name": "Wikidata",
+    "kind": "database",
+    "holder": "Wikimedia Foundation",
+    "url": "https://www.wikidata.org/",
+    "description": "Structured data about people, places and organisations. Useful context, not genealogical proof.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "people",
+      "places",
+      "organisations"
+    ],
+    "tags": [
+      "entities"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "licence": "CC0 1.0 (confirmed 2026-11-05)",
+    "status_label": "confirmed_live_api",
+    "tier": "A",
+    "review_status": "page_read",
+    "plan": "Live search connector (WP3).",
+    "last_checked": "2026-11-05",
+    "storage_policy": "full_copy",
+    "conditions": "No attribution or commercial limits on the data. API clients must send a descriptive User-Agent."
+  },
+  {
+    "key": "tna-discovery",
+    "name": "The National Archives: Discovery",
+    "kind": "catalogue",
+    "holder": "The National Archives (UK)",
+    "url": "https://discovery.nationalarchives.gov.uk/",
+    "description": "Catalogue descriptions of records held by The National Archives and thousands of other archives. Descriptions, not the documents themselves.",
+    "coverage_area": "UK",
+    "record_types": [
+      "catalogue descriptions",
+      "military",
+      "legal",
+      "government"
+    ],
+    "tags": [
+      "archives",
+      "catalogue"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "api_status": "API access requested by email",
+    "licence": "Open Government Licence cited on one page",
+    "conditions": "API terms say not to cache or store content.",
+    "storage_policy": "none",
+    "status_label": "potential_integration",
+    "tier": "A",
+    "review_status": "page_read",
+    "plan": "Live search only, once access is approved."
+  },
+  {
+    "key": "europeana",
+    "name": "Europeana",
+    "kind": "aggregator",
+    "holder": "Europeana Foundation",
+    "url": "https://www.europeana.eu/",
+    "description": "European cultural heritage objects: photographs, artworks, papers, film and sound from many institutions.",
+    "coverage_area": "Europe",
+    "record_types": [
+      "photographs",
+      "objects",
+      "documents",
+      "film"
+    ],
+    "tags": [
+      "photos",
+      "museums"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "api_status": "API key required (personal or project)",
+    "conditions": "Rights vary item by item.",
+    "status_label": "potential_integration",
+    "tier": "A",
+    "review_status": "not_checked",
+    "plan": "Connector once key type and attribution terms are confirmed."
+  },
+  {
+    "key": "openhistoricalmap",
+    "name": "OpenHistoricalMap",
+    "kind": "map",
+    "holder": "OpenHistoricalMap community",
+    "url": "https://www.openhistoricalmap.org/",
+    "description": "Time-aware map data: roads, buildings and boundaries with start and end dates.",
+    "coverage_area": "Worldwide (patchy)",
+    "record_types": [
+      "maps"
+    ],
+    "tags": [
+      "maps",
+      "time map"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Confirm licence",
+    "status_label": "potential_integration",
+    "tier": "A",
+    "review_status": "not_checked",
+    "plan": "Test for the time map; check Newbury coverage."
+  },
+  {
+    "key": "familysearch",
+    "name": "FamilySearch",
+    "kind": "database",
+    "holder": "FamilySearch International",
+    "url": "https://www.familysearch.org/",
+    "description": "Global genealogical indexes and images, and a shared family tree. Free account needed.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "births",
+      "marriages",
+      "deaths",
+      "census",
+      "parish registers",
+      "family trees"
+    ],
+    "tags": [
+      "genealogy"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "api_status": "Developer programme; partners need a business plan",
+    "conditions": "Access varies by collection.",
+    "status_label": "external_only",
+    "tier": "B/C",
+    "review_status": "partly_checked",
+    "plan": "Link out; apply for API access early."
+  },
+  {
+    "key": "vision-of-britain",
+    "name": "A Vision of Britain through Time",
+    "kind": "website",
+    "holder": "University of Portsmouth",
+    "url": "https://www.visionofbritain.org.uk/",
+    "description": "Historical statistics, boundaries and place descriptions; recommends NLS maps for historic OS mapping.",
+    "coverage_area": "Great Britain",
+    "period_from": 1801,
+    "record_types": [
+      "statistics",
+      "boundaries",
+      "place descriptions"
+    ],
+    "tags": [
+      "places",
+      "statistics"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "conditions": "Statistics open; boundaries limit commercial use; parish boundaries commercially licensed.",
+    "status_label": "external_only",
+    "tier": "B/D",
+    "review_status": "page_read",
+    "plan": "Later context layer."
+  },
+  {
+    "key": "free-uk-genealogy",
+    "name": "Free UK Genealogy (FreeBMD, FreeCEN, FreeREG)",
+    "kind": "database",
+    "holder": "Free UK Genealogy CIO",
+    "url": "https://www.freeukgenealogy.org.uk/",
+    "description": "Volunteer transcriptions: civil birth, marriage and death indexes for England and Wales (FreeBMD), census (FreeCEN) and parish registers (FreeREG). Coverage is partial and varies by county and year.",
+    "coverage_area": "England and Wales (partial)",
+    "period_from": 1538,
+    "record_types": [
+      "births",
+      "marriages",
+      "deaths",
+      "census",
+      "parish registers"
+    ],
+    "tags": [
+      "genealogy",
+      "parish",
+      "census"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "ODbL stated, but sharing hasn't started",
+    "conditions": "Commercial use not directly addressed.",
+    "status_label": "external_only",
+    "tier": "A/B",
+    "review_status": "page_read",
+    "plan": "Link out, then contact them."
+  },
+  {
+    "key": "icem",
+    "name": "Integrated Census Microdata (I-CeM)",
+    "kind": "dataset",
+    "holder": "University of Essex / UK Data Service",
+    "url": "https://www.essex.ac.uk/research-projects/integrated-census-microdata",
+    "description": "About 230 million census person records, 1851–1921.",
+    "coverage_area": "Great Britain",
+    "period_from": 1851,
+    "period_to": 1921,
+    "record_types": [
+      "census"
+    ],
+    "tags": [
+      "census"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "conditions": "Names and addresses need a special licence; commercial use not addressed.",
+    "status_label": "external_only",
+    "tier": "C/D",
+    "review_status": "page_read",
+    "plan": "Research use only until cleared."
+  },
+  {
+    "key": "gro",
+    "name": "General Register Office",
+    "kind": "official service",
+    "holder": "HM Passport Office",
+    "url": "https://www.gro.gov.uk/gro/content/certificates/",
+    "description": "Official birth, marriage and death certificates and indexes for England and Wales. Certificates are paid.",
+    "coverage_area": "England and Wales",
+    "period_from": 1837,
+    "record_types": [
+      "births",
+      "marriages",
+      "deaths"
+    ],
+    "tags": [
+      "genealogy",
+      "certificates"
+    ],
+    "access_type": "external_only",
+    "cost": "paid",
+    "status_label": "external_only",
+    "tier": "B/C",
+    "review_status": "not_checked",
+    "plan": "Link out and explain how to order."
+  },
+  {
+    "key": "findmypast",
+    "name": "Findmypast",
+    "kind": "database",
+    "holder": "Findmypast Ltd",
+    "url": "https://www.findmypast.co.uk/",
+    "description": "Subscription site with census (including the 1921 census), parish, military and newspaper records.",
+    "coverage_area": "UK and Ireland",
+    "record_types": [
+      "census",
+      "parish registers",
+      "military",
+      "newspapers"
+    ],
+    "tags": [
+      "genealogy",
+      "newspapers"
+    ],
+    "access_type": "external_only",
+    "cost": "paid",
+    "conditions": "Licensing conversation needed.",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "partly_checked",
+    "plan": "Link out; explore a partnership."
+  },
+  {
+    "key": "ancestry",
+    "name": "Ancestry",
+    "kind": "database",
+    "holder": "Ancestry.com",
+    "url": "https://www.ancestry.co.uk/",
+    "description": "Subscription site with census, parish, military records and user family trees.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "census",
+      "parish registers",
+      "military",
+      "family trees"
+    ],
+    "tags": [
+      "genealogy"
+    ],
+    "access_type": "external_only",
+    "cost": "paid",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Directory only; users can import their own GEDCOM exports."
+  },
+  {
+    "key": "scotlandspeople",
+    "name": "ScotlandsPeople",
+    "kind": "official service",
+    "holder": "National Records of Scotland",
+    "url": "https://www.scotlandspeople.gov.uk/",
+    "description": "Scottish births, marriages, deaths, census and other records. Pay per record.",
+    "coverage_area": "Scotland",
+    "record_types": [
+      "births",
+      "marriages",
+      "deaths",
+      "census"
+    ],
+    "tags": [
+      "genealogy"
+    ],
+    "access_type": "external_only",
+    "cost": "paid",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out."
+  },
+  {
+    "key": "british-newspaper-archive",
+    "name": "British Newspaper Archive",
+    "kind": "database",
+    "holder": "Findmypast / British Library",
+    "url": "https://www.britishnewspaperarchive.co.uk/",
+    "description": "Very large collection of digitised British and Irish newspapers. Subscription.",
+    "coverage_area": "UK and Ireland",
+    "period_from": 1700,
+    "record_types": [
+      "newspapers"
+    ],
+    "tags": [
+      "newspapers"
+    ],
+    "access_type": "external_only",
+    "cost": "paid",
+    "conditions": "Run by Findmypast, a potential competitor.",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "partly_checked",
+    "plan": "Link out, then ask about licensing."
+  },
+  {
+    "key": "lwmdb",
+    "name": "Living with Machines newspaper metadata (LwMDB)",
+    "kind": "dataset",
+    "holder": "Lancaster University / Living with Machines",
+    "url": "https://www.lancaster.ac.uk/",
+    "description": "Metadata on 19th-century newspapers (titles, places, dates), not the articles.",
+    "coverage_area": "UK",
+    "period_from": 1800,
+    "period_to": 1900,
+    "record_types": [
+      "newspaper metadata"
+    ],
+    "tags": [
+      "newspapers"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Code MIT; data licence to confirm",
+    "status_label": "potential_integration",
+    "tier": "B",
+    "review_status": "page_read",
+    "plan": "Newspaper discovery by place and title."
+  },
+  {
+    "key": "newbury-weekly-news",
+    "name": "Newbury Weekly News archive",
+    "kind": "newspaper",
+    "holder": "Newbury Weekly News / local libraries",
+    "description": "Back issues of the local newspaper. Access through the publisher and local libraries; not online here.",
+    "coverage_area": "Newbury and West Berkshire",
+    "record_types": [
+      "newspapers"
+    ],
+    "tags": [
+      "newspapers",
+      "newbury",
+      "local"
+    ],
+    "access_type": "external_only",
+    "cost": "unknown",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "A valuable local partnership: contact the publisher."
+  },
+  {
+    "key": "berkshire-record-office",
+    "name": "Berkshire Record Office",
+    "kind": "archive",
+    "holder": "Berkshire Record Office",
+    "description": "County archive holding local records, including licensing records for pubs, parish registers and local authority papers. Mostly visited in person; catalogue online.",
+    "coverage_area": "Berkshire",
+    "record_types": [
+      "licensing records",
+      "parish registers",
+      "local government",
+      "maps"
+    ],
+    "tags": [
+      "archives",
+      "local",
+      "pubs",
+      "licensing"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "partly_checked",
+    "plan": "Contact as a launch partner."
+  },
+  {
+    "key": "west-berkshire-museum",
+    "name": "West Berkshire Museum",
+    "kind": "museum",
+    "holder": "West Berkshire Council",
+    "description": "Local museum in Newbury with objects and photographs. Credited as the source of some historic pub photos online.",
+    "coverage_area": "Newbury and West Berkshire",
+    "record_types": [
+      "photographs",
+      "objects"
+    ],
+    "tags": [
+      "photos",
+      "local",
+      "museum"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Contact as a launch partner."
+  },
+  {
+    "key": "pub-wiki",
+    "name": "Pub Wiki (pubwiki.co.uk)",
+    "kind": "website",
+    "holder": "Kevan Wilding",
+    "url": "https://pubwiki.co.uk/",
+    "description": "Pub histories compiled from census returns and trade directories, with licensee lists by year.",
+    "coverage_area": "England (strong for Berkshire)",
+    "period_from": 1796,
+    "period_to": 1970,
+    "record_types": [
+      "licensee lists",
+      "trade directories",
+      "census summaries"
+    ],
+    "tags": [
+      "pubs",
+      "local",
+      "directories"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "licence": "All rights reserved (stated on pages)",
+    "conditions": "Reuse not confirmed. We store our own short factual claims with links (ADR-018).",
+    "storage_policy": "reference_only",
+    "status_label": "checked_reference",
+    "review_status": "page_read",
+    "last_checked": "2026-11-05",
+    "plan": "Link and invite the owner as a contributor."
+  },
+  {
+    "key": "closed-pubs",
+    "name": "Closed Pubs (closedpubs.co.uk)",
+    "kind": "website",
+    "holder": "Closed Pubs",
+    "url": "https://www.closedpubs.co.uk/",
+    "description": "Listings and photographs of pubs that have closed, by county.",
+    "coverage_area": "UK",
+    "record_types": [
+      "pub listings",
+      "photographs"
+    ],
+    "tags": [
+      "pubs",
+      "photos",
+      "lost pubs"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "conditions": "Reuse not confirmed; photos credited to third parties. We store our own short factual claims with links (ADR-018).",
+    "storage_policy": "reference_only",
+    "status_label": "checked_reference",
+    "review_status": "page_read",
+    "last_checked": "2026-11-05",
+    "plan": "Link and invite as a contributor."
+  },
+  {
+    "key": "nicks-blog",
+    "name": "Nickbits local history blog",
+    "kind": "website",
+    "holder": "Nick Young",
+    "url": "https://nickbits.co.uk/",
+    "description": "Local history research on Newbury pubs, drawing on newspapers and census returns.",
+    "coverage_area": "Newbury",
+    "record_types": [
+      "local history research"
+    ],
+    "tags": [
+      "pubs",
+      "local",
+      "blog",
+      "newbury"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "conditions": "Reuse not confirmed. We store our own short factual claims with links (ADR-018).",
+    "storage_policy": "reference_only",
+    "status_label": "checked_reference",
+    "review_status": "page_read",
+    "last_checked": "2026-11-05",
+    "plan": "Invite as an early historian."
+  },
+  {
+    "key": "historic-england-archive",
+    "name": "Historic England Archive",
+    "kind": "archive",
+    "holder": "Historic England",
+    "url": "https://historicengland.org.uk/images-books/archive/",
+    "description": "Building records and historic photographs of England.",
+    "coverage_area": "England",
+    "record_types": [
+      "photographs",
+      "building records"
+    ],
+    "tags": [
+      "buildings",
+      "photos"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "conditions": "Check image rights item by item.",
+    "status_label": "external_only",
+    "review_status": "partly_checked",
+    "plan": "Link; check image rights item by item."
+  },
+  {
+    "key": "nls-maps",
+    "name": "National Library of Scotland maps",
+    "kind": "map",
+    "holder": "National Library of Scotland",
+    "url": "https://maps.nls.uk/",
+    "description": "Extensive digitised historic Ordnance Survey maps for the whole of Great Britain, including town plans.",
+    "coverage_area": "Great Britain",
+    "period_from": 1840,
+    "record_types": [
+      "maps"
+    ],
+    "tags": [
+      "maps",
+      "ordnance survey"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "conditions": "Map images have conditions; terms not checked.",
+    "status_label": "external_only",
+    "tier": "B/C",
+    "review_status": "not_checked",
+    "plan": "Priority check for time-map layers."
+  },
+  {
+    "key": "heritage-gateway",
+    "name": "Heritage Gateway",
+    "kind": "portal",
+    "holder": "Historic England and partners",
+    "url": "https://www.heritagegateway.org.uk/",
+    "description": "Search across local and national historic environment records.",
+    "coverage_area": "England",
+    "record_types": [
+      "listed buildings",
+      "historic environment records"
+    ],
+    "tags": [
+      "buildings"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "tier": "B",
+    "review_status": "not_checked",
+    "plan": "Directory."
+  },
+  {
+    "key": "wikimedia-commons",
+    "name": "Wikimedia Commons",
+    "kind": "media library",
+    "holder": "Wikimedia Foundation",
+    "url": "https://commons.wikimedia.org/",
+    "description": "Openly licensed images and media, each file with its own licence.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "photographs",
+      "maps",
+      "documents"
+    ],
+    "tags": [
+      "photos"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "conditions": "Per-file licences and attribution.",
+    "status_label": "potential_integration",
+    "tier": "A/B",
+    "review_status": "not_checked",
+    "plan": "Photo connector showing each file's licence."
+  },
+  {
+    "key": "internet-archive",
+    "name": "Internet Archive",
+    "kind": "library",
+    "holder": "Internet Archive",
+    "url": "https://archive.org/",
+    "description": "Digitised books, film, audio and archived websites. Rights vary by item.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "books",
+      "film",
+      "audio",
+      "web archives"
+    ],
+    "tags": [
+      "books",
+      "directories",
+      "film"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "conditions": "Item-level rights.",
+    "status_label": "potential_integration",
+    "tier": "B",
+    "review_status": "not_checked",
+    "plan": "Connector respecting item-level rights."
+  },
+  {
+    "key": "british-history-online",
+    "name": "British History Online",
+    "kind": "library",
+    "holder": "Institute of Historical Research",
+    "url": "https://www.british-history.ac.uk/",
+    "description": "Primary and secondary sources for British history, including the Victoria County History.",
+    "coverage_area": "Britain and Ireland",
+    "record_types": [
+      "published histories",
+      "primary sources"
+    ],
+    "tags": [
+      "books",
+      "local history"
+    ],
+    "access_type": "external_only",
+    "cost": "mixed",
+    "status_label": "external_only",
+    "tier": "B",
+    "review_status": "not_checked",
+    "plan": "Directory; assess permissions."
+  },
+  {
+    "key": "cwgc",
+    "name": "Commonwealth War Graves Commission",
+    "kind": "database",
+    "holder": "CWGC",
+    "url": "https://www.cwgc.org/",
+    "description": "Records of Commonwealth war dead from the two World Wars and their graves and memorials.",
+    "coverage_area": "Worldwide",
+    "period_from": 1914,
+    "period_to": 1947,
+    "record_types": [
+      "war dead",
+      "cemeteries"
+    ],
+    "tags": [
+      "military"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Directory, then check data access."
+  },
+  {
+    "key": "lives-of-the-first-world-war",
+    "name": "Lives of the First World War",
+    "kind": "website",
+    "holder": "Imperial War Museums",
+    "url": "https://livesofthefirstworldwar.iwm.org.uk/",
+    "description": "Life stories of people who served in the First World War.",
+    "coverage_area": "UK and Commonwealth",
+    "period_from": 1914,
+    "period_to": 1918,
+    "record_types": [
+      "military",
+      "life stories"
+    ],
+    "tags": [
+      "military"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Directory and possible links."
+  },
+  {
+    "key": "iwm-collections",
+    "name": "Imperial War Museums collections",
+    "kind": "museum",
+    "holder": "Imperial War Museums",
+    "url": "https://www.iwm.org.uk/collections",
+    "description": "Photographs, oral histories, film and objects about conflict since 1914.",
+    "coverage_area": "UK and worldwide",
+    "period_from": 1914,
+    "record_types": [
+      "photographs",
+      "oral history",
+      "film"
+    ],
+    "tags": [
+      "military",
+      "oral history"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Catalogue and permissions."
+  },
+  {
+    "key": "a-street-near-you",
+    "name": "A Street Near You",
+    "kind": "website",
+    "holder": "A Street Near You",
+    "url": "https://astreetnearyou.org/",
+    "description": "First World War records mapped to the places people lived.",
+    "coverage_area": "UK",
+    "period_from": 1914,
+    "period_to": 1918,
+    "record_types": [
+      "military"
+    ],
+    "tags": [
+      "military",
+      "maps"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Design reference and possible partner."
+  },
+  {
+    "key": "old-bailey-online",
+    "name": "Old Bailey Online",
+    "kind": "database",
+    "holder": "Old Bailey Proceedings Online",
+    "url": "https://www.oldbaileyonline.org/",
+    "description": "Proceedings of London's central criminal court, 1674–1913.",
+    "coverage_area": "London",
+    "period_from": 1674,
+    "period_to": 1913,
+    "record_types": [
+      "criminal trials"
+    ],
+    "tags": [
+      "legal",
+      "crime"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Later specialist connector."
+  },
+  {
+    "key": "archives-hub",
+    "name": "Archives Hub",
+    "kind": "catalogue",
+    "holder": "Jisc",
+    "url": "https://archiveshub.jisc.ac.uk/",
+    "description": "Descriptions of archive collections held by UK universities and other institutions.",
+    "coverage_area": "UK",
+    "record_types": [
+      "catalogue descriptions"
+    ],
+    "tags": [
+      "archives",
+      "catalogue"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "tier": "B",
+    "review_status": "not_checked",
+    "plan": "Evaluate interfaces."
+  },
+  {
+    "key": "historic-hansard",
+    "name": "Historic Hansard",
+    "kind": "database",
+    "holder": "UK Parliament",
+    "url": "https://api.parliament.uk/historic-hansard/",
+    "description": "UK parliamentary debates, useful for mentions of people, places and events.",
+    "coverage_area": "UK",
+    "period_from": 1803,
+    "period_to": 2005,
+    "record_types": [
+      "parliamentary debates"
+    ],
+    "tags": [
+      "government"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Later."
+  },
+  {
+    "key": "bfi",
+    "name": "British Film Institute archive",
+    "kind": "archive",
+    "holder": "BFI",
+    "url": "https://www.bfi.org.uk/",
+    "description": "Historic film and television, some playable on BFI Player.",
+    "coverage_area": "UK",
+    "record_types": [
+      "film"
+    ],
+    "tags": [
+      "film"
+    ],
+    "access_type": "external_only",
+    "cost": "mixed",
+    "status_label": "external_only",
+    "review_status": "not_checked",
+    "plan": "Outbound links only."
+  },
+  {
+    "key": "ordnance-survey-opendata",
+    "name": "Ordnance Survey OpenData",
+    "kind": "dataset",
+    "holder": "Ordnance Survey",
+    "url": "https://osdatahub.os.uk/",
+    "description": "Modern UK reference geography. Not historical.",
+    "coverage_area": "Great Britain",
+    "record_types": [
+      "maps",
+      "place names"
+    ],
+    "tags": [
+      "maps",
+      "modern"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "status_label": "potential_integration",
+    "tier": "A",
+    "review_status": "not_checked",
+    "plan": "Modern context only."
+  }
 ]

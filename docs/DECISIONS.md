@@ -94,6 +94,20 @@ PostGIS geometry needs GeoDjango and GDAL, which add setup cost before anything 
 **Status:** Accepted · 2026-11-05
 The assistant cites records with numbers that the server assigns when a tool returns them. The sources list and the "What I checked" block are built from the actual tool calls and results, not from the model's text. A number the model writes that no tool returned is never shown as a source, so the model cannot invent a link.
 
+## ADR-021 — GB1900: the CC0 raw dump, under our own name
+**Status:** Accepted · 2026-11-05
+**Considered:** the Complete/Abridged GB1900 Gazetteer (CC BY-SA) or the Raw Dump (CC0).
+**Decision:** Host the Raw Dump. Our dataset is called "Old map names (OS six-inch, c.1900)" and cites "GB1900 final raw gazetteer data dump, made available by the GB1900 Project".
+**Why:** CC BY-SA's share-alike could reach data we combine with it (SPEC §11). The raw dump is CC0; its only condition is that derived works must not use "GB1900" in their name. We keep each pin's most agreed reading plus variants and coordinates, never contributor IDs. Import is limited to Newbury and West Berkshire by default (15,188 labels); `--all` loads Great Britain.
+
+## ADR-022 — Live connectors verify TLS with the OS trust store
+**Status:** Accepted · 2026-11-05
+Python's OpenSSL built an expired certificate chain from the Windows store for wikidata.org, while Windows' own verifier accepted it. Connectors use `truststore` (MIT), which verifies with the operating system's chain building. Verification is never disabled; a test asserts it.
+
+## ADR-023 — Explorer pages by server cursor; virtualised table later
+**Status:** Accepted · 2026-11-05
+The Explorer pages 25 records at a time with server-side keyset cursors (stable across millions of rows). A virtualised infinite-scroll table (TanStack Virtual) is deferred until a dataset needs continuous scrolling; the cursor API already supports it.
+
 ## ADR-017 — Prototype kept as reference only
 **Status:** Accepted · 2026-11-05
 The prototype lives untouched in `prototype-reference/`. It's the visual reference; its scripted replies and sample data are not architecture. The real app is built in `apps/web` and replaces simulated flows one at a time.

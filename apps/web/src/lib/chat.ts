@@ -9,10 +9,18 @@ export type StreamEvent =
   | { type: "error"; detail: string; message?: Message };
 
 /** Send a message and yield the assistant's reply as it streams. */
+/** A record chosen in the Explorer, sent with the message as marked data. */
+export interface AttachedRecord {
+  connector: string;
+  id: string;
+  title: string;
+}
+
 export async function* streamReply(
   chatId: string,
   content: string,
   signal?: AbortSignal,
+  record?: AttachedRecord | null,
 ): AsyncGenerator<StreamEvent> {
   const res = await fetch(`/api/v1/chats/${chatId}/stream`, {
     method: "POST",
@@ -22,7 +30,9 @@ export async function* streamReply(
       Accept: "text/event-stream",
       "X-CSRFToken": await csrfToken(),
     },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify(
+      record ? { content, record: { connector: record.connector, id: record.id } } : { content },
+    ),
     signal,
   });
   if (!res.ok) {

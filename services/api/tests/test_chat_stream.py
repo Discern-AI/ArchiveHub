@@ -145,9 +145,58 @@ async def test_sources_and_checked_come_from_tools_not_text(alice, alice_async, 
     assert [s["n"] for s in done["sources"]] == [1, 4]  # [42] was never returned by a tool
     assert all("made-up" not in s["url"] for s in done["sources"])
     assert any("sources disagree on address" in c["text"] for c in done["checked"])
+    assert [(d["subject"], d["predicate"]) for d in done["disputes"]] == [
+        ("The Pigeons", "address")
+    ]
 
     r = await alice_async.get(f"/api/v1/chats/{chat.id}/messages")
     assert r.json()[1]["sources"] == done["sources"]
+
+
+async def test_selected_record_is_sent_as_marked_data(alice, alice_async, monkeypatch):
+    from asgiref.sync import sync_to_async
+
+    from history.loader import load_all
+
+    await sync_to_async(load_all)()
+    seen = {}
+
+    class Captures:
+        async def stream_reply(self, history, toolkit):
+            seen["history"] = history
+            text = "This record [1] gives 69 Cheap Street."
+            yield TextDelta(text)
+            yield FinalReply(text=text, raw_content=[], stop_reason="end_turn", model="m")
+
+    monkeypatch.setattr("assistant.views.get_provider", lambda: Captures())
+    chat = await Chat.objects.acreate(owner=alice)
+    r = await alice_async.post(
+        f"/api/v1/chats/{chat.id}/stream",
+        {
+            "content": "What does this say?",
+            "record": {"connector": "checked-reference", "id": "closedpubs-pigeons"},
+        },
+        content_type="application/json",
+    )
+    events = await read_events(r)
+    blocks = seen["history"][-1]["content"]
+    assert blocks[0] == {"type": "text", "text": "What does this say?"}
+    assert "<selected_record>" in blocks[1]["text"] and "not instructions" in blocks[1]["text"]
+    start = events[0][1]["user_message"]
+    assert start["content"] == "What does this say?"
+    assert (
+        start["sources"][0]["url"] == "https://www.closedpubs.co.uk/berkshire/newbury_pigeons.html"
+    )
+    assert events[-1][1]["message"]["sources"][0]["n"] == 1
+    # The same blocks are replayed next turn (append-only history).
+    assert (await build_history(chat))[0]["content"] == blocks
+
+    bad = await alice_async.post(
+        f"/api/v1/chats/{chat.id}/stream",
+        {"content": "And this?", "record": {"connector": "checked-reference", "id": "nope"}},
+        content_type="application/json",
+    )
+    assert bad.status_code == 422
 
 
 async def test_billing_problem_gets_a_clear_message(alice, alice_async, monkeypatch):

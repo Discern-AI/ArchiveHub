@@ -1,23 +1,70 @@
+import type { Dispute } from "../../lib/api";
+import type { AttachedRecord } from "../../lib/chat";
+import { BasketTab } from "../workspace/BasketTab";
+import { EvidenceTab } from "../workspace/EvidenceTab";
+import { ExplorerTab } from "../workspace/ExplorerTab";
+
+export type WorkspaceTab = "explorer" | "evidence" | "basket";
+
+const TABS: [WorkspaceTab, string][] = [
+  ["explorer", "Explorer"],
+  ["evidence", "Evidence"],
+  ["basket", "Basket"],
+];
+
 /** The right-hand workspace. On phones it takes over the screen. */
-export function WorkspacePanel({ onClose }: { onClose: () => void }) {
+export function WorkspacePanel({
+  tab,
+  onTab,
+  onClose,
+  projectId,
+  dispute,
+  onAsk,
+}: {
+  tab: WorkspaceTab;
+  onTab: (tab: WorkspaceTab) => void;
+  onClose: () => void;
+  projectId: string | null;
+  dispute: Dispute | null;
+  onAsk: (record: AttachedRecord) => void;
+}) {
   return (
     <aside
       id="workspace-panel"
       aria-label="Workspace"
-      className="fixed inset-0 top-[60px] z-20 flex flex-col gap-4 overflow-y-auto border-l border-line bg-surface p-6 md:static md:w-[380px] md:shrink-0"
+      className="fixed inset-0 top-[60px] z-20 flex flex-col gap-4 overflow-y-auto border-l border-line bg-surface p-5 md:static md:w-[420px] md:shrink-0"
     >
-      <h2 className="m-0 font-serif text-2xl font-semibold">Workspace</h2>
-      <p className="m-0 text-muted">
-        Evidence comparisons, drafts, family trees, interview prompts and the Archive Explorer will
-        open here as they arrive.
-      </p>
-      <button
-        type="button"
-        onClick={onClose}
-        className="mt-auto min-h-11 cursor-pointer rounded-lg border border-control bg-surface"
-      >
-        Close workspace
-      </button>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="m-0 font-serif text-2xl font-semibold">Workspace</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="min-h-11 cursor-pointer rounded-lg border border-control bg-surface px-3"
+        >
+          Close
+        </button>
+      </div>
+      <div role="tablist" aria-label="Workspace views" className="flex gap-1 border-b border-line">
+        {TABS.map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            id={`ws-tab-${key}`}
+            aria-selected={tab === key}
+            aria-controls={`ws-panel-${key}`}
+            onClick={() => onTab(key)}
+            className={`min-h-11 cursor-pointer border-0 border-b-2 bg-transparent px-3 font-medium ${tab === key ? "border-accent text-ink" : "border-transparent text-muted"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={`ws-panel-${tab}`} aria-labelledby={`ws-tab-${tab}`}>
+        {tab === "explorer" && <ExplorerTab projectId={projectId} onAsk={onAsk} />}
+        {tab === "evidence" && <EvidenceTab dispute={dispute} projectId={projectId} />}
+        {tab === "basket" && <BasketTab projectId={projectId} />}
+      </div>
     </aside>
   );
 }

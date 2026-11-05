@@ -26,6 +26,8 @@ Filled in as packages are installed. Columns: package · version · licence · p
 | tailwindcss, @tailwindcss/vite | 4.3.4 | MIT | Styling | 1 |
 | vitest, jsdom, @testing-library/* | — | MIT | Dev: tests | 1 |
 | eslint, typescript-eslint, eslint-plugin-react-hooks, prettier | — | MIT | Dev: lint/format | 1 |
+| truststore | 0.10.5 | MIT | TLS verification via the OS trust store (ADR-022) | 3 |
+| GB1900 final raw gazetteer data dump (data) | July 2018 | CC0 1.0 | Hosted "Old map names" dataset; must not be named GB1900 (ADR-021) | 3 |
 | postgis/postgis image + postgresql-16-pgvector | 16-3.5 | GPL-2.0 (PostGIS, separate service) / PostgreSQL | Dev/CI database | 1 |
 | valkey image | 8 | BSD-3 | Dev job queue | 1 |
 

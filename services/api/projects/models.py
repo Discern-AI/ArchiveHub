@@ -82,6 +82,8 @@ class Message(BaseModel):
     # Built by the server from tool calls, never from the model's text (ADR-020).
     checked = models.JSONField(default=list, blank=True)
     sources = models.JSONField(default=list, blank=True)
+    # Questions where the sources disagreed, for the "Compare sources" panel.
+    disputes = models.JSONField(default=list, blank=True)
     status = models.CharField(
         max_length=12, choices=MessageStatus.choices, default=MessageStatus.COMPLETE
     )

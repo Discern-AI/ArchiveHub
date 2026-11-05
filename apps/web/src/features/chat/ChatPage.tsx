@@ -1,12 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
-import { api, type Message } from "../../lib/api";
-import { streamReply } from "../../lib/chat";
+import { api, type Dispute, type Message } from "../../lib/api";
+import { streamReply, type AttachedRecord } from "../../lib/chat";
 import { Composer } from "./Composer";
 import { MessageList } from "./MessageList";
 import { StarterPrompts } from "./StarterPrompts";
-import { WorkspacePanel } from "./WorkspacePanel";
+import { WorkspacePanel, type WorkspaceTab } from "./WorkspacePanel";
 
 let tempCounter = 0;
 const tempId = () => `temp-${++tempCounter}`;
@@ -14,15 +14,16 @@ const tempId = () => `temp-${++tempCounter}`;
 export function ChatPage() {
   const { chatId } = useParams();
   const [searchParams] = useSearchParams();
-  const projectId = searchParams.get("project");
   const navigate = useNavigate();
   const qc = useQueryClient();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [activity, setActivity] = useState<string | null>(null);
+  const [panel, setPanel] = useState<WorkspaceTab | null>(null);
+  const [dispute, setDispute] = useState<Dispute | null>(null);
+  const [attached, setAttached] = useState<AttachedRecord | null>(null);
   // The chat this page created itself: its messages are already in state, so don't reload.
   const [createdId, setCreatedId] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
@@ -34,6 +35,12 @@ export function ChatPage() {
     queryFn: () => api.messages(chatId!),
     enabled: !!chatId && !ownChat,
   });
+  const chat = useQuery({
+    queryKey: ["chat", chatId],
+    queryFn: () => api.chat(chatId!),
+    enabled: !!chatId,
+  });
+  const projectId = chat.data?.project_id ?? (chatId ? null : searchParams.get("project"));
 
   // Switching to another chat (or "New chat") resets the view.
   const [shownChat, setShownChat] = useState(chatId);
@@ -43,6 +50,8 @@ export function ChatPage() {
       setMessages([]);
       setError(null);
       setCreatedId(null);
+      setAttached(null);
+      setDispute(null);
     }
   }
   // Show history once it arrives for a chat we didn't just create.
@@ -66,8 +75,10 @@ export function ChatPage() {
 
   async function send(text: string) {
     if (busy) return;
+    const record = attached;
     setBusy(true);
     setError(null);
+    setAttached(null);
     const userTemp = tempId();
     let replyId = tempId();
     const now = new Date().toISOString();
@@ -80,14 +91,15 @@ export function ChatPage() {
     try {
       let id = chatId;
       if (!id) {
-        const chat = await api.createChat(projectId);
-        id = chat.id;
+        const created = await api.createChat(projectId);
+        id = created.id;
         setCreatedId(id);
+        qc.setQueryData(["chat", id], created);
         navigate(`/chat/${id}`, { replace: true });
       }
       abort.current = new AbortController();
       let soFar = "";
-      for await (const ev of streamReply(id, text, abort.current.signal)) {
+      for await (const ev of streamReply(id, text, abort.current.signal, record)) {
         if (ev.type === "start") {
           update(userTemp, ev.userMessage);
           update(replyId, { id: ev.replyId });
@@ -117,6 +129,18 @@ export function ChatPage() {
     }
   }
 
+  function compare(d: Dispute) {
+    setDispute(d);
+    setPanel("evidence");
+  }
+
+  function askAbout(record: AttachedRecord) {
+    setAttached(record);
+    // On phones the panel covers the chat; close it so the composer is visible.
+    if (window.matchMedia?.("(max-width: 767px)").matches) setPanel(null);
+    document.getElementById("composer")?.focus();
+  }
+
   const loading = !!chatId && !ownChat && history.isPending;
   const showStarters = messages.length === 0 && !loading && !history.isError;
 
@@ -126,12 +150,12 @@ export function ChatPage() {
         <div className="mx-auto flex w-full max-w-[760px] justify-end">
           <button
             type="button"
-            aria-expanded={panelOpen}
+            aria-expanded={!!panel}
             aria-controls="workspace-panel"
-            onClick={() => setPanelOpen(!panelOpen)}
+            onClick={() => setPanel(panel ? null : "explorer")}
             className="min-h-11 cursor-pointer rounded-lg border border-control bg-surface px-3 text-sm font-medium"
           >
-            {panelOpen ? "Hide workspace" : "Show workspace"}
+            {panel ? "Hide workspace" : "Open Explorer"}
           </button>
         </div>
 
@@ -140,7 +164,9 @@ export function ChatPage() {
           <p className="mx-auto text-warning">Couldn't load this conversation.</p>
         )}
         {showStarters && <StarterPrompts onPick={send} />}
-        {messages.length > 0 && <MessageList messages={messages} activity={activity} />}
+        {messages.length > 0 && (
+          <MessageList messages={messages} activity={activity} onCompare={compare} />
+        )}
         <div ref={bottom} />
 
         <div className="sticky bottom-0 mt-auto bg-page pt-3 pb-4">
@@ -149,10 +175,33 @@ export function ChatPage() {
               {error}
             </p>
           )}
+          {attached && (
+            <div className="mx-auto mb-2 flex max-w-[760px] flex-wrap items-center gap-2 text-sm">
+              <span className="rounded-full bg-tint-strong px-3 py-1">
+                Asking about: <strong>{attached.title}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setAttached(null)}
+                className="min-h-11 cursor-pointer rounded-lg border-0 bg-transparent px-2 text-accent"
+              >
+                Remove
+              </button>
+            </div>
+          )}
           <Composer onSend={send} busy={busy} />
         </div>
       </div>
-      {panelOpen && <WorkspacePanel onClose={() => setPanelOpen(false)} />}
+      {panel && (
+        <WorkspacePanel
+          tab={panel}
+          onTab={setPanel}
+          onClose={() => setPanel(null)}
+          projectId={projectId}
+          dispute={dispute}
+          onAsk={askAbout}
+        />
+      )}
     </div>
   );
 }

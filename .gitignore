@@ -35,3 +35,6 @@ private-data/
 # Django
 services/api/db.sqlite3
 services/api/staticfiles/
+
+# Downloaded datasets (never committed)
+services/api/var/

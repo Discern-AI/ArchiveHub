@@ -10,11 +10,13 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
 
 from asgiref.sync import sync_to_async
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from connectors.base import ConnectorError, ConnectorRecord
+from connectors.sources import get_connector
 from history import queries
 from history.models import AccessType, Cost, Source, SourceRecord
 
@@ -43,6 +45,11 @@ class GetRecordInput(_Input):
 class CompareClaimsInput(_Input):
     subject: str = Field(min_length=1, max_length=200)
     predicate: str | None = Field(default=None, max_length=60)
+
+
+class SearchConnectorInput(_Input):
+    source: Literal["old-map-names", "wikidata"]
+    query: str = Field(min_length=1, max_length=200)
 
 
 def _schema(model: type[BaseModel]) -> dict[str, Any]:
@@ -83,6 +90,15 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
         "whether sources disagree. Use this before stating facts about a subject.",
         CompareClaimsInput,
     ),
+    (
+        "search_connector",
+        "Search a connected dataset. 'old-map-names': every label on the OS six-inch maps "
+        "of about 1900 (streets, buildings, farms, abbreviations like P.H. for public "
+        "house) for Newbury and West Berkshire, with coordinates. 'wikidata': live search of "
+        "Wikidata for people, places and organisations, useful context but not proof. "
+        "Returns numbered records to cite.",
+        SearchConnectorInput,
+    ),
 ]
 
 TOOL_LABELS = {
@@ -90,6 +106,7 @@ TOOL_LABELS = {
     "search_records": "Searching records",
     "get_record": "Reading a record",
     "compare_claims": "Comparing what the sources say",
+    "search_connector": "Searching a connected source",
 }
 
 
@@ -125,6 +142,8 @@ class ToolKit:
     user: Any
     citations: dict[tuple[str, str], Citation] = field(default_factory=dict)
     checked: list[dict[str, str]] = field(default_factory=list)
+    # Questions where sources disagree, so the UI can offer "Compare sources".
+    disputes: list[dict[str, str]] = field(default_factory=list)
 
     # Numbering --------------------------------------------------------------------
 
@@ -141,6 +160,9 @@ class ToolKit:
 
     def cite_source(self, s: Source) -> int:
         return self.cite("source", str(s.id), s.name, s.url, s.holder or s.name)
+
+    def cite_connector(self, r: ConnectorRecord, source_name: str) -> int:
+        return self.cite("connector", f"{r.connector}:{r.id}", r.title, r.url, source_name)
 
     def log(self, status: str, text: str) -> None:
         entry = {"status": status, "text": text}
@@ -187,7 +209,10 @@ class ToolKit:
             return json.dumps(
                 {"error": "INVALID_INPUT", "detail": exc.errors()[:3]}, default=str
             ), True
-        result = getattr(self, f"_{name}")(args)
+        if name == "search_connector":
+            result = _search_connector(self, args)
+        else:
+            result = getattr(self, f"_{name}")(args)
         return json.dumps(result, ensure_ascii=False, default=str), False
 
     # Tools ------------------------------------------------------------------------
@@ -265,6 +290,14 @@ class ToolKit:
             is_disputed = queries.is_disputed(claims)
             if is_disputed:
                 disputed.append(predicate)
+                entry = {
+                    "subject_type": main.kind,
+                    "subject_id": str(main.obj.pk),
+                    "subject": main.name,
+                    "predicate": predicate,
+                }
+                if entry not in self.disputes:
+                    self.disputes.append(entry)
             questions.append(
                 {
                     "question": predicate,
@@ -304,6 +337,35 @@ class ToolKit:
             "other_matches": [s.name for s in subjects[1:]],
             "missing_note": "Questions with no answers here are unknown, not settled.",
         }
+
+
+def _search_connector(kit: ToolKit, args: SearchConnectorInput) -> dict[str, Any]:
+    connector = get_connector(args.source)
+    try:
+        page = connector.search(args.query, page_size=10)
+    except ConnectorError as exc:
+        kit.log("Couldn't access", f"{connector.name}: {exc.user_message}")
+        return {"error": exc.user_message}
+    kit.log("Searched", f"{page.searched} ({len(page.records)} shown)")
+    return {
+        "source": connector.name,
+        "licence": connector.licence,
+        "results": [connector_brief(kit, r, connector.name) for r in page.records],
+        "more_available": bool(page.next_cursor),
+    }
+
+
+def connector_brief(kit: ToolKit, r: ConnectorRecord, source_name: str) -> dict[str, Any]:
+    return {
+        "cite": kit.cite_connector(r, source_name),
+        "title": r.title,
+        "what_it_is": r.description,
+        "type": r.record_type,
+        "date": r.date_text or None,
+        "coordinates": [r.latitude, r.longitude] if r.latitude is not None else None,
+        "details": r.fields,
+        "url": r.url or None,
+    }
 
 
 def _record_brief(kit: ToolKit, r: SourceRecord) -> dict[str, Any]:

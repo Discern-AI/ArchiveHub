@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "accounts",
     "projects",
     "history",
+    "connectors",
+    "explorer",
     "assistant",
 ]
 

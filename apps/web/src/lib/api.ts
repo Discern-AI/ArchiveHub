@@ -95,6 +95,14 @@ export interface SourceRef {
   source: string;
 }
 
+/** A question where the sources disagreed, which the Evidence panel can open. */
+export interface Dispute {
+  subject_type: string;
+  subject_id: string;
+  subject: string;
+  predicate: string;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
@@ -102,8 +110,100 @@ export interface Message {
   status: MessageStatus;
   checked?: CheckedItem[];
   sources?: SourceRef[];
+  disputes?: Dispute[];
   created_at: string;
 }
+
+// --- Explorer, basket and evidence ----------------------------------------------
+
+export interface ExplorerSource {
+  key: string;
+  name: string;
+  description: string;
+  access_type: "hosted" | "live_api" | "metadata" | "external_only";
+  capabilities: string[];
+  licence: string;
+  attribution: string;
+  storage: string;
+  available: boolean;
+  note?: string;
+}
+
+export interface ConnectorRecord {
+  connector: string;
+  id: string;
+  title: string;
+  description: string;
+  record_type: string;
+  url: string;
+  date_text: string;
+  latitude: number | null;
+  longitude: number | null;
+  fields: Record<string, unknown>;
+  rights: string;
+  attribution: string;
+  citation?: string;
+  storage?: string;
+  source_name?: string;
+}
+
+export interface ExplorerPage {
+  records: ConnectorRecord[];
+  next_cursor: string | null;
+  searched: string;
+}
+
+export interface BasketItem {
+  id: string;
+  connector: string;
+  external_id: string;
+  title: string;
+  url: string;
+  storage: string;
+  note: string;
+  created_at: string;
+}
+
+export interface EvidenceItem {
+  record_title: string;
+  record_key: string;
+  source: string;
+  url: string;
+  what_it_says: string;
+  stance: string;
+  suggested_weight: string | null;
+  weight_suggested_by: string | null;
+}
+
+export interface Claim {
+  id: string;
+  value: string;
+  date: string | null;
+  status: string;
+  method: string;
+  note: string;
+  evidence: EvidenceItem[];
+}
+
+export interface Evidence {
+  subject: { type: string; id: string; name: string };
+  predicate: string;
+  disputed: boolean;
+  claims: Claim[];
+  decision: {
+    chosen_id: string | null;
+    keep_disputed: boolean;
+    reason: string;
+    decided_at: string;
+  } | null;
+}
+
+export const ACCESS_LABELS: Record<ExplorerSource["access_type"], string> = {
+  hosted: "Hosted here",
+  live_api: "Searched live",
+  metadata: "Metadata only",
+  external_only: "Link-out only",
+};
 
 export const api = {
   projects: () => request<Project[]>("GET", "/api/v1/projects"),
@@ -116,4 +216,41 @@ export const api = {
   createChat: (projectId?: string | null) =>
     request<Chat>("POST", "/api/v1/chats", { project_id: projectId ?? null }),
   messages: (chatId: string) => request<Message[]>("GET", `/api/v1/chats/${chatId}/messages`),
+  chat: (chatId: string) => request<Chat>("GET", `/api/v1/chats/${chatId}`),
+
+  explorerSources: () => request<ExplorerSource[]>("GET", "/api/v1/explorer/sources"),
+  explorerSearch: (key: string, q: string, cursor?: string | null) => {
+    const params = new URLSearchParams({ q, page_size: "25" });
+    if (cursor) params.set("cursor", cursor);
+    return request<ExplorerPage>("GET", `/api/v1/explorer/${key}/search?${params}`);
+  },
+  explorerRecord: (key: string, id: string) =>
+    request<ConnectorRecord>("GET", `/api/v1/explorer/${key}/records/${encodeURIComponent(id)}`),
+
+  basket: (projectId: string) =>
+    request<BasketItem[]>("GET", `/api/v1/projects/${projectId}/basket`),
+  addToBasket: (projectId: string, connector: string, recordId: string) =>
+    request<BasketItem>("POST", `/api/v1/projects/${projectId}/basket`, {
+      connector,
+      record_id: recordId,
+    }),
+  removeFromBasket: (projectId: string, itemId: string) =>
+    request<void>("DELETE", `/api/v1/projects/${projectId}/basket/${itemId}`),
+
+  evidence: (d: Dispute, projectId?: string | null) => {
+    const params = new URLSearchParams({ predicate: d.predicate });
+    if (projectId) params.set("project_id", projectId);
+    return request<Evidence>("GET", `/api/v1/evidence/${d.subject_type}/${d.subject_id}?${params}`);
+  },
+  saveDecision: (
+    projectId: string,
+    d: Dispute,
+    choice: { chosen_id?: string; keep_disputed?: boolean; reason: string },
+  ) =>
+    request<{ ok: boolean }>("PUT", `/api/v1/projects/${projectId}/decisions`, {
+      subject_type: d.subject_type,
+      subject_id: d.subject_id,
+      predicate: d.predicate,
+      ...choice,
+    }),
 };

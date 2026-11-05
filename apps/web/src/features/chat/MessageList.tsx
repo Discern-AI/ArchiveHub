@@ -1,4 +1,4 @@
-import type { Message } from "../../lib/api";
+import type { Dispute, Message } from "../../lib/api";
 
 const STATUS_NOTE: Partial<Record<Message["status"], string>> = {
   incomplete: "This reply was cut off before it finished.",
@@ -44,10 +44,12 @@ function Sources({ items }: { items: NonNullable<Message["sources"]> }) {
 export function MessageList({
   messages,
   activity,
+  onCompare,
 }: {
   messages: Message[];
   /** What the assistant is doing right now, e.g. "Searching records". */
   activity?: string | null;
+  onCompare?: (d: Dispute) => void;
 }) {
   return (
     <div
@@ -63,6 +65,11 @@ export function MessageList({
             className="ah-appear max-w-[80%] self-end rounded-xl bg-tint-strong px-3.5 py-2.5 whitespace-pre-line"
           >
             {m.content}
+            {m.sources && m.sources.length > 0 && (
+              <span className="mt-1 block text-[13px] text-muted">
+                About: {m.sources.map((s) => s.label).join(", ")}
+              </span>
+            )}
           </div>
         ) : (
           <div key={m.id} className="flex flex-col gap-2.5">
@@ -82,6 +89,26 @@ export function MessageList({
                 {activity ? `${activity}…` : m.content ? "" : "Thinking…"}
               </p>
             )}
+            {m.disputes?.map((d) => (
+              <div
+                key={`${d.subject_id}:${d.predicate}`}
+                className="flex flex-wrap items-center gap-2 rounded-lg border border-warning bg-surface p-2.5"
+              >
+                <span className="flex-1 text-sm">
+                  <strong className="text-warning">Sources disagree</strong> on the {d.predicate} of{" "}
+                  {d.subject}.
+                </span>
+                {onCompare && (
+                  <button
+                    type="button"
+                    onClick={() => onCompare(d)}
+                    className="min-h-11 cursor-pointer rounded-lg border border-warning bg-surface px-3 font-semibold text-warning"
+                  >
+                    Compare sources
+                  </button>
+                )}
+              </div>
+            ))}
             {m.checked && m.checked.length > 0 && <Checked items={m.checked} />}
             {m.sources && m.sources.length > 0 && <Sources items={m.sources} />}
             {STATUS_NOTE[m.status] && (

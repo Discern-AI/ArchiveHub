@@ -2,7 +2,7 @@
 
 A chat-first platform where people preserve family and local history, research the past, publish their work and find the people who can help. Piloting in Newbury and West Berkshire.
 
-**Status:** WP2 (research core) — the assistant searches a source directory and a checked Cheap Street dataset, cites what it finds and says what it checked. See [docs/WP2.md](docs/WP2.md).
+**Status:** WP3 (Archive Explorer and evidence panel). Browse sources beside the chat, save records to a project, ask the assistant about a record, and compare disputed sources. See [docs/WP3.md](docs/WP3.md) and [docs/WP2.md](docs/WP2.md).
 
 ## Documentation
 
@@ -33,6 +33,8 @@ Edit `.env`: add your `ANTHROPIC_API_KEY`, or set `ASSISTANT_PROVIDER=fake` to w
 ```bash
 python manage.py migrate
 python manage.py load_reference_data   # source directory + checked Cheap Street facts
+# Optional: old OS map names (see docs/WP3.md for the download)
+python manage.py import_old_map_names --zip var/downloads/gb1900/GB1900_final_raw_dump_july_2018.zip
 python manage.py createsuperuser   # optional: for /admin
 uvicorn archivehub.asgi:application --reload --port 8000
 ```

@@ -57,6 +57,7 @@ class MessageOut(Schema):
     status: str
     checked: list[dict]
     sources: list[dict]
+    disputes: list[dict]
     created_at: datetime
 
 

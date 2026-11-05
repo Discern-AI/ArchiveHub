@@ -1,8 +1,9 @@
 """Streaming chat endpoint: POST a message, receive the reply as server-sent events.
 
-Events: `start` (message ids), `delta` (text chunks), `done` (final message) or `error`.
-Both messages are saved before streaming starts, and the assistant message is saved
-again however the stream ends, so an interrupted reply keeps its partial text.
+Events: `start` (message ids), `delta` (text), `tool` (what the assistant is doing),
+then `done` (final message with sources and "What I checked") or `error`.
+Both messages are saved before streaming starts, and the reply is saved again however
+the stream ends, so an interrupted reply keeps its partial text.
 """
 
 from __future__ import annotations
@@ -18,7 +19,16 @@ from django.views.decorators.http import require_POST
 from projects.models import Chat, Message, MessageRole, MessageStatus
 from projects.permissions import writable_chats
 
-from .providers import FinalReply, TextDelta, get_provider, replayable_content
+from .providers import (
+    USER_MESSAGES,
+    FinalReply,
+    ProviderError,
+    TextDelta,
+    ToolActivity,
+    get_provider,
+    replayable_content,
+)
+from .tools import ToolKit
 
 logger = logging.getLogger(__name__)
 MAX_MESSAGE_CHARS = 20_000
@@ -28,12 +38,14 @@ def _sse(event: str, data: dict[str, Any]) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
-def _message_json(m: Message) -> dict[str, Any]:
+def message_json(m: Message) -> dict[str, Any]:
     return {
         "id": str(m.id),
         "role": m.role,
         "content": m.content,
         "status": m.status,
+        "checked": m.checked,
+        "sources": m.sources,
         "created_at": m.created_at.isoformat(),
     }
 
@@ -42,13 +54,21 @@ async def build_history(chat: Chat) -> list[dict[str, Any]]:
     """The full conversation, append-only, in API format.
 
     Turns are never trimmed or rewritten: editing earlier turns would invalidate the
-    model's earlier reasoning and the prompt cache. Assistant turns that produced
-    nothing (errors) are skipped; they never had content to replay.
+    model's earlier reasoning and the prompt cache. Replies that produced nothing (errors)
+    are skipped; they never had content to replay.
     """
     history: list[dict[str, Any]] = []
     async for m in Message.objects.filter(chat=chat).order_by("created_at"):
         if m.role == MessageRole.USER:
             history.append({"role": "user", "content": m.content})
+        elif m.turns:
+            for turn in m.turns:
+                if turn["role"] == "assistant":
+                    history.append(
+                        {"role": "assistant", "content": replayable_content(turn["content"])}
+                    )
+                else:
+                    history.append(turn)
         elif m.raw_content:
             history.append({"role": "assistant", "content": replayable_content(m.raw_content)})
         elif m.content:
@@ -84,24 +104,27 @@ async def stream_chat_reply(request: HttpRequest, chat_id: UUID) -> HttpResponse
     reply = await Message.objects.acreate(
         chat=chat, role=MessageRole.ASSISTANT, status=MessageStatus.STREAMING
     )
+    toolkit = ToolKit(user=user)
 
     async def events():
         parts: list[str] = []
         finished = False
-        yield _sse(
-            "start", {"user_message": _message_json(user_message), "reply_id": str(reply.id)}
-        )
+        yield _sse("start", {"user_message": message_json(user_message), "reply_id": str(reply.id)})
         try:
-            async for event in get_provider().stream_reply(history):
+            async for event in get_provider().stream_reply(history, toolkit):
                 if isinstance(event, TextDelta):
                     parts.append(event.text)
                     yield _sse("delta", {"text": event.text})
+                elif isinstance(event, ToolActivity):
+                    yield _sse("tool", {"label": event.label})
                 elif isinstance(event, FinalReply):
                     reply.content = event.text
                     reply.raw_content = event.raw_content
+                    reply.turns = event.turns
                     reply.model = event.model
                     reply.input_tokens = event.input_tokens
                     reply.output_tokens = event.output_tokens
+                    reply.sources = toolkit.cited_in(event.text)
                     if event.stop_reason == "refusal":
                         reply.status = MessageStatus.REFUSED
                         reply.error = event.refusal_category or ""
@@ -110,20 +133,23 @@ async def stream_chat_reply(request: HttpRequest, chat_id: UUID) -> HttpResponse
                     else:
                         reply.status = MessageStatus.COMPLETE
             finished = True
-        except Exception:
-            logger.exception("Assistant stream failed for chat %s", chat.id)
+        except Exception as exc:
+            kind = exc.kind if isinstance(exc, ProviderError) else "unknown"
+            logger.exception("Assistant reply failed for chat %s (%s)", chat.id, kind)
             reply.status = MessageStatus.ERROR
-            reply.content = "".join(parts)
-            reply.error = "The assistant couldn't finish this reply."
-            yield _sse("error", {"detail": reply.error, "message": _message_json(reply)})
+            reply.content = "".join(parts).strip()
+            reply.error = USER_MESSAGES.get(kind, USER_MESSAGES["unknown"])
+            reply.checked = toolkit.checked
+            yield _sse("error", {"detail": reply.error, "message": message_json(reply)})
         finally:
             if reply.status == MessageStatus.STREAMING:
                 # Client disconnected or the provider ended without a final reply.
                 reply.status = MessageStatus.INCOMPLETE
-                reply.content = "".join(parts)
+                reply.content = "".join(parts).strip()
+            reply.checked = toolkit.checked
             await reply.asave()
         if finished:
-            yield _sse("done", {"message": _message_json(reply)})
+            yield _sse("done", {"message": message_json(reply)})
 
     response = StreamingHttpResponse(events(), content_type="text/event-stream")
     response["Cache-Control"] = "no-cache"

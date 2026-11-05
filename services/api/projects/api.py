@@ -55,6 +55,8 @@ class MessageOut(Schema):
     role: str
     content: str
     status: str
+    checked: list[dict]
+    sources: list[dict]
     created_at: datetime
 
 

@@ -22,6 +22,7 @@ export function ChatPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [activity, setActivity] = useState<string | null>(null);
   // The chat this page created itself: its messages are already in state, so don't reload.
   const [createdId, setCreatedId] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
@@ -93,7 +94,10 @@ export function ChatPage() {
           replyId = ev.replyId;
         } else if (ev.type === "delta") {
           soFar += ev.text;
+          setActivity(null);
           update(replyId, { content: soFar });
+        } else if (ev.type === "tool") {
+          setActivity(ev.label);
         } else if (ev.type === "done") {
           update(replyId, ev.message);
         } else if (ev.type === "error") {
@@ -109,6 +113,7 @@ export function ChatPage() {
       }
     } finally {
       setBusy(false);
+      setActivity(null);
     }
   }
 
@@ -135,7 +140,7 @@ export function ChatPage() {
           <p className="mx-auto text-warning">Couldn't load this conversation.</p>
         )}
         {showStarters && <StarterPrompts onPick={send} />}
-        {messages.length > 0 && <MessageList messages={messages} />}
+        {messages.length > 0 && <MessageList messages={messages} activity={activity} />}
         <div ref={bottom} />
 
         <div className="sticky bottom-0 mt-auto bg-page pt-3 pb-4">

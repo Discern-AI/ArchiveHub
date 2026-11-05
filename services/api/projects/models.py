@@ -77,6 +77,11 @@ class Message(BaseModel):
     content = models.TextField(blank=True)
     # Full assistant content blocks as returned by the API, replayed unchanged on later turns.
     raw_content = models.JSONField(null=True, blank=True)
+    # Every API message in this reply, including tool calls and results (append-only replay).
+    turns = models.JSONField(null=True, blank=True)
+    # Built by the server from tool calls, never from the model's text (ADR-020).
+    checked = models.JSONField(default=list, blank=True)
+    sources = models.JSONField(default=list, blank=True)
     status = models.CharField(
         max_length=12, choices=MessageStatus.choices, default=MessageStatus.COMPLETE
     )

@@ -3,10 +3,52 @@ import type { Message } from "../../lib/api";
 const STATUS_NOTE: Partial<Record<Message["status"], string>> = {
   incomplete: "This reply was cut off before it finished.",
   refused: "The assistant declined to answer this.",
-  error: "This reply didn't finish. Try sending your message again.",
+  error: "This reply didn't finish.",
 };
 
-export function MessageList({ messages }: { messages: Message[] }) {
+function Checked({ items }: { items: NonNullable<Message["checked"]> }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-lg bg-tint p-3 text-sm">
+      <strong>What I checked</strong>
+      {items.map((c, i) => (
+        <div key={i}>
+          <strong>{c.status}:</strong> {c.text}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Sources({ items }: { items: NonNullable<Message["sources"]> }) {
+  return (
+    <div className="flex flex-col gap-1 text-[13px]">
+      <span className="text-muted">Sources</span>
+      <ol className="m-0 flex list-none flex-col gap-1 p-0">
+        {items.map((s) => (
+          <li key={s.n} className="flex gap-2">
+            <span className="shrink-0 font-semibold text-muted">[{s.n}]</span>
+            {s.url ? (
+              <a href={s.url} target="_blank" rel="noreferrer">
+                {s.label}
+              </a>
+            ) : (
+              <span>{s.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+export function MessageList({
+  messages,
+  activity,
+}: {
+  messages: Message[];
+  /** What the assistant is doing right now, e.g. "Searching records". */
+  activity?: string | null;
+}) {
   return (
     <div
       role="log"
@@ -24,16 +66,24 @@ export function MessageList({ messages }: { messages: Message[] }) {
           </div>
         ) : (
           <div key={m.id} className="flex flex-col gap-2.5">
-            <div className="whitespace-pre-line">
-              {m.content}
-              {m.status === "streaming" && (
-                <span
-                  aria-hidden="true"
-                  className="ah-caret ml-0.5 inline-block h-5 w-0.5 bg-accent align-text-bottom"
-                />
-              )}
-            </div>
-            {m.status === "streaming" && !m.content && <span className="sr-only">Thinking…</span>}
+            {(m.content || m.status !== "streaming") && (
+              <div className="whitespace-pre-line">
+                {m.content}
+                {m.status === "streaming" && (
+                  <span
+                    aria-hidden="true"
+                    className="ah-caret ml-0.5 inline-block h-5 w-0.5 bg-accent align-text-bottom"
+                  />
+                )}
+              </div>
+            )}
+            {m.status === "streaming" && (
+              <p role="status" className="m-0 text-sm text-muted">
+                {activity ? `${activity}…` : m.content ? "" : "Thinking…"}
+              </p>
+            )}
+            {m.checked && m.checked.length > 0 && <Checked items={m.checked} />}
+            {m.sources && m.sources.length > 0 && <Sources items={m.sources} />}
             {STATUS_NOTE[m.status] && (
               <p className="m-0 text-sm font-medium text-warning">{STATUS_NOTE[m.status]}</p>
             )}

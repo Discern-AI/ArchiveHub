@@ -4,6 +4,7 @@ import { readSse } from "./sse";
 export type StreamEvent =
   | { type: "start"; userMessage: Message; replyId: string }
   | { type: "delta"; text: string }
+  | { type: "tool"; label: string }
   | { type: "done"; message: Message }
   | { type: "error"; detail: string; message?: Message };
 
@@ -39,6 +40,8 @@ export async function* streamReply(
       };
     } else if (event === "delta") {
       yield { type: "delta", text: d.text as string };
+    } else if (event === "tool") {
+      yield { type: "tool", label: d.label as string };
     } else if (event === "done") {
       yield { type: "done", message: d.message as Message };
     } else if (event === "error") {

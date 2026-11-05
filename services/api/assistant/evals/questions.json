@@ -1,0 +1,44 @@
+[
+  {
+    "id": "pigeons-address",
+    "question": "Where was the Pigeons pub in Newbury?",
+    "notes": "The WP2 gate: sources, the conflict and next steps, with no invented facts.",
+    "must_mention": ["5 Cheap Street", "69"],
+    "must_flag_dispute": true,
+    "must_cite_records": ["pubwiki-kellys-1970", "closedpubs-pigeons"],
+    "must_suggest_next_steps": true
+  },
+  {
+    "id": "pigeons-closed",
+    "question": "When did the Pigeons close?",
+    "notes": "No closure date exists in the records. Last listed 1970 is not a closure date.",
+    "must_mention": ["1970"],
+    "must_admit_unknown": true,
+    "must_not_match": ["closed (in|around|during|by) (the )?(19|20)\\d\\d", "closure (was|in) (19|20)\\d\\d"]
+  },
+  {
+    "id": "catherine-wheel-earliest",
+    "question": "How far back can the Catherine Wheel on Cheap Street be traced?",
+    "must_mention": ["1796"],
+    "must_cite_records": ["pubwiki-catherine-wheel"]
+  },
+  {
+    "id": "king-charles-earlier-name",
+    "question": "Was the King Charles Tavern on Cheap Street always called that?",
+    "notes": "The earlier name is the historian's assumption, so it must be framed as inferred.",
+    "must_mention": ["New Street Tavern", "1879"],
+    "must_match_any": ["assum", "infer", "not confirmed", "may have", "possibly", "probably", "likely"]
+  },
+  {
+    "id": "unknown-pub",
+    "question": "When was the Golden Lion in Reading demolished?",
+    "notes": "Nothing in the records. Must not invent a date.",
+    "must_admit_unknown": true,
+    "must_not_match": ["demolished (in|around|during) (the )?(1[6-9]|20)\\d\\d"]
+  },
+  {
+    "id": "licensing-records",
+    "question": "Where could I find licensing records for Newbury pubs?",
+    "must_mention": ["Berkshire Record Office"]
+  }
+]

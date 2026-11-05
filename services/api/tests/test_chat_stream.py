@@ -4,7 +4,13 @@ import pytest
 from django.test import AsyncClient
 
 from assistant import providers
-from assistant.providers import FinalReply, TextDelta, replayable_content
+from assistant.providers import (
+    FinalReply,
+    ProviderError,
+    TextDelta,
+    ToolActivity,
+    replayable_content,
+)
 from assistant.views import build_history
 from projects.models import Chat, Message, MessageStatus, Project
 
@@ -41,7 +47,7 @@ async def test_stream_saves_both_messages_and_streams_text(alice, alice_async):
     messages = [m async for m in Message.objects.filter(chat=chat).order_by("created_at")]
     assert [m.role for m in messages] == ["user", "assistant"]
     assert messages[1].status == MessageStatus.COMPLETE
-    assert messages[1].content == streamed
+    assert messages[1].content == streamed.strip()
     assert messages[1].raw_content == [{"type": "text", "text": streamed}]
     await chat.arefresh_from_db()
     assert chat.title == "Where was the Pigeons?"
@@ -89,7 +95,7 @@ async def test_empty_message_rejected(alice, alice_async):
 
 async def test_provider_failure_saves_error_state(alice, alice_async, monkeypatch):
     class Broken:
-        async def stream_reply(self, history):
+        async def stream_reply(self, history, toolkit):
             yield TextDelta("Partial ")
             raise RuntimeError("upstream down")
 
@@ -99,12 +105,12 @@ async def test_provider_failure_saves_error_state(alice, alice_async, monkeypatc
     assert events[-1][0] == "error"
     reply = await Message.objects.filter(chat=chat, role="assistant").aget()
     assert reply.status == MessageStatus.ERROR
-    assert reply.content == "Partial "
+    assert reply.content == "Partial"
 
 
 async def test_refusal_is_recorded(alice, alice_async, monkeypatch):
     class Refuses:
-        async def stream_reply(self, history):
+        async def stream_reply(self, history, toolkit):
             yield FinalReply(
                 text="", raw_content=[], stop_reason="refusal", model="m", refusal_category="cyber"
             )
@@ -114,6 +120,66 @@ async def test_refusal_is_recorded(alice, alice_async, monkeypatch):
     await read_events(await post_message(alice_async, chat.id, "hi"))
     reply = await Message.objects.filter(chat=chat, role="assistant").aget()
     assert reply.status == MessageStatus.REFUSED
+
+
+async def test_sources_and_checked_come_from_tools_not_text(alice, alice_async, monkeypatch):
+    from asgiref.sync import sync_to_async
+
+    from history.loader import load_all
+
+    await sync_to_async(load_all)()
+
+    class UsesTools:
+        async def stream_reply(self, history, toolkit):
+            yield ToolActivity("Comparing what the sources say")
+            await toolkit.arun("compare_claims", {"subject": "Pigeons", "predicate": "address"})
+            text = "5 Cheap Street [1], or 69 [4]. Also see [42] and https://made-up.example."
+            yield TextDelta(text)
+            yield FinalReply(text=text, raw_content=[], stop_reason="end_turn", model="m")
+
+    monkeypatch.setattr("assistant.views.get_provider", lambda: UsesTools())
+    chat = await Chat.objects.acreate(owner=alice)
+    events = await read_events(await post_message(alice_async, chat.id, "Where was it?"))
+    assert ("tool", {"label": "Comparing what the sources say"}) in events
+    done = events[-1][1]["message"]
+    assert [s["n"] for s in done["sources"]] == [1, 4]  # [42] was never returned by a tool
+    assert all("made-up" not in s["url"] for s in done["sources"])
+    assert any("sources disagree on address" in c["text"] for c in done["checked"])
+
+    r = await alice_async.get(f"/api/v1/chats/{chat.id}/messages")
+    assert r.json()[1]["sources"] == done["sources"]
+
+
+async def test_billing_problem_gets_a_clear_message(alice, alice_async, monkeypatch):
+    class NoCredit:
+        async def stream_reply(self, history, toolkit):
+            raise ProviderError("billing", "credit balance is too low")
+            yield  # pragma: no cover
+
+    monkeypatch.setattr("assistant.views.get_provider", lambda: NoCredit())
+    chat = await Chat.objects.acreate(owner=alice)
+    events = await read_events(await post_message(alice_async, chat.id, "hi"))
+    assert events[-1][0] == "error"
+    assert "run out of credit" in events[-1][1]["detail"]
+
+
+async def test_history_replays_tool_turns(alice):
+    chat = await Chat.objects.acreate(owner=alice)
+    await Message.objects.acreate(chat=chat, role="user", content="Where?")
+    turns = [
+        {
+            "role": "assistant",
+            "content": [{"type": "tool_use", "id": "t1", "name": "x", "input": {}}],
+        },
+        {
+            "role": "user",
+            "content": [{"type": "tool_result", "tool_use_id": "t1", "content": "{}"}],
+        },
+        {"role": "assistant", "content": [{"type": "text", "text": "Here."}]},
+    ]
+    await Message.objects.acreate(chat=chat, role="assistant", content="Here.", turns=turns)
+    history = await build_history(chat)
+    assert history == [{"role": "user", "content": "Where?"}, *turns]
 
 
 def test_replayable_content_keeps_blocks_without_fallback():

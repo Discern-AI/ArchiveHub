@@ -10,6 +10,8 @@ Every directory entry in the product holds: subject, area, dates, record types, 
 
 **Acceptance scorecard (0–5 each):** research value, temporal/geographic coverage, unique records, quality, legal reuse clarity, API stability, browsing support, full-text/media availability, cost, contributor relationship, maintenance effort. Store score and rationale.
 
+**In the product:** these entries are seeded into the source directory from `services/api/history/data/sources.json` (keep the two in step). Checked Cheap Street facts are in `history/data/cheap_street.json`; see [WP2.md](WP2.md) for what was checked and what changed.
+
 ## Launch candidates
 
 | Source | Offers | Access | Conditions found | Status | Tier | Plan |

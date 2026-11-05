@@ -68,6 +68,7 @@ describe("ArchiveHub app", () => {
               reply_id: "m2",
             },
           ],
+          ["tool", { label: "Comparing what the sources say: “Pigeons”" }],
           ["delta", { text: "Sources " }],
           ["delta", { text: "disagree." }],
           [
@@ -78,6 +79,17 @@ describe("ArchiveHub app", () => {
                 role: "assistant",
                 content: "Sources disagree.",
                 status: "complete",
+                checked: [{ status: "Searched", text: "Claims about The Pigeons (3 found)" }],
+                sources: [
+                  {
+                    n: 1,
+                    kind: "record",
+                    id: "r1",
+                    label: "Kelly's 1970 (Pub Wiki)",
+                    url: "https://pubwiki.co.uk/x",
+                    source: "Pub Wiki",
+                  },
+                ],
                 created_at: "",
               },
             },
@@ -92,6 +104,11 @@ describe("ArchiveHub app", () => {
 
     expect(await screen.findByText("Sources disagree.")).toBeInTheDocument();
     expect(screen.getByText("Where was the Pigeons?")).toBeInTheDocument();
+    expect(screen.getByText("What I checked")).toBeInTheDocument();
+    expect(screen.getByText("Claims about The Pigeons (3 found)")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "Kelly's 1970 (Pub Wiki)" });
+    expect(link).toHaveAttribute("href", "https://pubwiki.co.uk/x");
+    expect(link).toHaveAttribute("rel", "noreferrer");
     expect(screen.queryByRole("heading", { name: "What are you working on?" })).toBeNull();
     expect(box).toHaveValue("");
 

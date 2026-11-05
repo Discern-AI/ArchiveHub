@@ -2,7 +2,7 @@
 
 A chat-first platform where people preserve family and local history, research the past, publish their work and find the people who can help. Piloting in Newbury and West Berkshire.
 
-**Status:** WP1 (foundation) — sign in, projects, and saved, streamed chats with the assistant.
+**Status:** WP2 (research core) — the assistant searches a source directory and a checked Cheap Street dataset, cites what it finds and says what it checked. See [docs/WP2.md](docs/WP2.md).
 
 ## Documentation
 
@@ -32,6 +32,7 @@ Edit `.env`: add your `ANTHROPIC_API_KEY`, or set `ASSISTANT_PROVIDER=fake` to w
 
 ```bash
 python manage.py migrate
+python manage.py load_reference_data   # source directory + checked Cheap Street facts
 python manage.py createsuperuser   # optional: for /admin
 uvicorn archivehub.asgi:application --reload --port 8000
 ```
@@ -62,3 +63,5 @@ SQLite is used by default so there's nothing to set up. To use Postgres (with Po
 | Types | — | `npm run typecheck` |
 
 CI runs all of these on every push, with the API tests against Postgres + PostGIS.
+
+**Assistant evaluations** (real API calls, costs credit): `python manage.py run_evals --live`.

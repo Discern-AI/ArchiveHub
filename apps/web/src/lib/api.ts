@@ -79,11 +79,29 @@ export interface Chat {
 
 export type MessageStatus = "streaming" | "complete" | "incomplete" | "refused" | "error";
 
+/** One line of "What I checked", built by the server from actual tool calls. */
+export interface CheckedItem {
+  status: string;
+  text: string;
+}
+
+/** A citation the server resolved from tool results; the model can't invent these. */
+export interface SourceRef {
+  n: number;
+  kind: "record" | "source";
+  id: string;
+  label: string;
+  url: string;
+  source: string;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   status: MessageStatus;
+  checked?: CheckedItem[];
+  sources?: SourceRef[];
   created_at: string;
 }
 

@@ -82,6 +82,18 @@ Both inputs agree. Living people are hidden by default and flagged before publis
 **Status:** Accepted · 2026-11-05
 Spec lists forums in Connect's first version; Blueprint defers them. They ship in WP8, only alongside reporting, moderation and block lists, and the moderation owner is named first (open decision).
 
+## ADR-018 — Third-party facts are stored as our own claims with links, after checking
+**Status:** Accepted · 2026-11-05 · decided by the owner
+For sites whose reuse terms aren't confirmed (Pub Wiki, Closed Pubs, local blogs), ArchiveHub stores only short factual claims written in our own words, each linked to the page it came from. No copied text, page layouts or photos. Every claim is checked against the live page before it is stored, with the date checked recorded. Anything that can't be checked (e.g. a page that blocks access) is not stored. Pub Wiki's pages say "All rights reserved", so this stays reference-only until permission is agreed; invite the site owners as contributors (DATA_SOURCES.md).
+
+## ADR-019 — Places use latitude/longitude until the time map
+**Status:** Accepted · 2026-11-05
+PostGIS geometry needs GeoDjango and GDAL, which add setup cost before anything uses spatial queries. Until WP6, `Place` stores latitude, longitude and a geocode precision; WP6 migrates these to PostGIS geometry (ADR-004 still stands).
+
+## ADR-020 — Citations and "What I checked" are built by the server
+**Status:** Accepted · 2026-11-05
+The assistant cites records with numbers that the server assigns when a tool returns them. The sources list and the "What I checked" block are built from the actual tool calls and results, not from the model's text. A number the model writes that no tool returned is never shown as a source, so the model cannot invent a link.
+
 ## ADR-017 — Prototype kept as reference only
 **Status:** Accepted · 2026-11-05
 The prototype lives untouched in `prototype-reference/`. It's the visual reference; its scripted replies and sample data are not architecture. The real app is built in `apps/web` and replaces simulated flows one at a time.

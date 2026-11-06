@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "genealogy",
     "assistant",
     "interviews",
+    "timemap",
 ]
 
 MIDDLEWARE = [
@@ -150,6 +151,12 @@ SPEECH_DEVICE = env("SPEECH_DEVICE", default="cpu")
 SPEECH_COMPUTE_TYPE = env("SPEECH_COMPUTE_TYPE", default="int8")
 INTERVIEW_MODEL = env("INTERVIEW_MODEL", default=ANTHROPIC_MODEL)
 INTERVIEW_MAX_MINUTES = env.int("INTERVIEW_MAX_MINUTES", default=120)
+
+# Time map (WP6, ADR-031). The modern map is OpenFreeMap (no key). Historic OS maps from
+# the National Library of Scotland come through MapTiler and need a key; MapTiler keys
+# are sent to the browser by design, so restrict yours to your own sites in MapTiler.
+MAP_STYLE_URL = env("MAP_STYLE_URL", default="https://tiles.openfreemap.org/styles/liberty")
+MAPTILER_KEY = env("MAPTILER_KEY", default="")
 
 SENTRY_DSN = env("SENTRY_DSN", default="")
 if SENTRY_DSN:

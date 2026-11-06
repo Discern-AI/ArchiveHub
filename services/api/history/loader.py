@@ -50,6 +50,11 @@ def load_cheap_street() -> dict[str, int]:
                 "kind": row.get("kind", "place"),
                 "alt_names": row.get("alt_names", []),
                 "parent": parent,
+                "latitude": row.get("latitude"),
+                "longitude": row.get("longitude"),
+                "geocode_precision": row.get("geocode_precision", "unknown"),
+                "geocode_source": row.get("geocode_source", ""),
+                "note": row.get("note", ""),
             },
         )
 

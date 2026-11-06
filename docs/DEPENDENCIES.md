@@ -41,6 +41,8 @@ Filled in as packages are installed. Columns: package · version · licence · p
 | GB1900 final raw gazetteer data dump (data) | July 2018 | CC0 1.0 | Hosted "Old map names" dataset; must not be named GB1900 (ADR-021) | 3 |
 | postgis/postgis image + postgresql-16-pgvector | 16-3.5 | GPL-2.0 (PostGIS, separate service) / PostgreSQL | Dev/CI database | 1 |
 | valkey image | 8 | BSD-3 | Dev job queue | 1 |
+| OpenFreeMap tiles (service, `liberty` style) | — | Data ODbL (© OpenStreetMap contributors), OpenMapTiles schema; free, commercial use allowed, no key (checked 2026-11-06) | Modern base map on the time map (ADR-031) | 6 |
+| NLS historic OS maps via MapTiler (service) | — | CC BY 3.0, attribution to the National Library of Scotland with a link; MapTiler's free plan is non-commercial and up to 100,000 tiles a month, so a paid plan is needed before launch (checked 2026-11-06) | Historic map layers, only when `MAPTILER_KEY` is set (ADR-031) | 6 |
 
 **Known advisories (5 Nov 2026):** `npm audit` reports 10 moderate advisories in ESLint's dependency chain (`minimatch`), dev-only; production dependencies report none. Fixing needs a breaking ESLint change — revisit when typescript-eslint updates.
 

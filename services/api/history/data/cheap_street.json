@@ -2,10 +2,10 @@
   "_about": "Checked reference facts for the Cheap Street pilot (ADR-018). Every record was checked against its live page on 2026-11-05. Summaries are our own wording. Historic England's photo of 8 Cheap Street is excluded because the page blocked automated checking.",
   "checked_on": "2026-11-05",
   "places": [
-    {"key": "newbury", "name": "Newbury", "kind": "town", "alt_names": []},
-    {"key": "cheap-street", "name": "Cheap Street", "kind": "street", "parent": "newbury"},
-    {"key": "st-marys-hill", "name": "St Marys Hill", "kind": "street", "parent": "newbury"},
-    {"key": "greenham-road", "name": "Greenham Road", "kind": "street", "parent": "newbury"}
+    {"key": "newbury", "name": "Newbury", "kind": "town", "alt_names": [], "latitude": 51.399902, "longitude": -1.316428, "geocode_precision": "town", "geocode_source": "Old map names (OS six-inch, c.1900), label \"NEWBURY\" (584810e62c66dc0ad400ec07)"},
+    {"key": "cheap-street", "name": "Cheap Street", "kind": "street", "parent": "newbury", "latitude": 51.400484, "longitude": -1.323134, "geocode_precision": "street", "geocode_source": "Old map names (OS six-inch, c.1900), label \"CHEAP STREET\" (584d1f652c66dc0ad4028bf4)"},
+    {"key": "st-marys-hill", "name": "St Marys Hill", "kind": "street", "parent": "newbury", "note": "Not found on the c.1900 six-inch map names, so not placed on the map yet."},
+    {"key": "greenham-road", "name": "Greenham Road", "kind": "street", "parent": "newbury", "latitude": 51.393522, "longitude": -1.316407, "geocode_precision": "street", "geocode_source": "Old map names (OS six-inch, c.1900), label \"GREENHAM ROAD\" (5a2c41402c66dc79120255b7)"}
   ],
   "organisations": [
     {"key": "pigeons", "name": "The Pigeons", "kind": "pub", "alt_names": ["Pigeons Inn", "Pigeons"], "place": "cheap-street"},

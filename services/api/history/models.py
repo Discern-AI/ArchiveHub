@@ -175,7 +175,7 @@ class GeocodePrecision(models.TextChoices):
 
 
 class Place(BaseModel):
-    """A location that changes over time. Coordinates until WP6 (ADR-019)."""
+    """A location that changes over time. Latitude/longitude, not PostGIS (ADR-030)."""
 
     key = models.SlugField(max_length=80, unique=True)
     name = models.CharField(max_length=200)
@@ -188,6 +188,9 @@ class Place(BaseModel):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     geocode_precision = models.CharField(
         max_length=10, choices=GeocodePrecision.choices, default=GeocodePrecision.UNKNOWN
+    )
+    geocode_source = models.CharField(
+        max_length=300, blank=True, help_text="Where the coordinates come from"
     )
     valid_from = models.IntegerField(null=True, blank=True)
     valid_to = models.IntegerField(null=True, blank=True)

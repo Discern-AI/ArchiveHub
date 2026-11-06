@@ -8,6 +8,7 @@ from explorer.api import router as explorer_router
 from genealogy.api import router as genealogy_router
 from interviews.api import router as interviews_router
 from projects.api import router as projects_router
+from search.api import router as search_router
 from timemap.api import router as timemap_router
 
 # django_auth is session-cookie auth; Ninja enforces CSRF on unsafe methods with it.
@@ -18,6 +19,7 @@ api.add_router("", archive_router)
 api.add_router("", genealogy_router)
 api.add_router("", interviews_router)
 api.add_router("", timemap_router)
+api.add_router("", search_router)
 
 
 @api.get("/health", auth=None)

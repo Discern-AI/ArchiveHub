@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "assistant",
     "interviews",
     "timemap",
+    "search",
 ]
 
 MIDDLEWARE = [

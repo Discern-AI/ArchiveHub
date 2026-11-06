@@ -7,6 +7,8 @@ const API = process.env.ARCHIVEHUB_API_URL ?? "http://127.0.0.1:8000";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // MapLibre's worker is an ES module (src/features/map/MapView.tsx).
+  worker: { format: "es" },
   server: {
     port: 5173,
     // Same-origin in development: cookies and CSRF work without CORS.

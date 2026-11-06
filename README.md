@@ -2,7 +2,9 @@
 
 A chat-first platform where people preserve family and local history, research the past, publish their work and find the people who can help. Piloting in Newbury and West Berkshire.
 
-**Status:** WP5 (Live guided interview). Press the microphone in a chat to record an interview: words appear as you speak, people, places, dates and questions appear at the side, and "End and send" puts the transcript and a response into the chat. See [docs/WP5.md](docs/WP5.md), [WP4](docs/WP4.md), [WP3](docs/WP3.md) and [WP2](docs/WP2.md).
+**Status:** WP6 (Time map and Search). Open **Map** to move through Cheap Street by year, with public records and your private memories and photos kept visibly apart, and today's map alongside. **Search** looks across everything you're allowed to see and says what it searched. See [docs/WP6.md](docs/WP6.md), [WP5](docs/WP5.md), [WP4](docs/WP4.md), [WP3](docs/WP3.md) and [WP2](docs/WP2.md).
+
+For historic OS maps on the time map, set `MAPTILER_KEY` (see [docs/WP6.md](docs/WP6.md)). Without it, the map shows today with names from the c.1900 map.
 
 For interviews, install speech recognition: `pip install -r requirements-speech.txt` (about 600 MB of models download on first use). Or set `SPEECH_PROVIDER=fake` to try it offline.
 

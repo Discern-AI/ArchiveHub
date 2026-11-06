@@ -115,6 +115,12 @@ def test_dated_claims_show_as_events(ref, alice_client):
     assert claim["date_role"] == "event" and claim["title"].startswith("The Pigeons")
 
 
+def test_a_photo_date_is_when_it_was_taken(ref, alice_client):
+    data = features(alice_client, year_from=1908, year_to=1908)
+    photo = next(f for f in data["public"] if "photographed" in f["title"])
+    assert photo["date_role"] == "made"
+
+
 def test_undated_items_only_when_asked(ref, alice_client):
     plain = features(alice_client, year_from=1800, year_to=2000)
     assert all(f["date_role"] != "undated" for f in plain["public"])

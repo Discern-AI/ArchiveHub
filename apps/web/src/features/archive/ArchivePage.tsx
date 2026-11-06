@@ -23,7 +23,7 @@ export function ArchivePage() {
   const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects });
   const projectId = params.get("project") ?? projects.data?.[0]?.id ?? null;
   const [folderId, setFolderId] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(params.get("file"));
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [newFolder, setNewFolder] = useState("");

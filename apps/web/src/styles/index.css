@@ -26,6 +26,8 @@
   --color-rail-ink: #e6efeb;
   --color-rail-label: #b5c8c2;
   --color-live: #b3261e;
+  --color-private: #6b3fa0;
+  --color-private-tint: #f1ebf8;
 }
 
 html,
@@ -43,11 +45,14 @@ body {
   line-height: 1.5;
 }
 
-a {
-  color: var(--color-accent);
-}
-a:hover {
-  color: var(--color-accent-strong);
+/* In the base layer so utility classes (e.g. the top bar's light links) can override it. */
+@layer base {
+  a {
+    color: var(--color-accent);
+  }
+  a:hover {
+    color: var(--color-accent-strong);
+  }
 }
 
 :focus-visible {

@@ -29,6 +29,8 @@ MAP_NAMES_LIMIT = 300
 MAP_NAMES_MAX_SPAN = 0.08
 
 PUBLIC, PRIVATE = "public", "private"
+# Claims whose date is when something was made, not when something happened.
+MADE_PREDICATES = {"photographed", "painted", "drawn", "filmed"}
 
 
 @dataclass
@@ -168,7 +170,11 @@ def _claim_feature(a: Assertion, subject, place: Place, at, project_titles) -> M
         date_display=a.date_display,
         year_from=a.year_from,
         year_to=a.year_to,
-        date_role="event" if a.date_display else "undated",
+        date_role=(
+            ("made" if a.predicate.lower() in MADE_PREDICATES else "event")
+            if a.date_display
+            else "undated"
+        ),
         latitude=at[0],
         longitude=at[1],
         precision=place.geocode_precision,

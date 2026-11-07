@@ -178,6 +178,37 @@ GEONAME = {
 }
 
 
+MET_OBJECT = {
+    "objectID": 1589,
+    "title": "Side Chair",
+    "objectDate": "ca. 1700",
+    "objectName": "Side chair",
+    "isPublicDomain": True,
+    "primaryImageSmall": "https://images.metmuseum.org/x.jpg",
+    "objectURL": "https://www.metmuseum.org/art/collection/search/1589",
+    "department": "The American Wing",
+}
+MET_IN_COPYRIGHT = {**MET_OBJECT, "objectID": 646786, "title": "Stables", "isPublicDomain": False}
+AIC_ART = {
+    "id": 211099,
+    "title": "John Q. Public",
+    "date_display": "1943",
+    "artist_display": "Cartoonist, American",
+    "artwork_type_title": "Drawing",
+    "is_public_domain": True,
+    "image_id": "abc",
+}
+OA_WORK = {
+    "id": "https://openalex.org/W4392071046",
+    "display_name": "Town and Countryside in western Berkshire",
+    "publication_year": 2007,
+    "type": "book",
+    "authorships": [{"author": {"display_name": "M. Yates"}}],
+    "primary_location": {"source": {"display_name": "Boydell"}, "landing_page_url": "https://x"},
+    "doi": "https://doi.org/10.1/abc",
+}
+
+
 @pytest.fixture
 def calls(monkeypatch, settings):
     for k, v in KEYS.items():
@@ -267,6 +298,34 @@ def calls(monkeypatch, settings):
             if p["startRow"] == 0:
                 return {"totalResultsCount": 2, "geonames": [GEONAME]}
             return {"totalResultsCount": 2, "geonames": [{**GEONAME, "geonameId": 1}]}
+        if "metmuseum" in url:
+            if "/search" in url:
+                ids = [646786, 999999] if p["offset"] == 0 else [1589]
+                return {"total": 3, "objectIDs": ids}
+            if url.endswith("/646786"):
+                return MET_IN_COPYRIGHT
+            if url.endswith("/1589"):
+                return MET_OBJECT
+            raise NotFound("404")
+        if "artic.edu" in url:
+            config = {"iiif_url": "https://www.artic.edu/iiif/2"}
+            if url.endswith("/search"):
+                art = (
+                    AIC_ART
+                    if p["page"] == 1
+                    else {**AIC_ART, "id": 25406, "is_public_domain": False}
+                )
+                return {"data": [art], "pagination": {"total_pages": 2}, "config": config}
+            if url.endswith("/211099"):
+                return {"data": AIC_ART, "config": config}
+            return {"data": {}}
+        if "openalex" in url:
+            if url.endswith("/works"):
+                work = OA_WORK if p["page"] == 1 else {**OA_WORK, "id": "https://openalex.org/W2"}
+                return {"meta": {"count": 2}, "results": [work]}
+            if url.endswith("W4392071046"):
+                return OA_WORK
+            raise NotFound("404")
         raise AssertionError(f"unexpected {url}")
 
     monkeypatch.setattr(sources, "http_get_json", fake)
@@ -284,6 +343,9 @@ CASES = {
     "historic-england": ("Cheap Street", "1220923"),
     "the-gazette": ("Spracklen Newbury", "Edinburgh/issue/12396/page/995"),
     "geonames": ("Newbury", "2641741"),
+    "met-museum": ("Newbury", "1589"),
+    "art-institute-chicago": ("shoemaker", "211099"),
+    "openalex": ("Newbury Berkshire", "W4392071046"),
 }
 
 
@@ -326,7 +388,7 @@ def test_contract_unknown_record_and_bad_input(case):
         connector.search("   ")
 
 
-OPEN = {"historic-england", "the-gazette"}  # no key needed
+OPEN = {"historic-england", "the-gazette", "met-museum", "art-institute-chicago", "openalex"}
 
 
 @pytest.mark.parametrize("key", sorted(set(CASES) - OPEN))
@@ -519,3 +581,30 @@ def test_geonames_errors_are_mapped(calls, monkeypatch):
         monkeypatch.setattr(sources, "http_get_json", status(value))
         with pytest.raises(error):
             CONNECTORS["geonames"].search("Newbury")
+
+
+def test_museum_images_only_for_public_domain_objects(calls):
+    met = CONNECTORS["met-museum"]
+    page = met.search("Newbury", page_size=2)
+    # A withdrawn object (404) is skipped rather than failing the search.
+    assert [r.id for r in page.records] == ["646786"]
+    assert "image" not in page.records[0].fields and "reserved" in page.records[0].rights
+    assert met.get_record("1589").fields["image"].startswith("https://images.metmuseum.org/")
+    aic = CONNECTORS["art-institute-chicago"].search("shoemaker", page_size=1)
+    assert aic.records[0].fields["image"].endswith("/abc/full/400,/0/default.jpg")
+    assert calls[-1]["headers"]["AIC-User-Agent"].startswith("ArchiveHub")
+    assert "description" not in calls[-1]["params"]["fields"]  # CC BY text left out
+    second = CONNECTORS["art-institute-chicago"].search(
+        "shoemaker", cursor=aic.next_cursor, page_size=1
+    )
+    assert "image" not in second.records[0].fields
+
+
+def test_openalex_uses_a_key_only_when_set(calls, settings):
+    settings.OPENALEX_API_KEY = ""
+    CONNECTORS["openalex"].search("Newbury")
+    assert "api_key" not in calls[-1]["params"]
+    settings.OPENALEX_API_KEY = "oa-secret"
+    record = CONNECTORS["openalex"].search("Newbury").records[0]
+    assert calls[-1]["params"]["api_key"] == "oa-secret"
+    assert record.url == "https://doi.org/10.1/abc" and record.date_text == "2007"

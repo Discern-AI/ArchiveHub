@@ -64,6 +64,9 @@ CONNECTOR_KEYS = Literal[
     "historic-england",
     "the-gazette",
     "geonames",
+    "met-museum",
+    "art-institute-chicago",
+    "openalex",
 ]
 
 
@@ -128,7 +131,10 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
         "to search near it ('Cheap Street Newbury'); the listing date is not the build date. "
         "'the-gazette': official notices (commissions, honours, bankruptcies, partnerships, "
         "deceased estates), only those at least 100 years old. 'geonames': place names "
-        "worldwide with locations and other spellings. Some sources may not be set up "
+        "worldwide with locations and other spellings. 'met-museum' and "
+        "'art-institute-chicago': museum objects and artworks, to show what things of a period "
+        "looked like (context, not family evidence). 'openalex': academic articles, books and "
+        "theses, e.g. local history research. Some sources may not be set up "
         "on this server; the result says so. Live sources receive the query: never include "
         "names of living people or private details from the user's files. A name match is "
         "a possible match, not the same person. Returns numbered records to cite.",

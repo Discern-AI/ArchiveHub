@@ -1093,5 +1093,93 @@
     "review_status": "page_read",
     "plan": "Live connector built (WP6); switched on when GEONAMES_USERNAME is set.",
     "last_checked": "2026-11-07"
+  },
+  {
+    "key": "met-museum",
+    "name": "The Metropolitan Museum of Art collection",
+    "kind": "museum collection",
+    "holder": "The Metropolitan Museum of Art",
+    "url": "https://www.metmuseum.org/art/collection",
+    "description": "Nearly 500,000 objects, from paintings and photographs to clothing and tools; public-domain objects have images.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "objects",
+      "photos",
+      "art"
+    ],
+    "tags": [
+      "museums",
+      "objects",
+      "context"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Open API, no key; at most 80 requests a second",
+    "licence": "Open Access data CC0; images for public-domain objects",
+    "conditions": "CC0 for commercial and non-commercial use; data also identifies works still in copyright, whose images aren't provided.",
+    "storage_policy": "full_copy",
+    "status_label": "confirmed_live_api",
+    "tier": "B",
+    "review_status": "page_read",
+    "plan": "Live connector (WP6) for context: what objects of a period looked like.",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "art-institute-chicago",
+    "name": "Art Institute of Chicago collection",
+    "kind": "museum collection",
+    "holder": "Art Institute of Chicago",
+    "url": "https://www.artic.edu/collection",
+    "description": "Around 130,000 artworks and objects, many public domain with images.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "art",
+      "objects",
+      "photos"
+    ],
+    "tags": [
+      "museums",
+      "context"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Open API, no key",
+    "licence": "Data CC0; descriptions CC BY (not used)",
+    "conditions": "CC0 for data; description field CC BY 4.0, which we don't request. Identify the client with an AIC-User-Agent header.",
+    "storage_policy": "full_copy",
+    "status_label": "confirmed_live_api",
+    "tier": "C",
+    "review_status": "page_read",
+    "plan": "Live connector (WP6) for context.",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "openalex",
+    "name": "OpenAlex",
+    "kind": "database",
+    "holder": "OurResearch",
+    "url": "https://openalex.org/",
+    "description": "Over 250 million scholarly works: articles, books and theses, including local and family history research.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "articles",
+      "books",
+      "theses"
+    ],
+    "tags": [
+      "research",
+      "secondary sources"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "No key needed; a free key raises the daily budget",
+    "licence": "Metadata CC0",
+    "conditions": "Keyless use shares a small daily budget per IP address; a free key gives each user their own.",
+    "storage_policy": "full_copy",
+    "status_label": "confirmed_live_api",
+    "tier": "B",
+    "review_status": "page_read",
+    "plan": "Live connector (WP6); set OPENALEX_API_KEY for production.",
+    "last_checked": "2026-11-07"
   }
 ]

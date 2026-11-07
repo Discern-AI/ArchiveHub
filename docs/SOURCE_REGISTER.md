@@ -30,6 +30,9 @@ Last full review: 7 Nov 2026.
 | [Wikidata](https://www.wikidata.org/) | People, places, organisations | Live API | Full copy (CC0) | 2026-11-05 | Context, not proof |
 | [National Heritage List for England](https://historicengland.org.uk/listing/the-list/) (Historic England) | Every listed building in England: grade, listing date, exact location (146 in central Newbury) | Live ArcGIS service | Full copy (OGL) | 2026-11-07 | Add a town to search near it. Listing date isn't build date (ADR-035) |
 | [The Gazette](https://www.thegazette.co.uk/) | Official notices since 1665: commissions, honours, bankruptcies, partnerships, deceased estates | Live JSON search | Link and label | 2026-11-07 | Notices at least 100 years old only, so living people stay out; at most one request every 2 seconds (ADR-035) |
+| [The Metropolitan Museum of Art](https://www.metmuseum.org/art/collection) | ~500,000 objects; images for public-domain ones | Live API | Full copy (CC0) | 2026-11-07 | Context: what things of a period looked like |
+| [Art Institute of Chicago](https://www.artic.edu/collection) | ~130,000 artworks and objects | Live API | Full copy (CC0) | 2026-11-07 | Their descriptions are CC BY, so we don't fetch them |
+| [OpenAlex](https://openalex.org/) | 250m+ academic articles, books, theses | Live API | Full copy (CC0 metadata) | 2026-11-07 | Works without a key on a small shared budget; set `OPENALEX_API_KEY` (free) for production |
 
 ## 2. Built, waiting for a key or access
 
@@ -80,7 +83,7 @@ All switch on from `services/api/.env`. Setup steps in [CONNECTORS.md](CONNECTOR
 | [Postcodes.io](https://postcodes.io/) | Postcode to location | Placing modern addresses | Open source; data from ONS/OS; not checked |
 | [Nominatim](https://nominatim.org/) (OpenStreetMap) | Address search | Placing addresses | Strict usage policy (max one request a second, no heavy use); not checked |
 
-## 5. APIs that need a key or approval, not built
+## 5. APIs that need a key or approval, not built (the key list)
 
 | Source | What it gives | Status | Notes |
 |---|---|---|---|
@@ -91,6 +94,24 @@ All switch on from `services/api/.env`. Setup steps in [CONNECTORS.md](CONNECTOR
 | [US National Archives catalog](https://www.archives.gov/research/catalog) | US federal records | Candidate | Not checked |
 | [Commonwealth War Graves Commission](https://www.cwgc.org/) | War dead and cemeteries | Candidate | No public API known; data access to check |
 | [BillionGraves](https://billiongraves.com/) | Gravestone photos and transcriptions | Candidate | Partner API not checked |
+| [Wolfram\|Alpha](https://products.wolframalpha.com/api) | Calculations: old money, units, dates, astronomy | Candidate | AppID key; free tier is 2,000 non-commercial calls a month, commercial licence needed. Most of this can be done locally |
+| [UK Museum Data Service](https://museumdata.uk/) | UK museum collections, one search | Candidate | Public museum list open; object search needs a token |
+| [Companies House](https://developer.company-information.service.gov.uk/) | Companies, officers, filings | Candidate, **handle with care** | Free key. Names and addresses of living directors: never a people search |
+| [OpenCorporates](https://api.opencorporates.com/) | Companies worldwide | Candidate | Key; free tier is non-commercial (share-alike) |
+| [Charity Commission register](https://api-portal.charitycommission.gov.uk/) | Charities, trustees, accounts | Candidate | Free key; living trustees |
+| [FRED](https://fred.stlouisfed.org/docs/api/fred/) | Economic time series | Candidate | Free key; series have their own terms |
+| [Open-Meteo Historical](https://open-meteo.com/en/docs/historical-weather-api) | Modelled weather worldwide since 1940 | Candidate | Free for non-commercial use; commercial plan needs a key. Modelled, not observed |
+| [Copernicus Climate Data Store](https://cds.climate.copernicus.eu/) | ERA5 reanalysis and climate data | Candidate | Account and key |
+| [NOAA NCEI](https://www.ncei.noaa.gov/) | Historical weather observations | Candidate | Token |
+| [NASA Earthdata](https://www.earthdata.nasa.gov/) | Satellite imagery and environment | Candidate | Login |
+| [CEDA MIDAS-Open](https://catalogue.ceda.ac.uk/) | UK weather station observations | Candidate | Registration; OGL |
+| [Delpher](https://www.delpher.nl/) (Netherlands) | Dutch newspapers and books | Candidate | API key on request |
+| [Deutsche Digitale Bibliothek](https://www.deutsche-digitale-bibliothek.de/) | German libraries, archives, newspapers | Candidate | Free key |
+| [Espacenet OPS](https://www.epo.org/en/searching-for-patents/data/web-services/ops) | Patents and inventors | Candidate | Key; usage quotas |
+| [Semantic Scholar](https://www.semanticscholar.org/product/api) | Academic papers | Candidate | Works without a key at low rates; key on request |
+| [Discogs](https://www.discogs.com/developers) | Recordings and releases | Candidate | Token; low relevance |
+| [Human Mortality Database](https://www.mortality.org/) | Long-run mortality by country | Candidate | Registration; research use |
+| [HM Land Registry business services](https://use-land-property-data.service.gov.uk/) | Ownership, leases, corporate owners | Candidate, **handle with care** | Account and key; some data paid |
 
 ## 6. Downloadable datasets
 
@@ -193,7 +214,164 @@ Full licences in [DEPENDENCIES.md](DEPENDENCIES.md). Only the ones that bring da
 | QGIS | Preparing boundaries and georeferencing (internal desktop tool) | Candidate | GPL: internal use only, never in our code |
 | Wikibase Suite | Hosting our own knowledge graph | Candidate | GPL: run separately only after review |
 | ArchiveBox, Heritrix | Capturing historians' old websites before migration (WP7) | Candidate | MIT / Apache-2.0 |
+| SunCalc | Sun and moon position for a place and time, in the browser (dating photos by shadows) | Candidate | BSD-2 (check) |
+| Skyfield | Precise astronomy in Python | Candidate | MIT (check) |
+| DuckDB | Exploring large downloaded datasets (CSV, Parquet) | Candidate | MIT |
+| Plotly.js | Charts and timelines | Candidate | MIT |
+| Apache Superset | Data dashboards (internal) | Candidate | Apache-2.0 |
+| Grafana | Time-series dashboards | Candidate | AGPL: internal use only, never in our code |
+| TanStack Table, TanStack Virtual | Very large tables in the Explorer | Planned | MIT |
 | Gramps, webtrees, Omeka S, AtoM, Archivematica, Discourse and other GPL/AGPL projects | Design reference only | **Not used in the core** | GPL / AGPL |
+
+## 10. Wider context: further afield
+
+Sources that aren't family history but help describe the world people lived in, or are simply rich. **Context is not evidence:** a regional wage, a modelled temperature or a stranger's diary describes the period, never a particular ancestor. Unless marked, none of these terms have been checked. "Claude" in the From column means suggested in our own review rather than in the pasted lists.
+
+### Property, planning and land
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads) | Every house sale in England and Wales since 1995 | Candidate (checked) | OGL, but address data may only be displayed for property price information services; needs a legal check before building |
+| [UK PlanIt](https://www.planit.org.uk/) | ~20 million planning applications, with an API | Candidate (checked) | No key; commercial use not addressed and planning documents are copyright. Ask first |
+| [Planning Data England](https://www.planning.data.gov.uk/) | Conservation areas, listed buildings, constraints (100+ datasets) | Candidate | OGL API, no key; the service was down when tested (7 Nov 2026) |
+| 1910 Valuation Office Survey ("Lloyd George's Domesday"), TNA IR 58 | A record of almost every property in 1910: owner, occupier, value | Partner / link out | From: Claude. Catalogued in TNA Discovery; maps at county record offices. Superb for "What was here?" |
+| Tithe maps and apportionments (TNA IR 29/30) | Who owned and occupied each field c.1840 | Link out | From: Claude. Berkshire copies at the record office |
+| Enclosure awards and maps | Land reallocation, 18th–19th centuries | Partner | From: Claude. Record office |
+| [Valuation Office Agency](https://www.gov.uk/government/organisations/valuation-office-agency) | Council tax bands, business rates | Candidate | Modern only |
+| [Coal Authority](https://www.gov.uk/government/organisations/the-coal-authority) | Mine plans and workings | Candidate | From: Claude. Not relevant to Newbury; keep for other regions |
+
+### Money, prices, business and failure
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| [Bank of England: A millennium of macroeconomic data](https://www.bankofengland.co.uk/statistics/research-datasets) | Prices, wages, rates, some series from 1086 | Candidate | Downloads |
+| Bank of England Bank Rate (from 1694) and the IADB | Interest and exchange rates | Candidate | From: Claude. Downloads |
+| [TNA currency converter](https://www.nationalarchives.gov.uk/currency-converter/) | Old money to modern values, 1270–2017 | Link out | From: Claude. No API; explains what an old sum would buy |
+| [MeasuringWorth](https://www.measuringworth.com/) | Historical wages, prices, values | Link out | Terms restrict reuse |
+| [Nationwide house price index](https://www.nationwide.co.uk/house-price-index/) | UK house prices quarterly since 1952 | Candidate | From: Claude. Downloads; terms to check |
+| [ONS](https://developer.ons.gov.uk/) and [NOMIS](https://www.nomisweb.co.uk/) | Census, population, employment, earnings | Candidate | ONS API is open with no key (OGL) |
+| [Insolvency Service statistics](https://www.gov.uk/government/collections/insolvency-service-official-statistics) | Bankruptcy and company failure rates; some series from 1960 | Candidate | OGL downloads. Individual bankruptcies come from The Gazette (live) |
+| [Jordà–Schularick–Taylor Macrohistory Database](https://www.macrohistory.net/) | Long-run credit, housing, banking | Candidate | Research licence to check |
+| [Broadberry et al. British economic growth data](https://www.nuffield.ox.ac.uk/) | Output, productivity, wages | Link out | Research publications |
+| [NBER Macrohistory](https://www.nber.org/research/data/nber-macrohistory-database) | Historical business data | Candidate | Mostly US |
+| Fire insurance: Sun Fire Office and Royal Exchange registers (London Metropolitan Archives); Goad fire insurance plans (British Library) | Who insured which building and what it was used for, 1710s–1960s | Partner | From: Claude. Indexed in TNA Discovery; Goad plans show building materials and uses street by street |
+| Lloyd's Register Heritage and Education Centre | Ship surveys, marine insurance | Link out | Ships and sailors |
+
+### Weather, climate, sun and sky
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| [HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid) | UK gridded temperature and rainfall, some from 1836 | Candidate | OGL downloads |
+| Met Office historic station data | Long-running monthly records at selected stations | Candidate | Open downloads |
+| Met Office Daily Weather Reports (Digital Archive) | Daily UK weather maps and observations from the 1860s | Candidate | From: Claude. Scans; "Weather Rescue" volunteers transcribed many |
+| [Chronology of British Hydrological Events](https://www.cbhe.hydrology.org.uk/) | Floods, droughts and storms recorded over centuries | Candidate | From: Claude. Local events with sources |
+| [Environment Agency data](https://environment.data.gov.uk/) | River levels, rainfall, recorded flood outlines, hydrology | Candidate | OGL, open APIs |
+| [Hadley Centre observations](https://www.metoffice.gov.uk/hadobs/) | Central England Temperature from 1659 | Candidate | Downloads |
+| [USGS earthquakes](https://earthquake.usgs.gov/fdsnws/event/1/) | Earthquakes worldwide | Candidate | Open API, public domain; rare in Britain |
+| NASA eclipse catalogues | Past eclipses | Candidate | Public domain |
+| SunCalc (see programs) | Where the sun was for a date, time and place | Program | Runs in the browser; for dating photos by their shadows |
+| [NOAA solar calculator](https://gml.noaa.gov/grad/solcalc/) | Same, as a website | Link out | From: Claude |
+
+### Museums, objects and art
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| The Met, Art Institute of Chicago | Objects and artworks | **Live** | See section 1 |
+| [V&A Collections API](https://developers.vam.ac.uk/) | 1m+ records: clothing, textiles, household objects | Candidate | No key known; reuse is under V&A website terms section 9.3, which couldn't be read. Check, then build |
+| [Science Museum Group](https://collection.sciencemuseumgroup.org.uk/) | Tools, machines, transport, medicine | Candidate | Not checked |
+| [Smithsonian Open Access](https://www.si.edu/openaccess) | US museum objects | Key needed | See section 5 |
+| [Rijksmuseum](https://data.rijksmuseum.nl/) | Dutch art and objects | Candidate | Not checked |
+| [Museum of English Rural Life](https://merl.reading.ac.uk/), Reading | Farming, rural trades, Berkshire | Partner | Local; oral histories to check |
+| [Portable Antiquities Scheme](https://finds.org.uk/) | Archaeological finds by the public, with locations | Candidate | Old sources suggest CC BY-SA and JSON output; no current terms found. Ask |
+| [Open Domesday](https://opendomesday.org/) | Every place in Domesday Book (1086) | Candidate | Open API, no key; no licence stated. Ask |
+| [Key to English Place-Names](https://kepn.nottingham.ac.uk/) | Origins of English place names | Link out | From: Claude |
+
+### People's own words: oral history, diaries, testimony
+
+These answer "what was it like?" in the words of people at the time. Rules: a few accounts can't speak for everyone ("people described…", not "everyone…"); someone else's memories describe the period, not your ancestor; most need permission to publish.
+
+| Source | What it holds | Status | Notes |
+|---|---|---|---|
+| [Mass Observation](https://massobs.org.uk/) | 1937–1950s diaries, questionnaires and observations; since 1981, ~4,500 volunteers' writing | Partner | Held at The Keep, Brighton; digitised edition via Adam Matthew (licensed). Reuse terms not stated |
+| [IWM Sound Archive](https://www.iwm.org.uk/collections) | 35,000+ recordings, 60,000+ hours, conflict since 1914 | Link out / partner | Licensing not shown |
+| [BBC WW2 People's War](https://www.bbc.co.uk/history/ww2peopleswar/) | 47,000 memories and 14,000 photos | Link out | Reuse terms not found |
+| [Burnett Archive of Working-Class Autobiographies](https://www.brunel.ac.uk/) | 349 autobiographies, c.1791–1945 | Partner | Brunel doesn't hold most copyrights |
+| [Charles Booth's London](https://booth.lse.ac.uk/) | 1886–1903 notebooks and poverty maps | Candidate | Searchable; reuse not stated |
+| [British Library: National Life Stories, Sounds](https://sounds.bl.uk/) | Life-story interviews across trades and places | Link out | Some services affected since the 2023 cyberattack |
+| Millennium Memory Bank (BBC and British Library, 1998–99) | Thousands of interviews organised by region | Link out | Limited online access |
+| UK Data Service qualitative archives (QualiBank) | Research interviews, e.g. "Family Life and Work Experience before 1918" (The Edwardians, 453 transcribed) and Young and Willmott's 1950s Bethnal Green study | Candidate | Registration; reuse per study |
+| [Great Diary Project](https://www.thegreatdiaryproject.co.uk/) | 20,000+ unpublished diaries at Bishopsgate Institute | Partner | Reading room; privacy matters even for old diaries |
+| Bishopsgate Institute oral histories | London work and community | Partner | |
+| [London Museum](https://www.londonmuseum.org.uk/) oral histories | Docks, neighbourhoods; ~3,000 tapes, 500 videos | Partner | |
+| [East Midlands Oral History Archive](https://www.le.ac.uk/emoha) | 4,000+ recordings, ~700 online | Candidate | Regional |
+| Domesday Reloaded (BBC, 1986) | Local descriptions written by the public | Link out | |
+| [Historypin](https://www.historypin.org/) | Photos and memories pinned to a map | Candidate | Not checked |
+| [Europeana 1914–1918](https://www.europeana.eu/) | First World War letters and objects from families | Via Europeana | Part of the Europeana connector |
+| Survey of English Dialects | Rural speech and working life recordings | Link out | British Library |
+| London Lives (1690–1800) | 240,000 documents, 3.35m name references; relaunched Nov 2025 | Candidate | London only |
+| Digital Panopticon (1780–1925) | Linked criminal lives | Candidate | Method worth studying for person matching |
+| Reading Experience Database (1450–1945) | Evidence of reading in diaries and letters | Link out | |
+| Observing the 1980s | Mass Observation and oral history | Link out | |
+| Library of Congress Veterans History Project, StoryCorps | US testimony | Link out | Emigrants |
+| Local oral history projects | Record offices, museums, societies | Partner | ArchiveHub could help publish them |
+| **ArchiveHub's own interviews** | A public memory bank, opt-in, separate consent, withdrawable | Idea | Needs a spec decision |
+
+### Law, government and institutions
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| [legislation.gov.uk](https://www.legislation.gov.uk/developer) | Acts and how they changed, e.g. Poor Law Acts | Candidate | OGL API, no key; returns XML/Atom, so needs an XML reader in the connector |
+| [Find Case Law](https://caselaw.nationalarchives.gov.uk/) | Court judgments | Candidate | Open Justice Licence restricts computational analysis without a licence |
+| [BAILII](https://www.bailii.org/) | Court judgments | Link out | No reuse |
+| [Electoral Commission data](https://search.electoralcommission.org.uk/) | Donations, parties | Link out, **handle with care** | Living people |
+| [Police.uk](https://data.police.uk/) | Street-level crime since 2010 | Not for us | Modern and about living communities; no clear history use |
+| Historic Hospital Admission Records Project | Children's hospital admissions 1852–1921 | Link out | From: Claude |
+| [Find a will](https://probatesearch.service.gov.uk/) | Probate calendar from 1858 | Link out | From: Claude. No API |
+
+### Transport, work and industry
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| Railway staff records (TNA RAIL series), [National Railway Museum](https://www.railwaymuseum.org.uk/) | Railway workers, many families | Link out | Catalogued in TNA Discovery |
+| [Rail Map Online](https://www.railmaponline.com/) | Former railway routes | Link out | |
+| Crew list projects (CLIP), Lloyd's Register | Ships and sailors | Link out | |
+| [ShipIndex](https://www.shipindex.org/), [Wrecksite](https://www.wrecksite.eu/) | Ships in publications, wrecks | Link out | Terms to check |
+| Trade union archives (Modern Records Centre, Warwick) | Working lives and disputes | Partner | |
+| Espacenet, Google Patents | Inventors and inventions | Key / link out | See section 5 |
+| [TfL Open Data](https://tfl.gov.uk/info-for/open-data-users/) | London transport today | Candidate | Modern |
+
+### Nature, land and the sky above
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| [GBIF](https://www.gbif.org/developer/summary) | Species records by place, some centuries old | Candidate | Open API, no key; licences per dataset (CC0, CC BY, CC BY-NC) |
+| [NBN Atlas](https://nbnatlas.org/) | British wildlife records | Candidate | Licences per record, some non-commercial |
+| [British Geological Survey](https://www.bgs.ac.uk/) | Geology, boreholes, mines, quarries | Candidate | OGL for much; some licensed |
+| Natural England, NatureScot, Forest Research | Designated sites, habitats, woodland | Candidate | OGL mostly |
+| Landsat, Copernicus Sentinel | Land change since the 1970s | Candidate | Free; heavy data |
+
+### Books, language, broadcasting and the web
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| [Wayback Machine](https://archive.org/help/wayback_api.php) | Old versions of websites | Candidate | Open availability API; useful for moving historians' old sites (WP7) |
+| [Open Library](https://openlibrary.org/developers/api) | Book editions and authors | Partner (checked) | API "not intended for high-traffic commercial infrastructure": ask openlibrary@archive.org; monthly dumps exist |
+| [Google Books API](https://developers.google.com/books) | Book search, some previews | Candidate | Key optional; terms to check |
+| [Gallica](https://gallica.bnf.fr/) (France) | French newspapers and books | Candidate | Non-commercial reuse free; commercial reuse licensed |
+| Oxford DNB, Oxford English Dictionary | Biographies, historical word meanings | Link out | Subscription |
+| Google Books Ngram Viewer | How often words were printed, by year | Link out | |
+| [BBC Programme Index](https://genome.ch.bbc.co.uk/) | Every BBC radio and TV listing since 1923 | Link out | No API |
+| [MusicBrainz](https://musicbrainz.org/doc/MusicBrainz_API) | Recordings and artists | Candidate | Open API; core data CC0 |
+| IMDb datasets | Films and people | Not allowed | Non-commercial only |
+| [Pleiades](https://pleiades.stoa.org/), [Getty vocabularies](https://www.getty.edu/research/tools/vocabularies/) | Ancient places; places, artists and art terms | Candidate | Pleiades CC BY; Getty ODC-By |
+| [Who's On First](https://whosonfirst.org/) | Place records | Candidate | Licences per source |
+| [GDELT](https://www.gdeltproject.org/) | Global news events since 1979 | Candidate | Fits the OSINT tools better |
+| [Zooniverse](https://www.zooniverse.org/) projects | Volunteer transcriptions (weather logs, ships, letters) | Candidate | From: Claude. Data per project |
+
+### Handle with care, or not at all
+
+- **DNA services:** genetic data is highly sensitive. Not before specialist advice.
+- **Living-people datasets** (Companies House, electoral data, Land Registry ownership, recent Gazette notices, police data): useful for businesses and buildings, but they can be used to find someone. No "people search", and the same living-people rules as everywhere else.
 
 ---
 

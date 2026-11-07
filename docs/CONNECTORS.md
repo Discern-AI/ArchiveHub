@@ -15,7 +15,7 @@ Each connector stays switched off, and is listed in the Explorer as "not availab
 
 Not built: **FamilySearch.** Its API is closed to the public; production access needs an approved Innovator Program application, a compatibility review and signed agreements.
 
-Already working without keys: Wikidata, old map names (c.1900), ArchiveHub's checked records, the National Heritage List for England and The Gazette.
+Already working without keys: Wikidata, old map names (c.1900), ArchiveHub's checked records, the National Heritage List for England, The Gazette, the Met, the Art Institute of Chicago and OpenAlex.
 
 ## Connected without a key
 
@@ -23,6 +23,9 @@ Already working without keys: Wikidata, old map names (c.1900), ArchiveHub's che
 |---|---|---|
 | National Heritage List for England (Historic England) | Listed buildings with grade, listing date and exact location | Open Government Licence; credit Historic England and Ordnance Survey |
 | The Gazette | Official notices at least 100 years old | Open Government Licence (not covering personal data); at most one request every 2 seconds |
+| The Metropolitan Museum of Art | Objects and artworks; images for public-domain ones | CC0 data |
+| Art Institute of Chicago | Artworks and objects | CC0 data (CC BY descriptions not used) |
+| OpenAlex | Academic articles, books, theses | CC0 metadata. Works without a key on a small shared daily budget; set `OPENALEX_API_KEY` (free) for production |
 
 ## What each adds
 

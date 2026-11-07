@@ -168,6 +168,8 @@ DPLA_API_KEY = env("DPLA_API_KEY", default="")
 GEOGRAPH_API_KEY = env("GEOGRAPH_API_KEY", default="")
 OS_DATA_HUB_KEY = env("OS_DATA_HUB_KEY", default="")
 GEONAMES_USERNAME = env("GEONAMES_USERNAME", default="")
+# Optional: OpenAlex works without a key, but a free key raises the shared daily budget.
+OPENALEX_API_KEY = env("OPENALEX_API_KEY", default="")
 # The National Archives registers access by the server's IP address, not by key.
 TNA_DISCOVERY_ENABLED = env.bool("TNA_DISCOVERY_ENABLED", default=False)
 

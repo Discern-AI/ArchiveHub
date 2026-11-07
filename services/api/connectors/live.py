@@ -1142,6 +1142,225 @@ class GeoNamesConnector(LiveConnector):
         )
 
 
+# --- Museums and research (open, no key) ---------------------------------------------
+
+
+class MetMuseumConnector(OpenConnector):
+    key = "met-museum"
+    name = "The Metropolitan Museum of Art"
+    source_key = "met-museum"
+    storage = "full_copy"  # Open Access data is CC0
+    licence = "Data CC0; images only for public-domain objects"
+    attribution = "The Metropolitan Museum of Art"
+    description = (
+        "Nearly 500,000 objects: paintings, photographs, clothing, tools and everyday things. "
+        "Useful for showing what objects of a period looked like."
+    )
+    api = "https://collectionapi.metmuseum.org/public/collection"
+    max_page_size = 20  # each result needs its own request
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 10) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        offset = decode_cursor(cursor).get("offset", 0)
+        if not isinstance(offset, int) or offset < 0 or offset + size > 10000:
+            raise BadQuery("Invalid cursor")
+        data = self.get(f"{self.api}/v1.1/search", {"q": q, "offset": offset, "limit": size})
+        ids = data.get("objectIDs") or []
+        records = []
+        for object_id in ids:
+            try:
+                records.append(self.get_record(str(object_id)))
+            except NotFound:
+                continue  # withdrawn objects are listed but no longer served
+        total = int(data.get("total") or 0)
+        more = offset + size < min(total, 10000) and bool(ids)
+        return Page(
+            records=records,
+            next_cursor=encode_cursor({"offset": offset + size}) if more else None,
+            searched=f"The Met's collection (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not record_id.isdigit():
+            raise NotFound(record_id)
+        o = self.get(f"{self.api}/v1/objects/{record_id}", {})
+        if not o.get("objectID"):
+            raise NotFound(record_id)
+        public = bool(o.get("isPublicDomain"))
+        return ConnectorRecord(
+            connector=self.key,
+            id=str(o["objectID"]),
+            title=o.get("title") or o.get("objectName") or record_id,
+            description=", ".join(
+                v for v in (o.get("objectName"), o.get("artistDisplayName"), o.get("medium")) if v
+            ),
+            record_type=(o.get("objectName") or "object").lower(),
+            url=o.get("objectURL") or "",
+            date_text=o.get("objectDate") or "",
+            fields={
+                k: v
+                for k, v in {
+                    "department": o.get("department"),
+                    "culture": o.get("culture"),
+                    "country": o.get("country"),
+                    "credit": o.get("creditLine"),
+                    # Images only where the object is public domain.
+                    "image": o.get("primaryImageSmall") if public else None,
+                }.items()
+                if v
+            },
+            rights="Public domain (CC0)" if public else "Data CC0; image rights reserved",
+            attribution=self.attribution,
+        )
+
+
+class ArtInstituteChicagoConnector(OpenConnector):
+    key = "art-institute-chicago"
+    name = "Art Institute of Chicago"
+    source_key = "art-institute-chicago"
+    storage = "full_copy"  # CC0, except descriptions (CC BY), which we don't request
+    licence = "Data CC0 (descriptions CC BY, not used); images only for public-domain works"
+    attribution = "Art Institute of Chicago"
+    description = "Around 130,000 artworks and objects, many public domain with images."
+    api = "https://api.artic.edu/api/v1/artworks"
+    fields_wanted = (
+        "id,title,date_display,artist_display,place_of_origin,medium_display,"
+        "artwork_type_title,is_public_domain,image_id,credit_line"
+    )
+    max_page_size = 50
+
+    def _headers(self) -> dict[str, str]:
+        # The Art Institute asks clients to identify themselves this way.
+        return {"AIC-User-Agent": "ArchiveHub (https://github.com/Discern-AI/ArchiveHub)"}
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        page = _page_number(cursor)
+        data = self.get(
+            f"{self.api}/search",
+            {"q": q, "limit": size, "page": page, "fields": self.fields_wanted},
+            headers=self._headers(),
+        )
+        iiif = (data.get("config") or {}).get("iiif_url", "")
+        items = data.get("data", []) or []
+        pages = int((data.get("pagination") or {}).get("total_pages") or 0)
+        return Page(
+            records=[self._record(a, iiif) for a in items],
+            next_cursor=encode_cursor({"page": page + 1}) if page < pages and items else None,
+            searched=f"The Art Institute of Chicago's collection (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not record_id.isdigit():
+            raise NotFound(record_id)
+        data = self.get(
+            f"{self.api}/{record_id}", {"fields": self.fields_wanted}, headers=self._headers()
+        )
+        if not (data.get("data") or {}).get("id"):
+            raise NotFound(record_id)
+        return self._record(data["data"], (data.get("config") or {}).get("iiif_url", ""))
+
+    def _record(self, a: dict[str, Any], iiif: str) -> ConnectorRecord:
+        public = bool(a.get("is_public_domain"))
+        image = (
+            f"{iiif}/{a['image_id']}/full/400,/0/default.jpg"
+            if public and iiif and a.get("image_id")
+            else None
+        )
+        rid = str(a.get("id", ""))
+        return ConnectorRecord(
+            connector=self.key,
+            id=rid,
+            title=a.get("title") or rid,
+            description=", ".join(
+                v
+                for v in (
+                    a.get("artwork_type_title"),
+                    _first(a.get("artist_display")).replace("\n", " "),
+                )
+                if v
+            ),
+            record_type=(a.get("artwork_type_title") or "artwork").lower(),
+            url=f"https://www.artic.edu/artworks/{rid}",
+            date_text=a.get("date_display") or "",
+            fields={
+                k: v
+                for k, v in {
+                    "place": a.get("place_of_origin"),
+                    "medium": a.get("medium_display"),
+                    "credit": a.get("credit_line"),
+                    "image": image,
+                }.items()
+                if v
+            },
+            rights="Public domain (CC0)" if public else "Data CC0; image rights reserved",
+            attribution=self.attribution,
+        )
+
+
+class OpenAlexConnector(OpenConnector):
+    key = "openalex"
+    name = "OpenAlex (research papers and books)"
+    source_key = "openalex"
+    setting = "OPENALEX_API_KEY"  # optional: raises the daily budget
+    storage = "full_copy"  # CC0 metadata
+    licence = "Metadata CC0; each work has its own rights"
+    attribution = "OpenAlex"
+    description = (
+        "Over 250 million scholarly works: journal articles, books and theses, including local "
+        "and family history research. Metadata and links, not full text."
+    )
+    api = "https://api.openalex.org/works"
+    max_page_size = 50
+
+    def _params(self, extra: dict[str, Any]) -> dict[str, Any]:
+        key = getattr(settings, self.setting, "")
+        return {**extra, **({"api_key": key} if isinstance(key, str) and key else {})}
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        page = _page_number(cursor)
+        data = self.get(self.api, self._params({"search": q, "per-page": size, "page": page}))
+        works = data.get("results", []) or []
+        total = int((data.get("meta") or {}).get("count") or 0)
+        more = page * size < min(total, 10000) and bool(works)
+        return Page(
+            records=[self._record(w) for w in works],
+            next_cursor=encode_cursor({"page": page + 1}) if more else None,
+            searched=f"OpenAlex (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not re.fullmatch(r"W\d+", record_id):
+            raise NotFound(record_id)
+        return self._record(self.get(f"{self.api}/{record_id}", self._params({})))
+
+    def _record(self, w: dict[str, Any]) -> ConnectorRecord:
+        rid = str(w.get("id", "")).rsplit("/", 1)[-1]
+        authors = [
+            (a.get("author") or {}).get("display_name", "")
+            for a in (w.get("authorships") or [])[:4]
+        ]
+        location = w.get("primary_location") or {}
+        venue = (location.get("source") or {}).get("display_name", "")
+        oa = (w.get("open_access") or {}).get("oa_url")
+        return ConnectorRecord(
+            connector=self.key,
+            id=rid,
+            title=w.get("display_name") or rid,
+            description=", ".join(v for v in (", ".join(a for a in authors if a), venue) if v),
+            record_type=str(w.get("type") or "work"),
+            url=w.get("doi") or location.get("landing_page_url") or f"https://openalex.org/{rid}",
+            date_text=str(w.get("publication_year") or ""),
+            fields={k: v for k, v in {"free_to_read": oa, "published_in": venue}.items() if v},
+            rights="Metadata CC0; see the work for its rights",
+            attribution="OpenAlex",
+        )
+
+
 LIVE_CONNECTORS: tuple[LiveConnector, ...] = (
     EuropeanaConnector(),
     TNADiscoveryConnector(),
@@ -1153,4 +1372,7 @@ LIVE_CONNECTORS: tuple[LiveConnector, ...] = (
     HistoricEnglandConnector(),
     GazetteConnector(),
     GeoNamesConnector(),
+    MetMuseumConnector(),
+    ArtInstituteChicagoConnector(),
+    OpenAlexConnector(),
 )

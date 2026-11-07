@@ -159,6 +159,17 @@ INTERVIEW_MAX_MINUTES = env.int("INTERVIEW_MAX_MINUTES", default=120)
 MAP_STYLE_URL = env("MAP_STYLE_URL", default="https://tiles.openfreemap.org/styles/liberty")
 MAPTILER_KEY = env("MAPTILER_KEY", default="")
 
+# Live sources that need a key or registered access (ADR-034). Each stays listed as
+# "not set up on this server yet" until its key is set. Never commit real keys.
+EUROPEANA_API_KEY = env("EUROPEANA_API_KEY", default="")
+TROVE_API_KEY = env("TROVE_API_KEY", default="")
+DIGITALNZ_API_KEY = env("DIGITALNZ_API_KEY", default="")
+DPLA_API_KEY = env("DPLA_API_KEY", default="")
+GEOGRAPH_API_KEY = env("GEOGRAPH_API_KEY", default="")
+OS_DATA_HUB_KEY = env("OS_DATA_HUB_KEY", default="")
+# The National Archives registers access by the server's IP address, not by key.
+TNA_DISCOVERY_ENABLED = env.bool("TNA_DISCOVERY_ENABLED", default=False)
+
 SENTRY_DSN = env("SENTRY_DSN", default="")
 if SENTRY_DSN:
     import sentry_sdk

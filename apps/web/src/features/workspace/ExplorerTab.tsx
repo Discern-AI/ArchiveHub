@@ -42,6 +42,7 @@ export function ExplorerTab({
   const [note, setNote] = useState<string | null>(null);
 
   const available = (sources.data ?? []).filter((s) => s.available);
+  const unavailable = (sources.data ?? []).filter((s) => !s.available);
   const source = available.find((s) => s.key === sourceKey) ?? available[0];
   const cursor = cursors[cursors.length - 1];
 
@@ -183,6 +184,22 @@ export function ExplorerTab({
         {source.note ? ` ${source.note}.` : ""}
         {source.licence ? ` Licence: ${source.licence}.` : ""}
       </p>
+      {unavailable.length > 0 && (
+        <details className="text-[13px] text-muted">
+          <summary className="cursor-pointer">
+            {unavailable.length} more {unavailable.length === 1 ? "source isn't" : "sources aren't"}{" "}
+            available here yet
+          </summary>
+          <ul className="m-0 mt-1 flex flex-col gap-1 pl-5">
+            {unavailable.map((s) => (
+              <li key={s.key}>
+                <strong className="font-medium text-ink">{s.name}</strong>
+                {s.note ? `: ${s.note}` : ""}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       <form onSubmit={search} className="flex gap-2">
         <label htmlFor="explorer-q" className="sr-only">
           Search {source.name}

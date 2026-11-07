@@ -51,8 +51,21 @@ class SearchArchiveInput(_Input):
     query: str = Field(min_length=1, max_length=200)
 
 
+CONNECTOR_KEYS = Literal[
+    "old-map-names",
+    "wikidata",
+    "europeana",
+    "tna-discovery",
+    "geograph",
+    "os-names",
+    "digitalnz",
+    "trove",
+    "dpla",
+]
+
+
 class SearchConnectorInput(_Input):
-    source: Literal["old-map-names", "wikidata"]
+    source: CONNECTOR_KEYS
     query: str = Field(min_length=1, max_length=200)
 
 
@@ -100,7 +113,17 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
         "of about 1900 (streets, buildings, farms, abbreviations like P.H. for public "
         "house) for Newbury and West Berkshire, with coordinates. 'wikidata': live search of "
         "Wikidata for people, places and organisations, useful context but not proof. "
-        "Returns numbered records to cite.",
+        "'tna-discovery': catalogue descriptions from The National Archives and about 2,500 "
+        "UK archives incl. the Royal Berkshire Archives (descriptions, not documents). "
+        "'europeana': European museums, libraries and archives (photos, maps, documents). "
+        "'geograph': photos of places in Britain, mostly since 2005; accepts place names or "
+        "grid references like SU4767. 'os-names': today's place names, streets and "
+        "postcodes with locations (modern only). 'trove': Australian newspapers; "
+        "'digitalnz': New Zealand collections incl. Papers Past newspapers; 'dpla': US "
+        "collections (useful for relatives who emigrated). Some sources may not be set up "
+        "on this server; the result says so. Live sources receive the query: never include "
+        "names of living people or private details from the user's files. A name match is "
+        "a possible match, not the same person. Returns numbered records to cite.",
         SearchConnectorInput,
     ),
     (
@@ -180,7 +203,31 @@ class ToolKit:
         return self.cite("file", f"{e.file_id}:{e.location}", e.title, "", "Your Archive")
 
     def cite_connector(self, r: ConnectorRecord, source_name: str) -> int:
-        return self.cite("connector", f"{r.connector}:{r.id}", r.title, r.url, source_name)
+        connector = get_connector(r.connector)
+        # Some sources' terms forbid storing what they return; keep only what's allowed.
+        label = connector.stored_label(r) if hasattr(connector, "stored_label") else r.title
+        return self.cite("connector", f"{r.connector}:{r.id}", label, r.url, source_name)
+
+    def stored_result(self, name: str, tool_input: Any, content: str) -> str:
+        """The tool result as it may be saved in the chat history.
+
+        Results from sources whose terms forbid storing them (e.g. The National Archives'
+        Discovery API) are used for this answer only; the saved history keeps a note.
+        """
+        if name != "search_connector" or not isinstance(tool_input, dict):
+            return content
+        try:
+            connector = get_connector(str(tool_input.get("source")))
+        except ConnectorError:
+            return content
+        if connector.storage != "none":
+            return content
+        return json.dumps(
+            {
+                "not_stored": f"Results from {connector.name} were used for this answer but "
+                "aren't kept, as its terms require. Search again to see them.",
+            }
+        )
 
     def log(self, status: str, text: str) -> None:
         entry = {"status": status, "text": text}

@@ -73,8 +73,9 @@ NOT_SEARCHED = [
         "reason": "The directory of historians, researchers and services isn't open yet.",
     },
     {
-        "label": "Live sources (Wikidata)",
-        "reason": "Searched live, one source at a time: open it in the Archive Explorer.",
+        "label": "Live sources (Wikidata, Europeana, The National Archives and others)",
+        "reason": "Searched live, one source at a time: open them in the Archive Explorer "
+        "or ask the assistant.",
     },
     {
         "label": "Sources we only link to",

@@ -1,0 +1,821 @@
+"""Live connectors that need a key or registered access (ADR-034).
+
+Each one reads its key from settings. Without it, the source is listed as "not set up
+on this server yet" and every call says so plainly: never an empty result that could be
+mistaken for "nothing exists". Results are fetched live; what may be kept follows each
+source's terms (`storage`). Error messages never contain the request URL, so keys can't
+leak.
+"""
+
+from __future__ import annotations
+
+import math
+import re
+import threading
+import time
+from typing import Any, ClassVar
+
+from django.conf import settings
+
+from .base import (
+    BadQuery,
+    ConnectorError,
+    ConnectorRecord,
+    NotFound,
+    Page,
+    SourceConnector,
+    decode_cursor,
+    encode_cursor,
+)
+
+
+def _sources():
+    """The shared HTTP helper lives in sources.py, which imports this module's registry."""
+    from . import sources
+
+    return sources
+
+
+def _size(page_size: int, maximum: int) -> int:
+    return _sources()._size(page_size, maximum)
+
+
+class NotConfigured(ConnectorError):
+    kind = "not_configured"
+    user_message = "This source isn't set up on this server yet."
+
+
+def _first(value: Any) -> str:
+    """Providers often wrap single values in lists."""
+    if isinstance(value, list):
+        value = next((v for v in value if v), "")
+    if isinstance(value, dict):
+        value = value.get("def") or value.get("en") or next(iter(value.values()), "")
+        return _first(value)
+    return str(value).strip() if value is not None else ""
+
+
+def _clip(text: str, n: int = 600) -> str:
+    text = " ".join(text.split())
+    return text if len(text) <= n else text[: n - 1].rstrip() + "…"
+
+
+def _float(value: Any) -> float | None:
+    try:
+        f = float(_first(value))
+    except (TypeError, ValueError):
+        return None
+    return f if math.isfinite(f) else None
+
+
+def _page_number(cursor: str | None) -> int:
+    page = decode_cursor(cursor).get("page", 1)
+    if not isinstance(page, int) or page < 1:
+        raise BadQuery("Invalid cursor")
+    return page
+
+
+class LiveConnector(SourceConnector):
+    """A live API that needs a key (or registered access) from settings."""
+
+    access_type = "live_api"
+    setting: ClassVar[str] = ""  # settings attribute holding the key
+    setup_note: ClassVar[str] = ""  # what the owner needs to do, shown when not set up
+    min_interval: ClassVar[float] = 0.0  # seconds between requests (provider guidance)
+    _lock: ClassVar[threading.Lock]
+    _last: ClassVar[float]
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._lock = threading.Lock()
+        cls._last = 0.0
+
+    # Key handling --------------------------------------------------------------
+
+    @property
+    def key_value(self) -> str:
+        value = getattr(settings, self.setting, "")
+        return value if isinstance(value, str) else ""
+
+    def configured(self) -> bool:
+        return bool(self.key_value)
+
+    def require_key(self) -> str:
+        if not self.configured():
+            raise NotConfigured(self.setup_note)
+        return self.key_value
+
+    def describe(self) -> dict[str, Any]:
+        info = super().describe()
+        info["configured"] = self.configured()
+        info["setup_note"] = "" if self.configured() else self.setup_note
+        return info
+
+    # Requests -----------------------------------------------------------------
+
+    def get(self, url: str, params: dict[str, Any], headers: dict[str, str] | None = None):
+        self.require_key()
+        if self.min_interval:
+            with self._lock:
+                wait = type(self)._last + self.min_interval - time.monotonic()
+                if wait > 0:
+                    time.sleep(wait)
+                type(self)._last = time.monotonic()
+        return _sources().http_get_json(url, params, timeout=12.0, headers=headers)
+
+    def stored_label(self, record: ConnectorRecord) -> str:
+        """What may be kept as this record's label (basket, citations)."""
+        return record.title
+
+
+def _require_query(query: str, name: str) -> str:
+    q = query.strip()
+    if not q:
+        raise BadQuery(f"{name} needs a search term")
+    return q
+
+
+# --- Europeana (CC0 metadata; each object carries its own rights statement) ------------
+
+
+class EuropeanaConnector(LiveConnector):
+    key = "europeana"
+    name = "Europeana"
+    source_key = "europeana"
+    setting = "EUROPEANA_API_KEY"
+    setup_note = "Needs a Europeana project API key (free; personal keys are not for production)."
+    storage = "metadata_only"
+    licence = "Metadata CC0 1.0; each item has its own rights statement"
+    attribution = "Europeana and the providing institution"
+    description = (
+        "Over 50 million items from European museums, libraries and archives: photos, "
+        "documents, maps, sound and film."
+    )
+    api = "https://api.europeana.eu/record/v2/search.json"
+    max_page_size = 50
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        mark = decode_cursor(cursor).get("mark", "*")
+        if not isinstance(mark, str):
+            raise BadQuery("Invalid cursor")
+        data = self.get(
+            self.api,
+            {"wskey": self.require_key(), "query": q, "rows": size, "cursor": mark},
+        )
+        if data.get("success") is False:
+            raise BadQuery(data.get("error", "Search failed"))
+        records = [self._record(i) for i in data.get("items", [])]
+        nxt = data.get("nextCursor")
+        return Page(
+            records=records,
+            next_cursor=encode_cursor({"mark": nxt}) if nxt and records else None,
+            searched=f"Europeana (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not re.fullmatch(r'[^/\s"]+/[^\s"]+', record_id):
+            raise NotFound(record_id)
+        data = self.get(
+            self.api,
+            {"wskey": self.require_key(), "query": f'europeana_id:"/{record_id}"', "rows": 1},
+        )
+        items = data.get("items") or []
+        if not items:
+            raise NotFound(record_id)
+        return self._record(items[0])
+
+    def _record(self, i: dict[str, Any]) -> ConnectorRecord:
+        rid = str(i.get("id", "")).lstrip("/")
+        rights = _first(i.get("rights"))
+        return ConnectorRecord(
+            connector=self.key,
+            id=rid,
+            title=_first(i.get("title")) or rid,
+            description=_clip(_first(i.get("dcDescription"))),
+            record_type=_first(i.get("type")).lower(),
+            url=_first(i.get("guid")) or f"https://www.europeana.eu/item/{rid}",
+            date_text=_first(i.get("year")),
+            latitude=_float(i.get("edmPlaceLatitude")),
+            longitude=_float(i.get("edmPlaceLongitude")),
+            fields={
+                k: v
+                for k, v in {
+                    "held_by": _first(i.get("dataProvider")),
+                    "country": _first(i.get("country")),
+                    "original": _first(i.get("edmIsShownAt")),
+                    "preview": _first(i.get("edmPreview")),
+                    "rights_statement": rights,
+                }.items()
+                if v
+            },
+            rights=f"Item rights: {rights}" if rights else "See the item for its rights",
+            attribution=_first(i.get("dataProvider")) or "Europeana",
+        )
+
+
+# --- Trove (National Library of Australia) ----------------------------------------------
+
+
+class TroveConnector(LiveConnector):
+    key = "trove"
+    name = "Trove newspapers (National Library of Australia)"
+    source_key = "trove"
+    setting = "TROVE_API_KEY"
+    setup_note = (
+        "Needs a Trove API key. Commercial use needs the National Library of Australia's "
+        "explicit permission (their commercial access level)."
+    )
+    storage = "reference_only"
+    licence = "Trove API terms; commercial use only with NLA permission"
+    attribution = "Trove, National Library of Australia"
+    description = (
+        "Australian newspapers 1803–1950s, digitised with searchable text. Useful for "
+        "relatives who emigrated."
+    )
+    api = "https://api.trove.nla.gov.au/v3"
+    max_page_size = 100
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        mark = decode_cursor(cursor).get("mark", "*")
+        if not isinstance(mark, str):
+            raise BadQuery("Invalid cursor")
+        data = self.get(
+            f"{self.api}/result",
+            {"category": "newspaper", "q": q, "encoding": "json", "n": size, "s": mark},
+            headers={"X-API-KEY": self.require_key()},
+        )
+        block = next((c for c in data.get("category", []) if c.get("code") == "newspaper"), {}).get(
+            "records", {}
+        )
+        articles = block.get("article", []) or []
+        nxt = block.get("nextStart")
+        return Page(
+            records=[self._record(a) for a in articles],
+            next_cursor=encode_cursor({"mark": nxt}) if nxt and articles else None,
+            searched=f"Trove newspapers (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not record_id.isdigit():
+            raise NotFound(record_id)
+        data = self.get(
+            f"{self.api}/newspaper/{record_id}",
+            {"encoding": "json", "reclevel": "brief"},
+            headers={"X-API-KEY": self.require_key()},
+        )
+        article = data.get("article", data)
+        if not article.get("id"):
+            raise NotFound(record_id)
+        return self._record(article)
+
+    def _record(self, a: dict[str, Any]) -> ConnectorRecord:
+        rid = str(a.get("id", ""))
+        paper = a.get("title")
+        paper_name = paper.get("title", "") if isinstance(paper, dict) else _first(paper)
+        snippet = re.sub(r"<[^>]+>", "", _first(a.get("snippet")))
+        return ConnectorRecord(
+            connector=self.key,
+            id=rid,
+            title=_first(a.get("heading")) or f"Article {rid}",
+            description=_clip(snippet),
+            record_type="newspaper article",
+            url=_first(a.get("troveUrl")) or f"https://trove.nla.gov.au/newspaper/article/{rid}",
+            date_text=_first(a.get("date")),
+            fields={
+                k: v
+                for k, v in {"newspaper": paper_name, "page": _first(a.get("page"))}.items()
+                if v
+            },
+            rights="See Trove for this article's rights",
+            attribution="Trove, National Library of Australia",
+        )
+
+
+# --- DigitalNZ (incl. Papers Past) ----------------------------------------------------
+
+
+class DigitalNZConnector(LiveConnector):
+    key = "digitalnz"
+    name = "DigitalNZ (incl. Papers Past newspapers)"
+    source_key = "digitalnz"
+    setting = "DIGITALNZ_API_KEY"
+    setup_note = (
+        "Needs a DigitalNZ API key: their terms allow commercial use of selected metadata "
+        "only with a key."
+    )
+    storage = "reference_only"
+    licence = "DigitalNZ Developer API terms (commercial); each item has its own rights"
+    attribution = "The item's source, linked as DigitalNZ requires"
+    description = (
+        "New Zealand collections, including Papers Past newspapers and photos. Useful for "
+        "relatives who emigrated."
+    )
+    api = "https://api.digitalnz.org/v3"
+    max_page_size = 100
+
+    def _headers(self) -> dict[str, str]:
+        return {"Authentication-Token": self.require_key()}
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        page = _page_number(cursor)
+        data = self.get(
+            f"{self.api}/records.json",
+            {"text": q, "page": page, "per_page": size},
+            headers=self._headers(),
+        )
+        block = data.get("search", {})
+        results = block.get("results", []) or []
+        total = int(block.get("result_count") or 0)
+        more = page * size < total and bool(results)
+        return Page(
+            records=[self._record(r) for r in results],
+            next_cursor=encode_cursor({"page": page + 1}) if more else None,
+            searched=f"DigitalNZ (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not record_id.isdigit():
+            raise NotFound(record_id)
+        data = self.get(f"{self.api}/records/{record_id}.json", {}, headers=self._headers())
+        record = data.get("record")
+        if not record:
+            raise NotFound(record_id)
+        return self._record(record)
+
+    def _record(self, r: dict[str, Any]) -> ConnectorRecord:
+        rid = str(r.get("id", ""))
+        partner = _first(r.get("display_content_partner")) or _first(r.get("content_partner"))
+        return ConnectorRecord(
+            connector=self.key,
+            id=rid,
+            title=_first(r.get("title")) or rid,
+            description=_clip(_first(r.get("description"))),
+            record_type=_first(r.get("category")).lower(),
+            # DigitalNZ's terms: link each item to its source page via source_url.
+            url=_first(r.get("source_url")) or _first(r.get("landing_url")),
+            date_text=_first(r.get("display_date")),
+            latitude=_float(r.get("lat")),
+            longitude=_float(r.get("lng")),
+            fields={
+                k: v
+                for k, v in {
+                    "source": partner,
+                    "page": _first(r.get("landing_url")),
+                    "usage": ", ".join(r.get("usage") or []),
+                }.items()
+                if v
+            },
+            rights=_first(r.get("rights")) or "See the source for rights",
+            attribution=partner or "DigitalNZ",
+        )
+
+
+# --- DPLA (Digital Public Library of America) ----------------------------------------
+
+
+class DPLAConnector(LiveConnector):
+    key = "dpla"
+    name = "Digital Public Library of America"
+    source_key = "dpla"
+    setting = "DPLA_API_KEY"
+    setup_note = "Needs a DPLA API key (free, requested by email)."
+    storage = "metadata_only"
+    licence = "Metadata CC0; each item has its own rights"
+    attribution = "DPLA and the contributing institution"
+    description = "US libraries, archives and museums: photos, documents, books and maps."
+    api = "https://api.dp.la/v2/items"
+    max_page_size = 100
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        page = _page_number(cursor)
+        data = self.get(
+            self.api, {"q": q, "page_size": size, "page": page, "api_key": self.require_key()}
+        )
+        docs = data.get("docs", []) or []
+        more = page * size < int(data.get("count") or 0) and bool(docs)
+        return Page(
+            records=[self._record(d) for d in docs],
+            next_cursor=encode_cursor({"page": page + 1}) if more else None,
+            searched=f"DPLA (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not re.fullmatch(r"[0-9a-f]{32}", record_id):
+            raise NotFound(record_id)
+        data = self.get(f"{self.api}/{record_id}", {"api_key": self.require_key()})
+        docs = data.get("docs") or []
+        if not docs:
+            raise NotFound(record_id)
+        return self._record(docs[0])
+
+    def _record(self, d: dict[str, Any]) -> ConnectorRecord:
+        src = d.get("sourceResource", {}) or {}
+        date = src.get("date")
+        date_text = ""
+        if isinstance(date, list) and date:
+            date = date[0]
+        if isinstance(date, dict):
+            date_text = date.get("displayDate", "")
+        provider = d.get("dataProvider")
+        provider_name = provider.get("name", "") if isinstance(provider, dict) else _first(provider)
+        rights = _first(d.get("rights")) or _first(src.get("rights"))
+        return ConnectorRecord(
+            connector=self.key,
+            id=str(d.get("id", "")),
+            title=_first(src.get("title")) or str(d.get("id", "")),
+            description=_clip(_first(src.get("description"))),
+            record_type=_first(src.get("type")),
+            url=_first(d.get("isShownAt")),
+            date_text=date_text,
+            fields={k: v for k, v in {"held_by": provider_name, "rights": rights}.items() if v},
+            rights=rights or "See the item for its rights",
+            attribution=provider_name or "DPLA",
+        )
+
+
+# --- Geograph (photos of every grid square, CC BY-SA) ----------------------------------
+
+
+class GeographConnector(LiveConnector):
+    key = "geograph"
+    name = "Geograph Britain and Ireland"
+    source_key = "geograph"
+    setting = "GEOGRAPH_API_KEY"
+    setup_note = "Needs a Geograph API key (free, requested on their site)."
+    storage = "reference_only"
+    licence = "Photos CC BY-SA 2.0; credit the photographer and link the photo"
+    attribution = "Photographer, via Geograph"
+    description = (
+        "Photos of places across Britain, most taken since 2005: what streets and "
+        "buildings look like today and in recent decades. Search by place or grid reference."
+    )
+    api = "https://api.geograph.org.uk"
+    max_page_size = 100
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        state = decode_cursor(cursor)
+        params: dict[str, Any] = {"key": self.require_key(), "format": "JSON"}
+        if state:
+            # Later pages come from the saved search the first page created.
+            search_id, page = state.get("i"), state.get("page")
+            if not (isinstance(search_id, str) and search_id.isdigit() and isinstance(page, int)):
+                raise BadQuery("Invalid cursor")
+            params.update({"i": search_id, "page": page})
+        else:
+            params.update({"q": q, "perpage": size})
+        data = self.get(f"{self.api}/syndicator.php", params)
+        if data.get("error"):
+            # e.g. "unable to identify a unique location": the query, not the service.
+            raise BadQuery(str(data["error"]))
+        items = data.get("items", []) or []
+        found = re.search(r"/feed/results/(\d+)/(\d+)\.json", data.get("nextURL") or "")
+        nxt = encode_cursor({"i": found[1], "page": int(found[2])}) if found and items else None
+        return Page(
+            records=[self._record(i) for i in items],
+            next_cursor=nxt,
+            searched=f"Geograph photos (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not record_id.isdigit():
+            raise NotFound(record_id)
+        data = self.get(
+            f"{self.api}/api/oembed",
+            {
+                "url": f"https://www.geograph.org.uk/photo/{record_id}",
+                "format": "json",
+                "key": self.require_key(),
+            },
+        )
+        if not data.get("title"):
+            raise NotFound(record_id)
+        geo = data.get("geo") or {}
+        return ConnectorRecord(
+            connector=self.key,
+            id=record_id,
+            title=data["title"],
+            description=_clip(_first(data.get("description"))),
+            record_type="photo",
+            url=data.get("web_page") or f"https://www.geograph.org.uk/photo/{record_id}",
+            latitude=_float(geo.get("lat")),
+            longitude=_float(geo.get("long")),
+            fields={
+                k: v
+                for k, v in {
+                    "photographer": data.get("author_name"),
+                    "thumbnail": data.get("thumbnail_url"),
+                    "grid_square": geo.get("square"),
+                    "licence": data.get("license_url"),
+                }.items()
+                if v
+            },
+            rights=(
+                f"{data.get('license') or 'CC BY-SA 2.0'}, © {data['author_name']}"
+                if data.get("author_name")
+                else data.get("license") or "CC BY-SA 2.0"
+            ),
+            attribution=(
+                f"{data['author_name']}, via Geograph" if data.get("author_name") else "Geograph"
+            ),
+        )
+
+    def _record(self, i: dict[str, Any]) -> ConnectorRecord:
+        rid = str(i.get("guid") or "")
+        author = _first(i.get("author"))
+        return ConnectorRecord(
+            connector=self.key,
+            id=rid,
+            title=_first(i.get("title")) or rid,
+            description=_clip(_first(i.get("description"))),
+            record_type="photo",
+            url=_first(i.get("link")) or f"https://www.geograph.org.uk/photo/{rid}",
+            date_text=_first(i.get("imageTaken")),
+            latitude=_float(i.get("lat")),
+            longitude=_float(i.get("long")),
+            fields={
+                k: v
+                for k, v in {
+                    "photographer": author,
+                    "thumbnail": _first(i.get("thumb")),
+                    "licence": _first(i.get("licence")),
+                }.items()
+                if v
+            },
+            rights=f"CC BY-SA 2.0, © {author}" if author else "CC BY-SA 2.0",
+            attribution=f"{author}, via Geograph" if author else "Geograph",
+        )
+
+
+# --- The National Archives: Discovery (catalogue; nothing may be stored) ---------------
+
+
+class TNADiscoveryConnector(LiveConnector):
+    key = "tna-discovery"
+    name = "The National Archives: Discovery"
+    source_key = "tna-discovery"
+    setting = "TNA_DISCOVERY_ENABLED"
+    setup_note = (
+        "Needs registration with The National Archives (email webmaster@"
+        "nationalarchives.gov.uk with the server's IP address), then TNA_DISCOVERY_ENABLED."
+    )
+    storage = "none"  # API terms: "do not cache or store any content returned by the API"
+    licence = "Catalogue descriptions; TNA API terms (no caching or storing)"
+    attribution = "The National Archives' Discovery catalogue"
+    description = (
+        "Catalogue descriptions from The National Archives and about 2,500 other UK "
+        "archives, including the Royal Berkshire Archives. Descriptions, not the documents."
+    )
+    api = "https://discovery.nationalarchives.gov.uk/API"
+    min_interval = 1.0  # TNA asks for no more than one request a second
+    max_page_size = 50
+
+    @property
+    def key_value(self) -> str:
+        return "enabled" if getattr(settings, self.setting, False) is True else ""
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        page = _page_number(cursor)
+        data = self.get(
+            f"{self.api}/search/records",
+            {"sps.searchQuery": q, "sps.resultsPageSize": size, "sps.page": page},
+        )
+        records = data.get("records", []) or []
+        more = page * size < int(data.get("count") or 0) and bool(records)
+        return Page(
+            records=[self._record(r) for r in records],
+            next_cursor=encode_cursor({"page": page + 1}) if more else None,
+            searched=f"The National Archives' Discovery catalogue (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not re.fullmatch(r"[A-Za-z0-9\-]{1,64}", record_id):
+            raise NotFound(record_id)
+        d = self.get(f"{self.api}/records/v1/details/{record_id}", {})
+        if not d.get("id"):
+            raise NotFound(record_id)
+        held = d.get("heldBy") or []
+        held_by = ", ".join(h.get("xReferenceName", "") for h in held if isinstance(h, dict))
+        scope = d.get("scopeContent") or {}
+        return ConnectorRecord(
+            connector=self.key,
+            id=d["id"],
+            title=_first(d.get("title")) or d["id"],
+            description=_clip(re.sub(r"<[^>]+>", " ", _first(scope.get("description")))),
+            record_type="catalogue description",
+            url=f"https://discovery.nationalarchives.gov.uk/details/r/{d['id']}",
+            date_text=_first(d.get("coveringDates")),
+            fields={
+                k: v
+                for k, v in {"reference": d.get("citableReference"), "held_by": held_by}.items()
+                if v
+            },
+            rights="Catalogue description; see Discovery",
+            attribution=held_by or "The National Archives",
+        )
+
+    def _record(self, r: dict[str, Any]) -> ConnectorRecord:
+        held_by = ", ".join(r.get("heldBy") or [])
+        return ConnectorRecord(
+            connector=self.key,
+            id=str(r.get("id", "")),
+            title=_first(r.get("title")) or str(r.get("id", "")),
+            description=_clip(re.sub(r"<[^>]+>", " ", _first(r.get("description")))),
+            record_type="catalogue description",
+            url=f"https://discovery.nationalarchives.gov.uk/details/r/{r.get('id', '')}",
+            date_text=_first(r.get("coveringDates")),
+            fields={
+                k: v
+                for k, v in {
+                    "reference": r.get("reference"),
+                    "held_by": held_by,
+                    "context": _clip(_first(r.get("context")), 300),
+                }.items()
+                if v
+            },
+            rights="Catalogue description; see Discovery",
+            attribution=held_by or "The National Archives",
+        )
+
+    def stored_label(self, record: ConnectorRecord) -> str:
+        # Nothing returned by the API may be stored: keep only the link's own identifiers.
+        return f"The National Archives' Discovery record {record.id}"
+
+
+# --- OS Names (Ordnance Survey's gazetteer, OGL) ----------------------------------------
+
+
+class OSNamesConnector(LiveConnector):
+    key = "os-names"
+    name = "OS Names (Ordnance Survey)"
+    source_key = "ordnance-survey-opendata"
+    setting = "OS_DATA_HUB_KEY"
+    setup_note = "Needs an OS Data Hub API key (free plan)."
+    storage = "full_copy"
+    licence = "Open Government Licence"
+    attribution = "Contains OS data © Crown copyright and database right"
+    description = (
+        "Today's place names, streets and postcodes across Great Britain, with locations. "
+        "For finding where an address is now; it says nothing about the past."
+    )
+    api = "https://api.os.uk/search/names/v1/find"
+    max_page_size = 100
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        offset = decode_cursor(cursor).get("offset", 0)
+        if not isinstance(offset, int) or offset < 0:
+            raise BadQuery("Invalid cursor")
+        params: dict[str, Any] = {"query": q, "maxresults": size, "key": self.require_key()}
+        if offset:
+            params["offset"] = offset
+        data = self.get(self.api, params)
+        results = [r["GAZETTEER_ENTRY"] for r in data.get("results", []) if "GAZETTEER_ENTRY" in r]
+        total = int((data.get("header") or {}).get("totalresults") or 0)
+        more = offset + size < total and bool(results)
+        return Page(
+            records=[self._record(e) for e in results],
+            next_cursor=encode_cursor({"offset": offset + size}) if more else None,
+            searched=f"OS Names (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        # OS Names has no lookup by ID, so the ID carries the name to search again.
+        os_id, _, name = record_id.partition("~")
+        if not os_id or not name:
+            raise NotFound(record_id)
+        page = self.search(name, page_size=100)
+        for r in page.records:
+            if r.id == record_id:
+                return r
+        raise NotFound(record_id)
+
+    def _record(self, e: dict[str, Any]) -> ConnectorRecord:
+        lat = lng = None
+        x, y = _float(e.get("GEOMETRY_X")), _float(e.get("GEOMETRY_Y"))
+        if x is not None and y is not None:
+            lat, lng = bng_to_wgs84(x, y)
+        where = ", ".join(
+            v
+            for v in (e.get("POPULATED_PLACE"), e.get("COUNTY_UNITARY"))
+            if v and v != e.get("NAME1")
+        )
+        return ConnectorRecord(
+            connector=self.key,
+            id=f"{e.get('ID', '')}~{e.get('NAME1', '')}",
+            title=e.get("NAME1", ""),
+            description=", ".join(v for v in (e.get("LOCAL_TYPE"), where) if v),
+            record_type=str(e.get("TYPE", "")).lower(),
+            url=e.get("NAMES_URI", ""),
+            latitude=round(lat, 6) if lat is not None else None,
+            longitude=round(lng, 6) if lng is not None else None,
+            fields={
+                k: v
+                for k, v in {
+                    "postcode_district": e.get("POSTCODE_DISTRICT"),
+                    "easting": x,
+                    "northing": y,
+                }.items()
+                if v
+            },
+            rights="Open Government Licence",
+            attribution=self.attribution,
+        )
+
+
+# --- British National Grid to WGS84 -----------------------------------------------------
+
+
+def bng_to_wgs84(easting: float, northing: float) -> tuple[float, float]:
+    """OSGB36 grid to WGS84 latitude/longitude, via a Helmert transform (about 5 m).
+
+    Formulae from Ordnance Survey's "A guide to coordinates systems in Great Britain".
+    Good enough for placing a pin; not for surveying.
+    """
+    a, b = 6377563.396, 6356256.909  # Airy 1830
+    f0 = 0.9996012717
+    lat0, lon0 = math.radians(49), math.radians(-2)
+    n0, e0 = -100000.0, 400000.0
+    e2 = 1 - (b * b) / (a * a)
+    n = (a - b) / (a + b)
+
+    lat, m = lat0, 0.0
+    while True:
+        lat = (northing - n0 - m) / (a * f0) + lat
+        dl, sl = lat - lat0, lat + lat0
+        m = (
+            b
+            * f0
+            * (
+                (1 + n + 1.25 * n**2 + 1.25 * n**3) * dl
+                - (3 * n + 3 * n**2 + 2.625 * n**3) * math.sin(dl) * math.cos(sl)
+                + (1.875 * n**2 + 1.875 * n**3) * math.sin(2 * dl) * math.cos(2 * sl)
+                - (35 / 24) * n**3 * math.sin(3 * dl) * math.cos(3 * sl)
+            )
+        )
+        if abs(northing - n0 - m) < 0.00001:
+            break
+
+    sin_lat, cos_lat, tan_lat = math.sin(lat), math.cos(lat), math.tan(lat)
+    nu = a * f0 / math.sqrt(1 - e2 * sin_lat**2)
+    rho = a * f0 * (1 - e2) / (1 - e2 * sin_lat**2) ** 1.5
+    eta2 = nu / rho - 1
+    sec = 1 / cos_lat
+    t2 = tan_lat**2
+    vii = tan_lat / (2 * rho * nu)
+    viii = tan_lat / (24 * rho * nu**3) * (5 + 3 * t2 + eta2 - 9 * t2 * eta2)
+    ix = tan_lat / (720 * rho * nu**5) * (61 + 90 * t2 + 45 * t2**2)
+    x_ = sec / nu
+    xi = sec / (6 * nu**3) * (nu / rho + 2 * t2)
+    xii = sec / (120 * nu**5) * (5 + 28 * t2 + 24 * t2**2)
+    xiia = sec / (5040 * nu**7) * (61 + 662 * t2 + 1320 * t2**2 + 720 * t2**3)
+    de = easting - e0
+    phi = lat - vii * de**2 + viii * de**4 - ix * de**6
+    lam = lon0 + x_ * de - xi * de**3 + xii * de**5 - xiia * de**7
+
+    # OSGB36 geodetic -> cartesian (Airy 1830, height 0).
+    nu_a = a / math.sqrt(1 - e2 * math.sin(phi) ** 2)
+    x1 = nu_a * math.cos(phi) * math.cos(lam)
+    y1 = nu_a * math.cos(phi) * math.sin(lam)
+    z1 = (1 - e2) * nu_a * math.sin(phi)
+
+    # Helmert OSGB36 -> WGS84.
+    tx, ty, tz = 446.448, -125.157, 542.060
+    s = -20.4894e-6
+    rx, ry, rz = (math.radians(v / 3600) for v in (0.1502, 0.2470, 0.8421))
+    x2 = tx + (1 + s) * x1 - rz * y1 + ry * z1
+    y2 = ty + rz * x1 + (1 + s) * y1 - rx * z1
+    z2 = tz - ry * x1 + rx * y1 + (1 + s) * z1
+
+    # Cartesian -> WGS84 geodetic (GRS80 ellipsoid).
+    a2, b2 = 6378137.0, 6356752.3141
+    e2b = 1 - (b2 * b2) / (a2 * a2)
+    p = math.hypot(x2, y2)
+    phi2 = math.atan2(z2, p * (1 - e2b))
+    for _ in range(10):
+        nu2 = a2 / math.sqrt(1 - e2b * math.sin(phi2) ** 2)
+        phi2 = math.atan2(z2 + e2b * nu2 * math.sin(phi2), p)
+    return math.degrees(phi2), math.degrees(math.atan2(y2, x2))
+
+
+LIVE_CONNECTORS: tuple[LiveConnector, ...] = (
+    EuropeanaConnector(),
+    TNADiscoveryConnector(),
+    GeographConnector(),
+    OSNamesConnector(),
+    DigitalNZConnector(),
+    TroveConnector(),
+    DPLAConnector(),
+)

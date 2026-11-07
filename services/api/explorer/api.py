@@ -46,6 +46,10 @@ def explorer_sources(request: HttpRequest) -> list[dict[str, Any]]:
     out = []
     for c in CONNECTORS.values():
         info = c.describe()
+        if hasattr(c, "configured") and not c.configured():
+            info["available"], info["note"] = False, c.setup_note
+            out.append(info)
+            continue
         try:
             if hasattr(c, "dataset"):
                 ds = c.dataset()
@@ -73,7 +77,7 @@ def explorer_search(
     }
 
 
-@router.get("/explorer/{key}/records/{record_id}")
+@router.get("/explorer/{key}/records/{path:record_id}")
 def explorer_record(request: HttpRequest, key: str, record_id: str) -> dict[str, Any]:
     connector = _connector_or_404(key)
     try:
@@ -127,7 +131,12 @@ def add_to_basket(request: HttpRequest, project_id: UUID, payload: BasketIn):
         connector=connector.key,
         external_id=record.id,
         defaults={
-            "title": record.title[:400],
+            # Some sources' terms forbid storing their content: keep only what's allowed.
+            "title": (
+                connector.stored_label(record)
+                if hasattr(connector, "stored_label")
+                else record.title
+            )[:400],
             "url": record.url,
             "storage": storage,
             # Keep a copy only where the source's terms allow it.

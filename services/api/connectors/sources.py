@@ -170,12 +170,23 @@ class OldMapNamesConnector(SourceConnector):
 # --- Wikidata (live API, CC0) ------------------------------------------------------
 
 
-def http_get_json(url: str, params: dict[str, Any], timeout: float = 10.0) -> Any:
-    """GET JSON with a descriptive User-Agent, mapping failures onto connector errors."""
-    full = f"{url}?{urllib.parse.urlencode(params)}"
+def http_get_json(
+    url: str,
+    params: dict[str, Any],
+    timeout: float = 10.0,
+    headers: dict[str, str] | None = None,
+) -> Any:
+    """GET JSON with a descriptive User-Agent, mapping failures onto connector errors.
+
+    Error messages never include the URL, so API keys in query strings can't leak into
+    logs or the "What I checked" list.
+    """
+    full = f"{url}?{urllib.parse.urlencode(params)}" if params else url
     if not url.startswith("https://"):
         raise BadQuery("Only https sources are allowed")
-    request = urllib.request.Request(full, headers={"User-Agent": USER_AGENT})  # noqa: S310
+    request = urllib.request.Request(  # noqa: S310
+        full, headers={"User-Agent": USER_AGENT, "Accept": "application/json", **(headers or {})}
+    )
     try:
         with urllib.request.urlopen(request, timeout=timeout, context=_TLS) as response:  # noqa: S310
             return json.loads(response.read().decode("utf-8"))
@@ -311,8 +322,11 @@ def _time(value: Any) -> str | None:
 
 # --- Registry ----------------------------------------------------------------------
 
+from .live import LIVE_CONNECTORS  # noqa: E402 - live.py uses this module's HTTP helper
+
 CONNECTORS: dict[str, SourceConnector] = {
-    c.key: c for c in (ReferenceConnector(), OldMapNamesConnector(), WikidataConnector())
+    c.key: c
+    for c in (ReferenceConnector(), OldMapNamesConnector(), WikidataConnector(), *LIVE_CONNECTORS)
 }
 
 

@@ -74,16 +74,17 @@
       "archives",
       "catalogue"
     ],
-    "access_type": "external_only",
+    "access_type": "live_api",
     "cost": "free",
     "api_status": "API access requested by email",
     "licence": "Open Government Licence cited on one page",
-    "conditions": "API terms say not to cache or store content.",
+    "conditions": "API terms: register by emailing webmaster@nationalarchives.gov.uk with the server's IP address; do not cache or store any content returned; no more than 3,000 calls a day, at most one a second.",
     "storage_policy": "none",
     "status_label": "potential_integration",
     "tier": "A",
     "review_status": "page_read",
-    "plan": "Live search only, once access is approved."
+    "plan": "Live connector built (WP6); switched on by TNA_DISCOVERY_ENABLED once registered. Nothing it returns is stored (ADR-034).",
+    "last_checked": "2026-11-07"
   },
   {
     "key": "europeana",
@@ -103,14 +104,17 @@
       "photos",
       "museums"
     ],
-    "access_type": "external_only",
+    "access_type": "live_api",
     "cost": "free",
     "api_status": "API key required (personal or project)",
-    "conditions": "Rights vary item by item.",
+    "conditions": "Metadata CC0, commercial use allowed. Production services need a project API key (personal keys are for individual, non-production use). Keys must not be shared. Media rights per item (edm:rights).",
     "status_label": "potential_integration",
     "tier": "A",
-    "review_status": "not_checked",
-    "plan": "Connector once key type and attribution terms are confirmed."
+    "review_status": "partly_checked",
+    "plan": "Live connector built (WP6); switched on when EUROPEANA_API_KEY is set (ADR-034).",
+    "storage_policy": "metadata_only",
+    "licence": "Metadata CC0 1.0; each item has its own rights statement",
+    "last_checked": "2026-11-07"
   },
   {
     "key": "openhistoricalmap",
@@ -878,11 +882,129 @@
       "maps",
       "modern"
     ],
-    "access_type": "external_only",
+    "access_type": "live_api",
     "cost": "free",
     "status_label": "potential_integration",
     "tier": "A",
     "review_status": "not_checked",
-    "plan": "Modern context only."
+    "plan": "OS Names connector built (WP6) for finding where addresses are today; switched on when OS_DATA_HUB_KEY is set.",
+    "storage_policy": "full_copy",
+    "licence": "Open Government Licence",
+    "conditions": "OS Names API: free for any purpose; needs an OS Data Hub key. Attribution: Contains OS data © Crown copyright and database right.",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "trove",
+    "name": "Trove (National Library of Australia)",
+    "kind": "database",
+    "holder": "National Library of Australia",
+    "url": "https://trove.nla.gov.au/",
+    "description": "Australian newspapers from 1803 into the 1950s with searchable text, plus books, photos and archives. Useful for relatives who emigrated.",
+    "coverage_area": "Australia",
+    "record_types": [
+      "newspapers",
+      "photos",
+      "books"
+    ],
+    "tags": [
+      "newspapers",
+      "emigration"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Key on application; v3 API",
+    "licence": "Trove API terms (non-commercial by default)",
+    "conditions": "Commercial use needs the National Library of Australia's explicit permission (commercial access level) and must acknowledge Trove and the NLA. Keys expire after 12 months.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "B",
+    "review_status": "partly_checked",
+    "plan": "Live newspaper connector built (WP6); switched on when TROVE_API_KEY is set, after NLA permission for commercial use.",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "digitalnz",
+    "name": "DigitalNZ (incl. Papers Past)",
+    "kind": "database",
+    "holder": "National Library of New Zealand / DigitalNZ",
+    "url": "https://digitalnz.org/",
+    "description": "New Zealand collections, including Papers Past newspapers, photos and archives. Useful for relatives who emigrated.",
+    "coverage_area": "New Zealand",
+    "record_types": [
+      "newspapers",
+      "photos",
+      "archives"
+    ],
+    "tags": [
+      "newspapers",
+      "emigration"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Public API; key needed for commercial use",
+    "licence": "DigitalNZ Developer API terms (commercial terms for selected metadata)",
+    "conditions": "Commercial use only with an API key and only for selected metadata. Name the original source and link via source_url for each item. 10,000 calls a day per key. Remove items that are withdrawn.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "B",
+    "review_status": "page_read",
+    "plan": "Live connector built (WP6); switched on when DIGITALNZ_API_KEY is set.",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "dpla",
+    "name": "Digital Public Library of America",
+    "kind": "database",
+    "holder": "DPLA",
+    "url": "https://dp.la/",
+    "description": "Photos, documents, books and maps from US libraries, archives and museums. Useful for relatives who emigrated.",
+    "coverage_area": "United States",
+    "record_types": [
+      "photos",
+      "documents",
+      "books",
+      "maps"
+    ],
+    "tags": [
+      "emigration"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Key requested by email",
+    "licence": "Metadata CC0; items have their own rights",
+    "conditions": "Metadata released CC0 (no restriction on commercial use). Item rights vary.",
+    "storage_policy": "metadata_only",
+    "status_label": "potential_integration",
+    "tier": "B",
+    "review_status": "partly_checked",
+    "plan": "Live connector built (WP6) from the documented API; switched on when DPLA_API_KEY is set. API terms page couldn't be read automatically: confirm before launch.",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "geograph",
+    "name": "Geograph Britain and Ireland",
+    "kind": "photo archive",
+    "holder": "Geograph Project",
+    "url": "https://www.geograph.org.uk/",
+    "description": "Photos of places across Britain and Ireland, mostly taken since 2005, with locations. Shows what streets and buildings look like today and in recent decades.",
+    "coverage_area": "Great Britain and Ireland",
+    "record_types": [
+      "photos"
+    ],
+    "tags": [
+      "photos",
+      "places"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Key on request",
+    "licence": "Photos CC BY-SA 2.0",
+    "conditions": "Credit the photographer beside each image, say it's Creative Commons and link the photo page. Adapted images must be shared alike. No bulk collection or model training through the live API.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "A",
+    "review_status": "page_read",
+    "plan": "Live photo connector built (WP6); switched on when GEOGRAPH_API_KEY is set.",
+    "last_checked": "2026-11-07"
   }
 ]

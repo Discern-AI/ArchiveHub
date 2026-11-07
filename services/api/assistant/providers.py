@@ -174,7 +174,7 @@ class AnthropicProvider:
             if rounds > MAX_TOOL_ROUNDS:
                 raise ProviderError("tool_limit")
 
-            results = []
+            results, stored = [], []
             for block in tool_uses:
                 tool_input = block.input if isinstance(block.input, dict) else {}
                 yield ToolActivity(toolkit.label(block.name, tool_input))
@@ -183,8 +183,11 @@ class AnthropicProvider:
                 if is_error:
                     result["is_error"] = True
                 results.append(result)
-            # All results for one turn go back in a single user message.
-            turns.append({"role": "user", "content": results})
+                kept = toolkit.stored_result(block.name, tool_input, content)
+                stored.append(result if kept == content else {**result, "content": kept})
+            # All results for one turn go back in a single user message. The saved turns
+            # leave out what a source's terms say mustn't be stored (ADR-034).
+            turns.append({"role": "user", "content": stored})
             messages.append({"role": "user", "content": results})
             # Keep paragraphs apart when the model writes again after using tools.
             if text_parts and not text_parts[-1].endswith("\n"):

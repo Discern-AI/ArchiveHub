@@ -47,6 +47,18 @@ const base = {
         storage: "reference_only",
         available: true,
       },
+      {
+        key: "europeana",
+        name: "Europeana",
+        description: "European collections.",
+        access_type: "live_api",
+        capabilities: ["search"],
+        licence: "",
+        attribution: "",
+        storage: "metadata_only",
+        available: false,
+        note: "Needs a Europeana project API key",
+      },
     ]),
   "GET /api/v1/explorer/checked-reference/search": () =>
     json({ records: [RECORD], next_cursor: null, searched: "" }),
@@ -107,6 +119,12 @@ describe("Workspace", () => {
 
     await user.click(await screen.findByRole("button", { name: "Open Explorer" }));
     const panel = await screen.findByRole("complementary", { name: "Workspace" });
+    // Sources that aren't set up are listed with what they need, not hidden.
+    expect(
+      await within(panel).findByText("1 more source isn't available here yet"),
+    ).toBeInTheDocument();
+    expect(within(panel).getByText(/Needs a Europeana project API key/)).toBeInTheDocument();
+    expect(within(panel).queryByRole("option", { name: /Europeana/ })).not.toBeInTheDocument();
     await user.click(await within(panel).findByRole("button", { name: /The Pigeons, Newbury/ }));
     expect(await within(panel).findByText("Cite as: The Pigeons. Closed Pubs")).toBeVisible();
     expect(within(panel).getByRole("link", { name: "Open the original" })).toHaveAttribute(

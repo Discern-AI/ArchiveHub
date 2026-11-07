@@ -15,6 +15,7 @@ Optional: install [Tesseract](https://github.com/tesseract-ocr/tesseract) for pr
 - [docs/SPEC.md](docs/SPEC.md) — product and build specification
 - [docs/DECISIONS.md](docs/DECISIONS.md) — architecture and product decisions
 - [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) — historical data sources and their status
+- [docs/CONNECTORS.md](docs/CONNECTORS.md) — live sources that need a key, and how to switch them on
 - [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) — third-party code and licences
 - [docs/WP1_PLAN.md](docs/WP1_PLAN.md) — the current work package
 - [CLAUDE.md](CLAUDE.md) — rules for coding assistants

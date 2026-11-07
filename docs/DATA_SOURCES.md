@@ -18,11 +18,22 @@ Every directory entry in the product holds: subject, area, dates, record types, 
 |---|---|---|---|---|---|---|
 | [GB1900 Gazetteer](https://www.visionofbritain.org.uk/data/) | Place names from old OS maps | Download | Raw Dump CC0; Complete/Abridged CC BY-SA, commercial use allowed | Page read | A | **First hosted dataset**, map search (WP3) |
 | [Wikidata](https://www.wikidata.org/) | People, places, organisations | API / SPARQL / dumps | Confirm current terms | Not yet checked | A | Entity matching and context; never genealogical proof |
-| [National Archives Discovery](https://discovery.nationalarchives.gov.uk/) | 32–37m catalogue descriptions (metadata, not document text) | API, access requested by email | One page cites OGL; [API terms](https://www.nationalarchives.gov.uk/terms-and-conditions/discovery-for-developers-about-the-application-programming-interface-api/) say don't cache or store | Page read | A | Live search only until clarified; contact TNA |
-| [Europeana](https://www.europeana.eu/) | European cultural objects | [API](https://api.europeana.eu/en), personal vs project keys | Per-item rights | API docs referenced | A | Connector once key type, limits and attribution confirmed |
+| [National Archives Discovery](https://discovery.nationalarchives.gov.uk/) | 32–37m catalogue descriptions (metadata, not document text), incl. the Royal Berkshire Archives | API; register by email with the server's IP | One page cites OGL; [API terms](https://www.nationalarchives.gov.uk/terms-and-conditions/discovery-for-developers-about-the-application-programming-interface-api/) say don't cache or store; ≤3,000 calls a day, one a second | Page read | A | **Connector built** (live only, nothing stored); on with `TNA_DISCOVERY_ENABLED` |
+| [Europeana](https://www.europeana.eu/) | European cultural objects | [API](https://api.europeana.eu/en), project key for production | Metadata CC0, commercial use allowed; per-item media rights | Partly checked | A | **Connector built**; on with `EUROPEANA_API_KEY` |
 | [OpenHistoricalMap](https://www.openhistoricalmap.org/) | Time-aware map data | Data and tools | Confirm licence and Newbury coverage | Not yet checked | A | Test for the time map |
 | [FamilySearch API](https://www.familysearch.org/developers/) | Family Tree and related data | Developer programme | Licensing terms; partners need a business plan and roadmap | Page read | B/C | Apply early; optional |
 | [Vision of Britain / GBHDB](https://www.visionofbritain.org.uk/) | Historical statistics and boundaries | UK Data Service | Statistics open; boundaries limit commercial use; parish boundaries commercially licensed | Page read | B/D | Later context layer |
+
+## Live connectors added 7 Nov 2026 (keys needed; see CONNECTORS.md)
+
+| Source | Offers | Conditions found | Status | Plan |
+|---|---|---|---|---|
+| [Geograph](https://www.geograph.org.uk/) | Located photos of Britain, mostly since 2005 | CC BY-SA 2.0 photos; credit the photographer; no bulk use of the live API | Page read | **Connector built**; `GEOGRAPH_API_KEY` |
+| [OS Names API](https://osdatahub.os.uk/) | Today's place names, streets, postcodes | Free for any purpose, OGL; needs an OS Data Hub key | Page read | **Connector built**; `OS_DATA_HUB_KEY` |
+| [DigitalNZ](https://digitalnz.org/) incl. Papers Past | NZ newspapers, photos, archives | Commercial use only with a key, selected metadata; link via source_url | Page read | **Connector built**; `DIGITALNZ_API_KEY` |
+| [Trove](https://trove.nla.gov.au/) | Australian newspapers 1803–1950s | Commercial use needs the NLA's explicit permission; keys expire yearly | Partly checked (terms page blocks automated reading) | **Connector built**; `TROVE_API_KEY` after permission |
+| [DPLA](https://dp.la/) | US library, archive and museum items | Metadata CC0 | Partly checked (terms page blocks automated reading) | **Connector built**; `DPLA_API_KEY` |
+| [FamilySearch API](https://www.familysearch.org/developers/) | Family Tree and records | Closed to the public; Innovator Program application, compatibility review, signed agreements | Page read | Not built until accepted |
 
 ## UK genealogy and civil records
 

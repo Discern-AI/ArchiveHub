@@ -96,6 +96,19 @@ describe("Search", () => {
   it("asks outside sources only when ticked, and says which couldn't be searched", async () => {
     const calls = installFetch({
       ...base,
+      "GET /api/v1/projects": () =>
+        json([
+          {
+            id: "p1",
+            title: "Sample family",
+            summary: "",
+            visibility: "private",
+            is_owner: true,
+            created_at: "",
+            updated_at: "",
+          },
+        ]),
+      "POST /api/v1/projects/p1/basket": () => json({ id: "b1" }, 201),
       "GET /api/v1/search": (url) =>
         json({
           query: "Spracklen",
@@ -107,6 +120,10 @@ describe("Search", () => {
                     {
                       title: "The London Gazette, Issue 28538",
                       url: "https://www.thegazette.co.uk/x",
+                      extra: {
+                        connector: "the-gazette",
+                        record_id: "London/issue/28538/page/7207",
+                      },
                     },
                   ]),
                   live: true,
@@ -141,6 +158,12 @@ describe("Search", () => {
     expect(screen.getByText("Outside sources, searched live")).toBeInTheDocument();
     expect(screen.getByText(/OpenAlex: Didn't answer in time/)).toBeInTheDocument();
     expect(calls.some((c) => c.path === "/api/v1/search?q=Spracklen&live=true")).toBe(true);
+    await userEvent.click(within(gazette).getByRole("button", { name: "Save to Sample family" }));
+    expect(await within(gazette).findByText("Saved to Sample family.")).toBeInTheDocument();
+    expect(calls.find((c) => c.method === "POST")?.body).toEqual({
+      connector: "the-gazette",
+      record_id: "London/issue/28538/page/7207",
+    });
     const listed = screen.getByRole("region", { name: "Historic England" });
     expect(within(listed).getByRole("link", { name: /No. 6 CHEAP STREET/ })).toHaveAttribute(
       "href",

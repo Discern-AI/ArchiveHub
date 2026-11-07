@@ -153,7 +153,11 @@ def _records(bbox: BBox, lo, hi, undated) -> list[MapFeature]:
                 place=str(r.place),
                 source=r.source.name,
                 url=r.url,
-                extra={"record_type": r.record_type, "connector": "checked-reference"},
+                extra={
+                    "record_type": r.record_type,
+                    "connector": "checked-reference",
+                    "record_id": r.key,
+                },
             )
         )
     return out

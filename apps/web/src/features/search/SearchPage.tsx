@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
+import { SaveToProject } from "../../components/SaveToProject";
 import { mapApi, type SearchGroup, type SearchResult } from "../../lib/map";
 
 function ResultItem({ r }: { r: SearchResult }) {
@@ -40,6 +41,9 @@ function ResultItem({ r }: { r: SearchResult }) {
           {mapLink && !titleToMap && <Link to={mapLink}>Show on the time map</Link>}
         </span>
       ) : null}
+      {typeof r.extra.connector === "string" && typeof r.extra.record_id === "string" && (
+        <SaveToProject connector={r.extra.connector} recordId={r.extra.record_id} />
+      )}
     </li>
   );
 }

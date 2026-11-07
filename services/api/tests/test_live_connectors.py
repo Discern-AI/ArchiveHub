@@ -623,3 +623,24 @@ def test_check_connectors_reports_each_source(calls, settings):
     assert "NOT SET UP" in text and "Trove API key" in text
     assert "1 works, 1 not set up." in text
     assert "eu-secret" not in text  # keys never printed
+
+
+def test_gazette_and_listed_buildings_can_be_saved_to_a_project(calls, alice, alice_client):
+    load_all()
+    project = Project.objects.create(owner=alice, title="P")
+    url = f"/api/v1/projects/{project.id}/basket"
+    for connector, record_id in (
+        ("the-gazette", "London/issue/28538/page/7207"),
+        ("historic-england", "1220923"),
+    ):
+        r = alice_client.post(
+            url, {"connector": connector, "record_id": record_id}, content_type=JSON
+        )
+        assert r.status_code == 201, r.content
+    items = {i.connector: i for i in BasketItem.objects.filter(project=project)}
+    assert items["the-gazette"].url == "https://www.thegazette.co.uk/London/issue/28538/page/7207"
+    assert items["the-gazette"].snapshot is None  # link and label only
+    assert items["historic-england"].title == "No. 6 CHEAP STREET"
+    assert items["historic-england"].snapshot["latitude"] == pytest.approx(
+        51.3984
+    )  # OGL: full copy

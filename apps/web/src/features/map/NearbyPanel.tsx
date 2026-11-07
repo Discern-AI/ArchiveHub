@@ -1,6 +1,7 @@
 /** "What else is known here?": evidence near a spot on the time map, never a guess. */
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { SaveToProject } from "../../components/SaveToProject";
 import { DATE_ROLE_LABELS, mapApi, type MapFeature } from "../../lib/map";
 
 function EvidenceLine({ f }: { f: MapFeature }) {
@@ -115,6 +116,7 @@ export function NearbyPanel({ f }: { f: MapFeature }) {
                       </a>
                       <span className="text-muted"> {g.date}</span>
                       {g.snippet && <span className="block text-muted">{g.snippet}</span>}
+                      <SaveToProject connector="the-gazette" recordId={g.id} />
                     </li>
                   ))}
                 </ul>

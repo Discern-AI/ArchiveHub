@@ -12,6 +12,7 @@ import {
   type HistoricLayer,
   type MapFeature,
 } from "../../lib/map";
+import { SaveToProject } from "../../components/SaveToProject";
 import { AddItemForm } from "./AddItemForm";
 import { NearbyPanel } from "./NearbyPanel";
 import type { View } from "./MapView";
@@ -183,6 +184,9 @@ function FeatureDetail({
           </a>
         )}
       </div>
+      {typeof f.extra.connector === "string" && typeof f.extra.record_id === "string" && (
+        <SaveToProject connector={f.extra.connector} recordId={f.extra.record_id} />
+      )}
       <NearbyPanel key={f.id} f={f} />
       {itemId &&
         (confirming ? (

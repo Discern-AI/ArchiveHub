@@ -278,6 +278,38 @@ describe("Listed buildings", () => {
             listed_buildings: url.searchParams.get("listed") ? [listedBuilding] : [],
             notes: [],
           }),
+        "GET /api/v1/map/nearby": () =>
+          json({
+            street: "Cheap Street, Newbury",
+            map_names: [
+              {
+                title: "P.H.",
+                meaning: "public house",
+                distance_m: 40,
+                record_id: "n2",
+                latitude: 51.3986,
+                longitude: -1.3216,
+              },
+            ],
+            public: [feature({})],
+            private: [],
+            gazette: {
+              searched: "The Gazette for Cheap Street",
+              results: [
+                {
+                  id: "g1",
+                  title: "The London Gazette, Issue 25693, Page 2224",
+                  snippet: "",
+                  date: "1887-04-19",
+                  url: "https://www.thegazette.co.uk/London/issue/25693/page/2224",
+                },
+              ],
+              error: "",
+            },
+            notes: [
+              "Records are placed on Cheap Street as a whole, so they may be about any building on it.",
+            ],
+          }),
       }),
     );
     renderAt("/map");
@@ -287,6 +319,17 @@ describe("Listed buildings", () => {
     expect(screen.getByText("Listed")).toBeInTheDocument();
     expect(screen.getByText(/The date it was listed, not built/)).toBeInTheDocument();
     expect(calls.some((c) => c.path.includes("listed=true"))).toBe(true);
+
+    await userEvent.click(screen.getByRole("button", { name: "What else is known here?" }));
+    const here = await screen.findByRole("region", { name: "What else is known here" });
+    expect(await within(here).findByText(/public house/)).toBeInTheDocument();
+    expect(within(here).getByText("Records for Cheap Street, Newbury")).toBeInTheDocument();
+    expect(within(here).getByRole("link", { name: /Issue 25693/ })).toHaveAttribute(
+      "href",
+      "https://www.thegazette.co.uk/London/issue/25693/page/2224",
+    );
+    expect(within(here).getByText(/may be about any building/)).toBeInTheDocument();
+    expect(calls.some((c) => c.path.startsWith("/api/v1/map/nearby?lat=51.3984"))).toBe(true);
 
     await userEvent.click(screen.getByRole("button", { name: "← Back to the list" }));
     await userEvent.click(screen.getByLabelText("Listed buildings"));

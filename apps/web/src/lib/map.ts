@@ -132,6 +132,27 @@ export const PRECISION_LABELS: Record<string, string> = {
   unknown: "Location uncertain",
 };
 
+export interface Nearby {
+  street: string | null;
+  map_names: {
+    title: string;
+    meaning: string;
+    distance_m: number;
+    record_id: string;
+    latitude: number;
+    longitude: number;
+  }[];
+  public: MapFeature[];
+  private: MapFeature[];
+  gazette: {
+    searched: string;
+    results: { id: string; title: string; snippet: string; date: string; url: string }[];
+    more?: boolean;
+    error: string;
+  } | null;
+  notes: string[];
+}
+
 export const mapApi = {
   layers: () => request<MapLayers>("GET", "/api/v1/map/layers"),
   places: (q = "") =>
@@ -153,6 +174,11 @@ export const mapApi = {
   },
   addItem: (projectId: string, item: NewMapItem) =>
     request<MapFeature>("POST", `/api/v1/projects/${projectId}/map-items`, item),
+  nearby: (lat: number, lng: number, name: string) =>
+    request<Nearby>(
+      "GET",
+      `/api/v1/map/nearby?${new URLSearchParams({ lat: String(lat), lng: String(lng), name })}`,
+    ),
   deleteItem: (itemId: string) => request<void>("DELETE", `/api/v1/map-items/${itemId}`),
   search: (q: string, live = false) =>
     request<SearchResponse>(

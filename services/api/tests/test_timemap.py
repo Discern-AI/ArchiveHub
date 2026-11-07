@@ -7,6 +7,7 @@ from django.test import Client
 from django.utils import timezone
 
 from archive.models import FileAsset
+from conftest import make_user
 from connectors.models import Dataset, DatasetRow
 from core.models import AuditLog
 from history.loader import load_all
@@ -345,3 +346,61 @@ def test_listed_buildings_unavailable_is_said_plainly(ref, alice_client, monkeyp
     data = features(alice_client, listed="true")
     assert data["listed_buildings"] == []
     assert any("couldn't be loaded" in n for n in data["notes"])
+
+
+def test_what_else_is_known_here(ref, alice, alice_client, project, monkeypatch):
+    from connectors.base import ConnectorRecord, Page
+    from connectors.sources import get_connector
+
+    ds = Dataset.objects.create(
+        key="old-map-names", name="Old map names", source=Source.objects.get(key="gb1900")
+    )
+    DatasetRow.objects.create(
+        dataset=ds, external_id="n1", title="Corn Exchange", title_lower="corn exchange",
+        latitude=51.3990, longitude=-1.3214,
+    )  # fmt: skip
+    DatasetRow.objects.create(
+        dataset=ds, external_id="n2", title="P.H.", title_lower="p.h.",
+        latitude=51.3986, longitude=-1.3216,
+    )  # fmt: skip
+    DatasetRow.objects.create(
+        dataset=ds, external_id="far", title="Far away", title_lower="far away",
+        latitude=51.41, longitude=-1.3214,
+    )  # fmt: skip
+    pigeons = Organisation.objects.get(key="pigeons")
+    Assertion.objects.create(
+        subject_type=ContentType.objects.get_for_model(Organisation), subject_id=pigeons.id,
+        predicate="family story", value="Grandad drank here", project=project, method="user",
+    )  # fmt: skip
+    sent = []
+
+    def gazette(query, cursor=None, page_size=25):
+        sent.append(query)
+        record = ConnectorRecord(
+            connector="the-gazette", id="London/issue/25693/page/2224",
+            title="The London Gazette, Issue 25693, Page 2224", date_text="1887-04-19",
+            url="https://www.thegazette.co.uk/London/issue/25693/page/2224",
+        )  # fmt: skip
+        return Page(records=[record], searched=f"The Gazette for {query}")
+
+    monkeypatch.setattr(get_connector("the-gazette"), "search", gazette)
+    url = "/api/v1/map/nearby"
+    here = {"lat": 51.3984, "lng": -1.3214, "name": "No. 6 CHEAP STREET"}
+    data = alice_client.get(url, here).json()
+    assert data["street"] == "Cheap Street, Newbury"
+    assert [n["title"] for n in data["map_names"]] == ["P.H.", "Corn Exchange"]  # nearest first
+    assert data["map_names"][0]["meaning"] == "public house"
+    assert any("Pigeons, 5 Cheap Street" in f["title"] for f in data["public"])
+    assert [f["title"] for f in data["private"]] == ["The Pigeons: family story Grandad drank here"]
+    assert sent == ['"Cheap Street" Newbury']  # only the street, never anything of the user's
+    assert data["gazette"]["results"][0]["date"] == "1887-04-19"
+    assert any("may be about any building" in n for n in data["notes"])
+
+    # Someone else sees the public evidence but not this project's claim.
+    other = Client()
+    other.force_login(make_user("carol@example.com"))
+    assert other.get(url, here).json()["private"] == []
+
+    nowhere = alice_client.get(url, {"lat": 51.3984, "lng": -1.3214, "name": "Some House"}).json()
+    assert nowhere["street"] is None and nowhere["gazette"] is None
+    assert alice_client.get(url, {"lat": 95, "lng": 0}).status_code == 422

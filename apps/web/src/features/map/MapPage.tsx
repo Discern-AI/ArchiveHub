@@ -12,6 +12,7 @@ import {
   type MapFeature,
 } from "../../lib/map";
 import { AddItemForm } from "./AddItemForm";
+import { NearbyPanel } from "./NearbyPanel";
 import type { View } from "./MapView";
 
 const MapView = lazy(() => import("./MapView"));
@@ -181,6 +182,7 @@ function FeatureDetail({
           </a>
         )}
       </div>
+      <NearbyPanel key={f.id} f={f} />
       {itemId &&
         (confirming ? (
           <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface p-3">

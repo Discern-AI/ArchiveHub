@@ -18,6 +18,7 @@ from interviews.models import InterviewSession
 from projects.permissions import editable_projects, visible_projects
 
 from .models import ItemKind, MapItem
+from .nearby import nearby
 from .queries import BBox, item_feature, map_features
 
 router = Router()
@@ -131,6 +132,13 @@ def features(
     if lo is not None and hi is not None and lo > hi:
         lo, hi = hi, lo
     return map_features(request.user, box, lo, hi, undated, project_id, listed)
+
+
+@router.get("/map/nearby")
+def what_is_here(request: HttpRequest, lat: float, lng: float, name: str = "") -> dict[str, Any]:
+    """What else is known at a spot: c.1900 map names, records for the street, Gazette."""
+    _check_point(lat, lng)
+    return nearby(request.user, lat, lng, name[:200])
 
 
 # --- A project's own items ------------------------------------------------------------

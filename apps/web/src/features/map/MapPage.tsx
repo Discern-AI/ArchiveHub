@@ -291,7 +291,13 @@ export function MapPage() {
     placeholderData: keepPreviousData,
   });
   // Protected areas change slowly: ask per rough area, and keep them a while.
-  const areaBox = bbox.map((n) => Math.round(n * 100) / 100) as BBox;
+  // Round outwards, so a zoomed-in view never shrinks to nothing.
+  const areaBox = [
+    Math.floor(bbox[0] * 100) / 100,
+    Math.floor(bbox[1] * 100) / 100,
+    Math.ceil(bbox[2] * 100) / 100,
+    Math.ceil(bbox[3] * 100) / 100,
+  ] as BBox;
   const areas = useQuery({
     queryKey: ["map-areas", areaBox],
     queryFn: () => mapApi.areas(areaBox),

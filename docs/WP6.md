@@ -22,6 +22,8 @@
 
 - **Listed buildings layer** on the time map (ADR-037): 52 around Cheap Street, live from Historic England, with the listing date explained.
 - **Outside sources in Search** (opt-in, ADR-037): The Gazette, Historic England and OpenAlex today; others as their keys are set (docs/CONNECTORS.md).
+- **What else is known here?** on any map item: c.1900 map names within 150 m (with OS abbreviations explained), records for the street, and Gazette notices for it, searched live.
+- **Pictures in the Explorer** where allowed (public-domain museum images; Geograph photos credited), and "Show on the time map" for located records.
 - **Connectors:** 13 live sources added (ADR-034 to ADR-036); see docs/SOURCE_REGISTER.md.
 
 ## Privacy checks (tests)

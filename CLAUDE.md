@@ -6,6 +6,7 @@ ArchiveHub is a chat-first platform for family and local history (Record, Resear
 - `docs/SPEC.md` — the merged specification and build plan (WP1–WP8).
 - `docs/DECISIONS.md` — read before changing the architecture; supersede decisions with a new ADR, never silently.
 - `docs/DATA_SOURCES.md` and `docs/DEPENDENCIES.md` — sources and third-party code, with licences.
+- `docs/SOURCE_REGISTER.md` — the running list of every connector, database, website and program; update it whenever a source's status changes.
 
 ## Stack
 React 18 + TypeScript + Vite (`apps/web`) · Django 5 + Django Ninja (`services/api`) · PostgreSQL 16 + PostGIS + pgvector · Redis + RQ · R2 in production, local files in dev · Anthropic API behind a provider adapter.

@@ -285,3 +285,63 @@ def test_places_list_starts_with_cheap_street(ref, alice_client):
 def test_bbox_contains():
     box = BBox.parse(NEWBURY)
     assert box.contains(51.4, -1.32) and not box.contains(52, -1.32) and box.small
+
+
+def test_listed_buildings_layer_is_live_cached_and_opt_in(ref, alice_client, monkeypatch):
+    from django.core.cache import cache
+
+    from connectors.sources import get_connector
+
+    cache.clear()
+    seen = []
+    connector = get_connector("historic-england")
+
+    def fake_query(where, extra):
+        seen.append(extra)
+        return {
+            "features": [
+                {
+                    "attributes": {
+                        "ListEntry": 1220923,
+                        "Name": "No. 6 CHEAP STREET",
+                        "Grade": "II",
+                        "ListDate": 431308800000,
+                        "hyperlink": "https://historicengland.org.uk/listing/the-list/list-entry/1220923",
+                    },
+                    "geometry": {"points": [[-1.3214, 51.3984]]},
+                }
+            ],
+            "exceededTransferLimit": True,
+        }
+
+    monkeypatch.setattr(connector, "_query", fake_query)
+    assert features(alice_client)["listed_buildings"] == []  # off unless asked
+    data = features(alice_client, listed="true", year_from=1850, year_to=1860)
+    building = data["listed_buildings"][0]
+    assert building["date_role"] == "listed" and building["date_display"] == "1983"
+    assert building["layer"] == "public" and building["url"].endswith("1220923")
+    assert any("first 300 listed buildings" in n for n in data["notes"])
+    assert seen[0]["geometryType"] == "esriGeometryEnvelope"
+    features(alice_client, listed="true", year_from=1900, year_to=1910)
+    assert len(seen) == 1  # same area: served from the cache, whatever the year
+    wide = features(alice_client, bbox="-2,51,-1,52", listed="true")
+    assert wide["listed_buildings"] == [] and any(
+        "Zoom in to see listed" in n for n in wide["notes"]
+    )
+
+
+def test_listed_buildings_unavailable_is_said_plainly(ref, alice_client, monkeypatch):
+    from django.core.cache import cache
+
+    from connectors.base import Unavailable
+    from connectors.sources import get_connector
+
+    cache.clear()
+
+    def down(where, extra):
+        raise Unavailable("down")
+
+    monkeypatch.setattr(get_connector("historic-england"), "_query", down)
+    data = features(alice_client, listed="true")
+    assert data["listed_buildings"] == []
+    assert any("couldn't be loaded" in n for n in data["notes"])

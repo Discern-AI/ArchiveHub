@@ -42,18 +42,24 @@ function pinElement(group: MapFeature[], selectedId: string | null): HTMLButtonE
   const el = document.createElement("button");
   el.type = "button";
   const isPrivate = f.layer === "private";
+  const isListed = f.kind === "listed_building";
   const many = group.length > 1;
+  const what = isPrivate ? "private" : isListed ? "listed building" : "public record";
   const label = many
-    ? `${group.length} ${isPrivate ? "private items" : "public records"} here`
-    : `${f.title}${f.date_display ? `, ${f.date_display}` : ""} (${isPrivate ? "private" : "public record"})`;
+    ? `${group.length} ${isPrivate ? "private items" : isListed ? "listed buildings" : "public records"} here`
+    : `${f.title}${f.date_display ? `, ${isListed ? "listed " : ""}${f.date_display}` : ""} (${what})`;
   el.setAttribute("aria-label", label);
   el.title = label;
   el.dataset.layer = f.layer;
   const selected = group.some((g) => g.id === selectedId);
   el.className = `${PIN} ${
-    isPrivate ? "size-7 rounded-[5px] bg-private" : "size-7 rounded-full bg-accent"
+    isPrivate
+      ? "size-7 rounded-[5px] bg-private"
+      : isListed
+        ? "size-5 rounded-full bg-listed text-[10px]"
+        : "size-7 rounded-full bg-accent"
   } ${selected ? "outline-3 outline-focus" : ""}`;
-  el.textContent = many ? String(group.length) : isPrivate ? "P" : "";
+  el.textContent = many ? String(group.length) : isPrivate ? "P" : isListed ? "L" : "";
   return el;
 }
 

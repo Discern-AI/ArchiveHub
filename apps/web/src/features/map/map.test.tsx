@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
@@ -249,6 +249,50 @@ describe("Time map", () => {
       date_role: "event",
     });
     expect(await screen.findByText("Private: Gran's Newbury")).toBeInTheDocument();
+  });
+});
+
+describe("Listed buildings", () => {
+  it("shows listed buildings as their own layer, with the listing date explained", async () => {
+    const listedBuilding = feature({
+      id: "listed:1220923",
+      kind: "listed_building",
+      title: "No. 6 CHEAP STREET",
+      summary: "Grade II listed building",
+      date_display: "1983",
+      date_role: "listed",
+      year_from: null,
+      year_to: null,
+      precision: "exact",
+      latitude: 51.3984,
+      longitude: -1.3214,
+      url: "https://historicengland.org.uk/listing/the-list/list-entry/1220923",
+    });
+    const calls = installFetch(
+      routes({
+        "GET /api/v1/map/features": (url) =>
+          json({
+            public: [],
+            private: [],
+            map_names: [],
+            listed_buildings: url.searchParams.get("listed") ? [listedBuilding] : [],
+            notes: [],
+          }),
+      }),
+    );
+    renderAt("/map");
+    await userEvent.click(await screen.findByText("Listed buildings standing today (1)"));
+    expect(screen.getByText(/listed, not when it was built/)).toBeInTheDocument();
+    await userEvent.click(await screen.findByText("pin No. 6 CHEAP STREET"));
+    expect(screen.getByText("Listed")).toBeInTheDocument();
+    expect(screen.getByText(/The date it was listed, not built/)).toBeInTheDocument();
+    expect(calls.some((c) => c.path.includes("listed=true"))).toBe(true);
+
+    await userEvent.click(screen.getByRole("button", { name: "← Back to the list" }));
+    await userEvent.click(screen.getByLabelText("Listed buildings"));
+    await waitFor(() =>
+      expect(screen.queryByText("pin No. 6 CHEAP STREET")).not.toBeInTheDocument(),
+    );
   });
 });
 

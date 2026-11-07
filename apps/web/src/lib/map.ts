@@ -17,7 +17,7 @@ export interface MapLayers {
   historic: HistoricLayer[];
 }
 
-export type DateRole = "event" | "made" | "record_covers" | "map_survey" | "undated";
+export type DateRole = "event" | "made" | "record_covers" | "map_survey" | "listed" | "undated";
 
 export interface MapFeature {
   id: string;
@@ -45,6 +45,8 @@ export interface MapFeatures {
   public: MapFeature[];
   private: MapFeature[];
   map_names: MapFeature[];
+  /** Listed buildings standing today (Historic England); not filtered by year. */
+  listed_buildings: MapFeature[];
   notes: string[];
 }
 
@@ -113,6 +115,7 @@ export const DATE_ROLE_LABELS: Record<DateRole, string> = {
   event: "Happened",
   made: "Made or taken",
   record_covers: "Record covers",
+  listed: "Listed",
   map_survey: "Map surveyed",
   undated: "Undated",
 };
@@ -135,11 +138,13 @@ export const mapApi = {
     years: { from: number | null; to: number | null },
     undated: boolean,
     projectId?: string | null,
+    listed = false,
   ) => {
     const params = new URLSearchParams({ bbox: bbox.map((n) => n.toFixed(5)).join(",") });
     if (years.from !== null) params.set("year_from", String(years.from));
     if (years.to !== null) params.set("year_to", String(years.to));
     if (undated) params.set("undated", "true");
+    if (listed) params.set("listed", "true");
     if (projectId) params.set("project_id", projectId);
     return request<MapFeatures>("GET", `/api/v1/map/features?${params}`);
   },
@@ -172,7 +177,8 @@ export function boxAround(lat: number, lng: number, halfLat = 0.008, halfLng = 0
 export function groupPins(features: MapFeature[]): MapFeature[][] {
   const groups = new Map<string, MapFeature[]>();
   for (const f of features) {
-    const key = `${f.layer}|${f.latitude.toFixed(6)}|${f.longitude.toFixed(6)}`;
+    const kind = f.kind === "listed_building" ? "listed" : f.layer;
+    const key = `${kind}|${f.latitude.toFixed(6)}|${f.longitude.toFixed(6)}`;
     const g = groups.get(key);
     if (g) g.push(f);
     else groups.set(key, [f]);

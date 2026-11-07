@@ -121,6 +121,7 @@ def features(
     year_to: int | None = None,
     undated: bool = False,
     project_id: UUID | None = None,
+    listed: bool = False,
 ) -> dict[str, Any]:
     try:
         box = BBox.parse(bbox)
@@ -129,7 +130,7 @@ def features(
     lo, hi = _year(year_from), _year(year_to)
     if lo is not None and hi is not None and lo > hi:
         lo, hi = hi, lo
-    return map_features(request.user, box, lo, hi, undated, project_id)
+    return map_features(request.user, box, lo, hi, undated, project_id, listed)
 
 
 # --- A project's own items ------------------------------------------------------------

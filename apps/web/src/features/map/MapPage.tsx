@@ -155,6 +155,11 @@ function FeatureDetail({
       </span>
       <h2 className="m-0 font-serif text-2xl font-semibold">{f.title}</h2>
       <DateLine f={f} />
+      {f.kind === "listed_building" && (
+        <p className="m-0 text-sm text-muted">
+          The date it was listed, not built. The listing entry often describes its age.
+        </p>
+      )}
       <p className="m-0 text-sm text-muted">
         {[f.place, PRECISION_LABELS[f.precision] ?? ""].filter(Boolean).join(" · ")}
       </p>
@@ -229,6 +234,7 @@ export function MapPage() {
   });
   const [span, setSpan] = useState<number | null>(10);
   const [undated, setUndated] = useState(false);
+  const [listed, setListed] = useState(true);
   const [layerChoice, setLayerChoice] = useState<string>("auto");
   const [opacity, setOpacity] = useState(0.85);
   const [alongside, setAlongside] = useState(false);
@@ -256,8 +262,8 @@ export function MapPage() {
   const years = span === null ? { from: null, to: null } : { from: year - span, to: year + span };
   const rounded = bbox.map((n) => Math.round(n * 1000) / 1000) as BBox;
   const features = useQuery({
-    queryKey: ["map-features", rounded, years.from, years.to, undated],
-    queryFn: () => mapApi.features(rounded, years, undated),
+    queryKey: ["map-features", rounded, years.from, years.to, undated, listed],
+    queryFn: () => mapApi.features(rounded, years, undated, null, listed),
     placeholderData: keepPreviousData,
   });
 
@@ -270,7 +276,11 @@ export function MapPage() {
         : (historicLayers.find((l) => l.id === layerChoice) ?? null);
 
   const all = useMemo(
-    () => [...(features.data?.public ?? []), ...(features.data?.private ?? [])],
+    () => [
+      ...(features.data?.public ?? []),
+      ...(features.data?.private ?? []),
+      ...(features.data?.listed_buildings ?? []),
+    ],
     [features.data],
   );
   const selected = all.find((f) => f.id === selectedId) ?? null;
@@ -421,6 +431,15 @@ export function MapPage() {
           />
           Include undated
         </label>
+        <label className="flex min-h-11 items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={listed}
+            onChange={(e) => setListed(e.target.checked)}
+            className="size-5"
+          />
+          Listed buildings
+        </label>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
@@ -554,6 +573,38 @@ export function MapPage() {
                 layer="private"
                 onSelect={setSelectedId}
               />
+              {listed && (features.data?.listed_buildings?.length ?? 0) > 0 && (
+                <details className="rounded-lg border border-line bg-surface p-3">
+                  <summary className="cursor-pointer font-semibold">
+                    <span
+                      aria-hidden="true"
+                      className="mr-2 inline-block size-3 rounded-full bg-listed align-middle"
+                    />
+                    Listed buildings standing today ({features.data!.listed_buildings!.length})
+                  </summary>
+                  <p className="mt-1 mb-1 text-sm text-muted">
+                    From Historic England's National Heritage List. Shown for every year: the date
+                    is when a building was listed, not when it was built, so check whether it stood
+                    in {year}.
+                  </p>
+                  <ul className="m-0 flex list-none flex-col gap-1 p-0">
+                    {features
+                      .data!.listed_buildings!.filter((f) => !here || here.includes(f.id))
+                      .map((f) => (
+                        <li key={f.id}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedId(f.id)}
+                            className="flex min-h-11 w-full cursor-pointer flex-col items-start rounded-lg border-0 bg-transparent px-2 py-1 text-left hover:bg-tint"
+                          >
+                            <span className="font-medium">{f.title}</span>
+                            <DateLine f={f} />
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              )}
               {(features.data?.map_names.length ?? 0) > 0 && (
                 <p className="m-0 text-sm text-muted">
                   {features.data!.map_names.length} names from the OS six-inch map (c.1888–1913) are

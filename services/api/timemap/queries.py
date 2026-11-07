@@ -82,7 +82,7 @@ class MapFeature:
     date_display: str
     year_from: int | None
     year_to: int | None
-    date_role: str  # event | made | record_covers | map_survey | undated
+    date_role: str  # event | made | record_covers | map_survey | listed | undated
     latitude: float
     longitude: float
     precision: str
@@ -323,6 +323,74 @@ def item_feature(i: MapItem) -> MapFeature:
     )
 
 
+LISTED_LIMIT = 300
+LISTED_CACHE_SECONDS = 24 * 3600  # the Heritage List is updated daily
+
+
+def _listed_buildings(bbox: BBox) -> tuple[list[MapFeature], str]:
+    """Listed buildings standing today, from the National Heritage List (OGL, live).
+
+    Shown whatever year is chosen: a listing date isn't a build date, so these aren't
+    filtered by year, and the panel says so.
+    """
+    if not bbox.small:
+        return [], "Zoom in to see listed buildings."
+    from django.core.cache import cache
+
+    from connectors.base import ConnectorError
+    from connectors.sources import get_connector
+
+    key = "nhle:" + ",".join(f"{v:.3f}" for v in (bbox.west, bbox.south, bbox.east, bbox.north))
+    cached = cache.get(key)
+    if cached is None:
+        connector = get_connector("historic-england")
+        try:
+            data = connector._query(
+                "1=1",
+                {
+                    "geometry": f"{bbox.west},{bbox.south},{bbox.east},{bbox.north}",
+                    "geometryType": "esriGeometryEnvelope",
+                    "inSR": 4326,
+                    "spatialRel": "esriSpatialRelIntersects",
+                    "resultRecordCount": LISTED_LIMIT,
+                },
+            )
+        except ConnectorError:
+            return [], "Listed buildings couldn't be loaded from Historic England just now."
+        cached = {
+            "records": [connector._record(f).to_dict() for f in data.get("features", []) or []],
+            "more": bool(data.get("exceededTransferLimit")),
+        }
+        cache.set(key, cached, LISTED_CACHE_SECONDS)
+    features = [
+        MapFeature(
+            id=f"listed:{r['id']}",
+            layer=PUBLIC,
+            kind="listed_building",
+            title=r["title"],
+            summary=r["description"],
+            date_display=r["date_text"].removeprefix("Listed "),
+            year_from=None,
+            year_to=None,
+            date_role="listed",
+            latitude=r["latitude"],
+            longitude=r["longitude"],
+            precision="exact",
+            source="National Heritage List for England (Historic England)",
+            url=r["url"],
+            extra={"connector": "historic-england", "record_id": r["id"]},
+        )
+        for r in cached["records"]
+        if r["latitude"] is not None and r["longitude"] is not None
+    ]
+    note = (
+        f"Showing the first {LISTED_LIMIT} listed buildings here; zoom in for more."
+        if cached["more"]
+        else ""
+    )
+    return features, note
+
+
 def map_features(
     user,
     bbox: BBox,
@@ -330,6 +398,7 @@ def map_features(
     year_to: int | None = None,
     undated: bool = False,
     project_id=None,
+    listed: bool = False,
 ) -> dict[str, Any]:
     project_titles = dict(visible_projects(user).values_list("id", "title"))
     if project_id and project_id not in project_titles:
@@ -351,6 +420,11 @@ def map_features(
         return (f.year_from if f.year_from is not None else 99999, f.title.lower())
 
     notes = [names_note] if names_note else []
+    listed_buildings: list[MapFeature] = []
+    if listed:
+        listed_buildings, listed_note = _listed_buildings(bbox)
+        if listed_note:
+            notes.append(listed_note)
     unplaced = Place.objects.filter(
         Q(latitude__isnull=True) | Q(longitude__isnull=True), records__isnull=False
     ).distinct()
@@ -360,5 +434,6 @@ def map_features(
         "public": [f.to_dict() for f in sorted(public, key=key)],
         "private": [f.to_dict() for f in sorted(private, key=key)],
         "map_names": [f.to_dict() for f in names],
+        "listed_buildings": [f.to_dict() for f in listed_buildings],
         "notes": notes,
     }

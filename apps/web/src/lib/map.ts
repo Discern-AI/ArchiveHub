@@ -188,6 +188,27 @@ export const familyPlacesApi = {
   ) => request<FamilyPlace>("PATCH", `/api/v1/family-places/${id}`, body),
 };
 
+export interface ProtectedArea {
+  type: "Feature";
+  id: string;
+  geometry: unknown;
+  properties: {
+    kind: "conservation_area" | "scheduled_monument" | "park_garden" | "battlefield";
+    label: string;
+    name: string;
+    designated: string;
+    url: string;
+    authority: string;
+  };
+}
+
+export interface ProtectedAreas {
+  type: "FeatureCollection";
+  features: ProtectedArea[];
+  notes: string[];
+  attribution?: string;
+}
+
 export const mapApi = {
   layers: () => request<MapLayers>("GET", "/api/v1/map/layers"),
   places: (q = "") =>
@@ -209,6 +230,11 @@ export const mapApi = {
   },
   addItem: (projectId: string, item: NewMapItem) =>
     request<MapFeature>("POST", `/api/v1/projects/${projectId}/map-items`, item),
+  areas: (bbox: BBox) =>
+    request<ProtectedAreas>(
+      "GET",
+      `/api/v1/map/areas?bbox=${bbox.map((n) => n.toFixed(3)).join(",")}`,
+    ),
   nearby: (lat: number, lng: number, name: string) =>
     request<Nearby>(
       "GET",

@@ -243,6 +243,7 @@ export function MapPage() {
   const [span, setSpan] = useState<number | null>(10);
   const [undated, setUndated] = useState(false);
   const [listed, setListed] = useState(true);
+  const [showAreas, setShowAreas] = useState(true);
   const [layerChoice, setLayerChoice] = useState<string>("auto");
   const [opacity, setOpacity] = useState(0.85);
   const [alongside, setAlongside] = useState(false);
@@ -287,6 +288,15 @@ export function MapPage() {
   const features = useQuery({
     queryKey: ["map-features", rounded, years.from, years.to, undated, listed],
     queryFn: () => mapApi.features(rounded, years, undated, null, listed),
+    placeholderData: keepPreviousData,
+  });
+  // Protected areas change slowly: ask per rough area, and keep them a while.
+  const areaBox = bbox.map((n) => Math.round(n * 100) / 100) as BBox;
+  const areas = useQuery({
+    queryKey: ["map-areas", areaBox],
+    queryFn: () => mapApi.areas(areaBox),
+    enabled: showAreas,
+    staleTime: 60 * 60 * 1000,
     placeholderData: keepPreviousData,
   });
 
@@ -463,6 +473,15 @@ export function MapPage() {
           />
           Listed buildings
         </label>
+        <label className="flex min-h-11 items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={showAreas}
+            onChange={(e) => setShowAreas(e.target.checked)}
+            className="size-5"
+          />
+          Protected areas
+        </label>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
@@ -488,6 +507,7 @@ export function MapPage() {
                     historic={historic}
                     historicOpacity={opacity}
                     names={features.data?.map_names ?? []}
+                    areas={showAreas ? (areas.data ?? null) : null}
                   />
                 </div>
               </div>
@@ -620,6 +640,42 @@ export function MapPage() {
                 layer="private"
                 onSelect={setSelectedId}
               />
+              {showAreas && (areas.data?.features.length ?? 0) > 0 && (
+                <details className="rounded-lg border border-line bg-surface p-3">
+                  <summary className="cursor-pointer font-semibold">
+                    Protected areas nearby ({areas.data!.features.length})
+                  </summary>
+                  <p className="mt-1 mb-1 text-sm text-muted">
+                    Dashed outlines on the map: conservation areas (blue), scheduled monuments
+                    (brown), parks and gardens (green), battlefields (red). The year is when each
+                    was designated. From Historic England, Open Government Licence.
+                  </p>
+                  <ul className="m-0 flex flex-col gap-1 pl-5 text-sm">
+                    {areas.data!.features.map((a) => (
+                      <li key={a.id}>
+                        {a.properties.url ? (
+                          <a href={a.properties.url} target="_blank" rel="noreferrer">
+                            {a.properties.name} ↗
+                          </a>
+                        ) : (
+                          a.properties.name
+                        )}
+                        <span className="text-muted">
+                          {" "}
+                          · {a.properties.label}
+                          {a.properties.designated ? `, ${a.properties.designated}` : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+              {showAreas &&
+                areas.data?.notes.map((n) => (
+                  <p key={n} className="m-0 text-sm text-muted">
+                    {n}
+                  </p>
+                ))}
               {listed && (features.data?.listed_buildings?.length ?? 0) > 0 && (
                 <details className="rounded-lg border border-line bg-surface p-3">
                   <summary className="cursor-pointer font-semibold">

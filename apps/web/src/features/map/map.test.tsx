@@ -339,6 +339,46 @@ describe("Listed buildings", () => {
   });
 });
 
+describe("Protected areas", () => {
+  it("lists protected areas with their designation year and links", async () => {
+    installFetch(
+      routes({
+        "GET /api/v1/map/features": () =>
+          json({ public: [], private: [], map_names: [], listed_buildings: [], notes: [] }),
+        "GET /api/v1/map/areas": () =>
+          json({
+            type: "FeatureCollection",
+            notes: [],
+            features: [
+              {
+                type: "Feature",
+                id: "battlefield:1",
+                geometry: null,
+                properties: {
+                  kind: "battlefield",
+                  label: "Registered battlefield",
+                  name: "Battle of Newbury 1643",
+                  designated: "1995",
+                  url: "https://historicengland.org.uk/listing/the-list/list-entry/1000002",
+                  authority: "",
+                },
+              },
+            ],
+          }),
+      }),
+    );
+    renderAt("/map");
+    await userEvent.click(await screen.findByText("Protected areas nearby (1)"));
+    expect(screen.getByRole("link", { name: /Battle of Newbury 1643/ })).toHaveAttribute(
+      "href",
+      "https://historicengland.org.uk/listing/the-list/list-entry/1000002",
+    );
+    expect(screen.getByText(/Registered battlefield, 1995/)).toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText("Protected areas"));
+    expect(screen.queryByText("Protected areas nearby (1)")).not.toBeInTheDocument();
+  });
+});
+
 describe("layerForYear", () => {
   const layers: HistoricLayer[] = [
     SIX_INCH,

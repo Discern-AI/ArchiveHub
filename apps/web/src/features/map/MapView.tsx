@@ -9,7 +9,13 @@ import "maplibre-gl/dist/maplibre-gl.css";
 // MapLibre finds its worker relative to its own file, which bundling breaks, so Vite
 // bundles the worker and we pass its URL.
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { groupPins, type BBox, type HistoricLayer, type MapFeature } from "../../lib/map";
+import {
+  groupPins,
+  type BBox,
+  type HistoricLayer,
+  type MapFeature,
+  type ProtectedAreas,
+} from "../../lib/map";
 
 export interface View {
   lat: number;
@@ -32,6 +38,8 @@ export interface MapViewProps {
   onSelectMany: (ids: string[]) => void;
   placing: boolean;
   onPlace: (lat: number, lng: number) => void;
+  /** Protected areas (GeoJSON outlines), drawn under the pins. */
+  areas?: ProtectedAreas | null;
 }
 
 const PIN =
@@ -134,7 +142,34 @@ export default function MapView(props: MapViewProps) {
           );
         });
         map.on("click", (e) => {
-          if (latest.current.placing) latest.current.onPlace(e.lngLat.lat, e.lngLat.lng);
+          if (latest.current.placing) {
+            latest.current.onPlace(e.lngLat.lat, e.lngLat.lng);
+            return;
+          }
+          // Clicking a protected area shows what it is, with a link to its entry.
+          const hit = map?.getLayer("areas-fill")
+            ? map.queryRenderedFeatures(e.point, { layers: ["areas-fill"] })[0]
+            : undefined;
+          if (!hit || !map) return;
+          const p = hit.properties as Record<string, string>;
+          const box = document.createElement("div");
+          const title = document.createElement("strong");
+          title.textContent = p.name;
+          const what = document.createElement("div");
+          what.textContent = `${p.label}${p.designated ? `, designated ${p.designated}` : ""}`;
+          box.append(title, what);
+          if (p.url) {
+            const link = document.createElement("a");
+            link.href = p.url;
+            link.target = "_blank";
+            link.rel = "noreferrer";
+            link.textContent = "Historic England entry ↗";
+            box.append(link);
+          }
+          new ml.Popup({ closeButton: true, maxWidth: "260px" })
+            .setLngLat(e.lngLat)
+            .setDOMContent(box)
+            .addTo(map);
         });
         map.on("error", (e) => {
           // Tile hiccups are normal; only say so if the map itself didn't start.
@@ -181,9 +216,63 @@ export default function MapView(props: MapViewProps) {
         source: "historic",
         paint: { "raster-opacity": latest.current.historicOpacity },
       },
-      map.getLayer("old-map-names") ? "old-map-names" : undefined,
+      map.getLayer("areas-fill")
+        ? "areas-fill"
+        : map.getLayer("old-map-names")
+          ? "old-map-names"
+          : undefined,
     );
   }, [tilejson, attribution, ready]);
+
+  // Protected areas, coloured by kind, under the labels and pins.
+  const areas = props.areas;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const data = areas ?? { type: "FeatureCollection", features: [] };
+    const source = map.getSource("areas") as { setData?: (d: unknown) => void } | undefined;
+    if (source?.setData) {
+      source.setData(data);
+      return;
+    }
+    map.addSource("areas", {
+      type: "geojson",
+      data: data as never,
+      attribution: areas?.attribution,
+    });
+    const colour = [
+      "match",
+      ["get", "kind"],
+      "conservation_area",
+      "#2f6f8f",
+      "scheduled_monument",
+      "#8a4b0f",
+      "park_garden",
+      "#3f7a3a",
+      "battlefield",
+      "#9b2c2c",
+      "#555555",
+    ] as never;
+    const before = map.getLayer("old-map-names") ? "old-map-names" : undefined;
+    map.addLayer(
+      {
+        id: "areas-fill",
+        type: "fill",
+        source: "areas",
+        paint: { "fill-color": colour, "fill-opacity": 0.12 },
+      },
+      before,
+    );
+    map.addLayer(
+      {
+        id: "areas-line",
+        type: "line",
+        source: "areas",
+        paint: { "line-color": colour, "line-width": 1.5, "line-dasharray": [3, 2] },
+      },
+      before,
+    );
+  }, [areas, ready]);
 
   useEffect(() => {
     const map = mapRef.current;

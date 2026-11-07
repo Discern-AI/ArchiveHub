@@ -404,3 +404,51 @@ def test_what_else_is_known_here(ref, alice, alice_client, project, monkeypatch)
     nowhere = alice_client.get(url, {"lat": 51.3984, "lng": -1.3214, "name": "Some House"}).json()
     assert nowhere["street"] is None and nowhere["gazette"] is None
     assert alice_client.get(url, {"lat": 95, "lng": 0}).status_code == 422
+
+
+def test_protected_areas_are_live_cached_and_labelled(alice_client, monkeypatch):
+    from django.core.cache import cache
+
+    from connectors.base import Unavailable
+    from timemap import areas
+
+    cache.clear()
+    seen = []
+    square = {
+        "type": "Polygon",
+        "coordinates": [[[-1.33, 51.39], [-1.32, 51.39], [-1.32, 51.40], [-1.33, 51.39]]],
+    }
+
+    def fake(url, params, timeout=10.0, headers=None):
+        seen.append(url)
+        if "/8/" in url:
+            raise Unavailable("down")
+        if "Conservation_Areas" in url:
+            props = {
+                "UID": 1957,
+                "NAME": "Newbury Town Centre",
+                "DATE_OF_DE": "03/1971",
+                "LPA": "West Berkshire",
+            }
+        else:
+            props = {"ListEntry": 1, "Name": "Donnington Castle", "SchedDate": -1420070400000,
+                     "hyperlink": "https://historicengland.org.uk/listing/the-list/list-entry/1"}  # fmt: skip
+        return {"features": [{"geometry": square, "properties": props}]}
+
+    monkeypatch.setattr(areas, "http_get_json", fake)
+    data = alice_client.get("/api/v1/map/areas", {"bbox": NEWBURY}).json()
+    names = {f["properties"]["name"]: f["properties"] for f in data["features"]}
+    assert names["Newbury Town Centre"]["designated"] == "1971"
+    assert names["Newbury Town Centre"]["label"] == "Conservation area"
+    monument = next(
+        f["properties"] for f in data["features"] if f["properties"]["kind"] == "scheduled_monument"
+    )
+    assert monument["designated"] == "1925" and monument["url"]
+    assert any("battlefields couldn't be loaded" in n.lower() for n in data["notes"])
+    assert "Open Government Licence" in data["attribution"]
+    # A failed layer isn't cached, so the next look tries again.
+    alice_client.get("/api/v1/map/areas", {"bbox": NEWBURY})
+    assert len(seen) == 8
+    wide = alice_client.get("/api/v1/map/areas", {"bbox": "-3,50,-1,52"}).json()
+    assert wide["features"] == [] and "Zoom in" in wide["notes"][0]
+    assert alice_client.get("/api/v1/map/areas", {"bbox": "x"}).status_code == 422

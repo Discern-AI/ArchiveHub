@@ -19,6 +19,8 @@ from history.models import DatePrecision, Place
 from interviews.models import InterviewSession
 from projects.permissions import editable_projects, visible_projects
 
+from .areas import ATTRIBUTION as AREAS_ATTRIBUTION
+from .areas import protected_areas
 from .family import EVENT_LABELS, locate_places, location_json, text_key, tree_places
 from .models import ItemKind, LocationStatus, MapItem, PlaceLocation
 from .nearby import nearby
@@ -135,6 +137,16 @@ def features(
     if lo is not None and hi is not None and lo > hi:
         lo, hi = hi, lo
     return map_features(request.user, box, lo, hi, undated, project_id, listed)
+
+
+@router.get("/map/areas")
+def areas(request: HttpRequest, bbox: str) -> dict[str, Any]:
+    """Protected areas (conservation areas, scheduled monuments, parks, battlefields)."""
+    try:
+        box = BBox.parse(bbox)
+    except ValueError as exc:
+        raise HttpError(422, "The map area wasn't understood.") from exc
+    return {**protected_areas(box), "attribution": AREAS_ATTRIBUTION}
 
 
 @router.get("/map/nearby")

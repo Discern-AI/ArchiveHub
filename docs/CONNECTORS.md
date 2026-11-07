@@ -1,6 +1,6 @@
 # Live connectors: keys and setup
 
-Each connector stays switched off, and is listed in the Explorer as "not available here yet", until its key is set in `services/api/.env` (ADR-034). Restart the API after adding a key. Never commit keys.
+Each connector stays switched off, and is listed in the Explorer as "not available here yet", until its key is set in `services/api/.env` (ADR-034). Restart the API after adding a key, then run `python manage.py check_connectors` to see which sources work. Never commit keys.
 
 | Source | Setting | How to get access | Terms to know | Tested against the real service |
 |---|---|---|---|---|

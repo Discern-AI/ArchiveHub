@@ -608,3 +608,18 @@ def test_openalex_uses_a_key_only_when_set(calls, settings):
     record = CONNECTORS["openalex"].search("Newbury").records[0]
     assert calls[-1]["params"]["api_key"] == "oa-secret"
     assert record.url == "https://doi.org/10.1/abc" and record.date_text == "2007"
+
+
+def test_check_connectors_reports_each_source(calls, settings):
+    from io import StringIO
+
+    from django.core.management import call_command
+
+    settings.TROVE_API_KEY = ""
+    out = StringIO()
+    call_command("check_connectors", "--source", "europeana", "--source", "trove", stdout=out)
+    text = out.getvalue()
+    assert "WORKS" in text and "europeana" in text and "Map of the Country" in text
+    assert "NOT SET UP" in text and "Trove API key" in text
+    assert "1 works, 1 not set up." in text
+    assert "eu-secret" not in text  # keys never printed

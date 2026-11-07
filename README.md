@@ -16,6 +16,7 @@ Optional: install [Tesseract](https://github.com/tesseract-ocr/tesseract) for pr
 - [docs/DECISIONS.md](docs/DECISIONS.md) — architecture and product decisions
 - [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) — historical data sources and their status
 - [docs/SOURCE_REGISTER.md](docs/SOURCE_REGISTER.md) — every connector, database, website and program we use or could use
+- [docs/OWNER_ACTIONS.md](docs/OWNER_ACTIONS.md) — **everything waiting on the owner**: keys, applications, partners, real-world checks, decisions
 - [docs/OUTREACH.md](docs/OUTREACH.md) — ready-to-send requests for keys, access and partnerships
 - [docs/CONNECTORS.md](docs/CONNECTORS.md) — live sources that need a key, and how to switch them on
 - [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) — third-party code and licences

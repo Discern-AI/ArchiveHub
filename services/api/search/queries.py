@@ -12,6 +12,7 @@ when hosted datasets need them (ADR-033).
 from __future__ import annotations
 
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
 from dataclasses import asdict, dataclass, field
 from functools import reduce
 from operator import and_, or_
@@ -20,7 +21,9 @@ from typing import Any
 from django.db.models import Q
 
 from archive.models import Derivative, FileAsset, FileKind
+from connectors.base import ConnectorError
 from connectors.models import DatasetRow
+from connectors.sources import get_connector
 from history.models import Organisation, Person, Place, Source, SourceRecord
 from history.queries import terms
 from interviews.models import Segment
@@ -55,6 +58,8 @@ class Group:
     results: list[Result]
     count: int
     more: bool
+    live: bool = False  # searched on an outside service just now
+    error: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -73,9 +78,9 @@ NOT_SEARCHED = [
         "reason": "The directory of historians, researchers and services isn't open yet.",
     },
     {
-        "label": "Live sources (Wikidata, Europeana, The National Archives and others)",
-        "reason": "Searched live, one source at a time: open them in the Archive Explorer "
-        "or ask the assistant.",
+        "label": "Museum collections (the Met, Art Institute of Chicago)",
+        "reason": "Each result needs its own request, so they're searched in the Archive "
+        "Explorer or by the assistant.",
     },
     {
         "label": "Sources we only link to",
@@ -356,14 +361,126 @@ PUBLIC_GROUPS = [_places, _organisations, _records, _map_names, _directory]
 PRIVATE_GROUPS = [_map_items, _files, _transcripts, _people]
 
 
-def search_everything(user, query: str) -> dict[str, Any]:
+# Outside sources Search can ask at once, each with a single request (ADR-037).
+LIVE_SEARCH = [
+    "the-gazette",
+    "historic-england",
+    "tna-discovery",
+    "openalex",
+    "europeana",
+    "wikidata",
+    "geograph",
+    "digitalnz",
+    "trove",
+    "dpla",
+]
+LIVE_PER_SOURCE = 5
+LIVE_TIMEOUT = 12.0  # seconds for all outside sources together
+
+
+def _live_group(connector, query: str) -> Group:
+    from django.db import close_old_connections
+
+    try:
+        page = connector.search(query, page_size=LIVE_PER_SOURCE)
+    except ConnectorError as exc:
+        return Group(
+            key=f"live:{connector.key}",
+            label=connector.name,
+            layer="public",
+            searched=f"{connector.name} (live)",
+            results=[],
+            count=0,
+            more=False,
+            live=True,
+            error=exc.user_message,
+        )
+    finally:
+        close_old_connections()  # this runs in a worker thread
+    return Group(
+        key=f"live:{connector.key}",
+        label=connector.name,
+        layer="public",
+        searched=page.searched or f"{connector.name} (live)",
+        results=[
+            Result(
+                id=f"{connector.key}:{r.id}",
+                title=r.title,
+                snippet=r.description,
+                date=r.date_text,
+                source=r.attribution or connector.name,
+                url=r.url,
+                extra={"connector": connector.key, "record_id": r.id, "rights": r.rights},
+            )
+            for r in page.records
+        ],
+        count=len(page.records),
+        more=bool(page.next_cursor),
+        live=True,
+    )
+
+
+def search_live(query: str) -> tuple[list[Group], list[dict[str, str]]]:
+    """Ask every set-up outside source at once; say which weren't set up or didn't answer."""
+    chosen, not_set_up = [], []
+    for key in LIVE_SEARCH:
+        connector = get_connector(key)
+        if hasattr(connector, "configured") and not connector.configured():
+            not_set_up.append({"label": connector.name, "reason": "Not set up on this server yet."})
+        else:
+            chosen.append(connector)
+    groups: dict[str, Group] = {}
+    pool = ThreadPoolExecutor(max_workers=min(8, len(chosen) or 1))
+    futures = {pool.submit(_live_group, c, query): c for c in chosen}
+    try:
+        for future in as_completed(futures, timeout=LIVE_TIMEOUT):
+            group = future.result()
+            groups[group.key] = group
+    except TimeoutError:
+        pass
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+    ordered = []
+    for c in chosen:
+        ordered.append(
+            groups.get(f"live:{c.key}")
+            or Group(
+                key=f"live:{c.key}",
+                label=c.name,
+                layer="public",
+                searched=f"{c.name} (live)",
+                results=[],
+                count=0,
+                more=False,
+                live=True,
+                error="Didn't answer in time.",
+            )
+        )
+    return ordered, not_set_up
+
+
+def search_everything(user, query: str, live: bool = False) -> dict[str, Any]:
     words = terms(query)
+    not_searched = list(NOT_SEARCHED)
+    if not live:
+        not_searched.insert(
+            0,
+            {
+                "label": "Outside sources (The Gazette, Historic England and others)",
+                "reason": "Only when you tick “Also search outside sources”, because your "
+                "search words are sent to them.",
+            },
+        )
     if not words:
-        return {"query": query, "words": [], "groups": [], "not_searched": NOT_SEARCHED}
+        return {"query": query, "words": [], "groups": [], "not_searched": not_searched}
     groups = [g(words) for g in PUBLIC_GROUPS] + [g(user, words) for g in PRIVATE_GROUPS]
+    if live:
+        live_groups, not_set_up = search_live(query.strip()[:200])
+        groups += live_groups
+        not_searched = not_set_up + not_searched
     return {
         "query": query,
         "words": words,
         "groups": [g.to_dict() for g in groups],
-        "not_searched": NOT_SEARCHED,
+        "not_searched": not_searched,
     }

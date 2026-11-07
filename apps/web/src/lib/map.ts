@@ -102,6 +102,9 @@ export interface SearchGroup {
   results: SearchResult[];
   count: number;
   more: boolean;
+  /** Searched on an outside service just now. */
+  live?: boolean;
+  error?: string;
 }
 
 export interface SearchResponse {
@@ -151,8 +154,11 @@ export const mapApi = {
   addItem: (projectId: string, item: NewMapItem) =>
     request<MapFeature>("POST", `/api/v1/projects/${projectId}/map-items`, item),
   deleteItem: (itemId: string) => request<void>("DELETE", `/api/v1/map-items/${itemId}`),
-  search: (q: string) =>
-    request<SearchResponse>("GET", `/api/v1/search?q=${encodeURIComponent(q)}`),
+  search: (q: string, live = false) =>
+    request<SearchResponse>(
+      "GET",
+      `/api/v1/search?q=${encodeURIComponent(q)}${live ? "&live=true" : ""}`,
+    ),
 };
 
 /** The historic layer to show for a year: the one whose years contain it, if any. */

@@ -93,6 +93,46 @@ describe("Search", () => {
     expect(calls.some((c) => c.path === "/api/v1/search?q=Pigeons")).toBe(true);
   });
 
+  it("asks outside sources only when ticked, and says which couldn't be searched", async () => {
+    const calls = installFetch({
+      ...base,
+      "GET /api/v1/search": (url) =>
+        json({
+          query: "Spracklen",
+          words: ["spracklen"],
+          groups: url.searchParams.get("live")
+            ? [
+                {
+                  ...group("live:the-gazette", "The Gazette", "public", [
+                    {
+                      title: "The London Gazette, Issue 28538",
+                      url: "https://www.thegazette.co.uk/x",
+                    },
+                  ]),
+                  live: true,
+                },
+                {
+                  ...group("live:openalex", "OpenAlex", "public"),
+                  live: true,
+                  error: "Didn't answer in time.",
+                },
+              ]
+            : [group("records", "Checked records", "public")],
+          not_searched: NOT_SEARCHED,
+        }),
+    });
+    renderAt("/search");
+    expect(await screen.findByText(/leave out the names of living people/)).toBeInTheDocument();
+    await userEvent.type(await screen.findByRole("searchbox"), "Spracklen");
+    await userEvent.click(screen.getByRole("checkbox"));
+    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+    const gazette = await screen.findByRole("region", { name: "The Gazette" });
+    expect(within(gazette).getByText("Searched live")).toBeInTheDocument();
+    expect(screen.getByText("Outside sources, searched live")).toBeInTheDocument();
+    expect(screen.getByText(/OpenAlex: Didn't answer in time/)).toBeInTheDocument();
+    expect(calls.some((c) => c.path === "/api/v1/search?q=Spracklen&live=true")).toBe(true);
+  });
+
   it("never treats no results as proof", async () => {
     installFetch({
       ...base,

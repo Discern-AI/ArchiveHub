@@ -166,3 +166,55 @@ def test_snippet():
     s = snippet(text, ["pigeons"])
     assert "Pigeons" in s and s.startswith("…") and s.endswith("…") and len(s) < 220
     assert snippet("", ["x"]) == ""
+
+
+@pytest.fixture
+def live_sources(monkeypatch, settings):
+    """Every outside source answers from a stand-in; one fails and one is slow."""
+    import time
+
+    from connectors.base import ConnectorRecord, Page, Unavailable
+    from connectors.sources import CONNECTORS
+    from search import queries
+
+    settings.TNA_DISCOVERY_ENABLED = False
+    sent = []
+
+    def answer(key):
+        def search(query, cursor=None, page_size=25):
+            sent.append((key, query))
+            if key == "historic-england":
+                raise Unavailable("down")
+            if key == "openalex":
+                time.sleep(0.5)
+            record = ConnectorRecord(
+                connector=key, id="1", title=f"{key} result", url="https://example.org/1"
+            )
+            return Page(records=[record], next_cursor="x", searched=f"{key} for {query}")
+
+        return search
+
+    for key in queries.LIVE_SEARCH:
+        monkeypatch.setattr(CONNECTORS[key], "search", answer(key))
+    monkeypatch.setattr(queries, "LIVE_TIMEOUT", 0.3)
+    return sent
+
+
+def test_outside_sources_only_when_asked(ref, alice_client, live_sources):
+    data, groups = search(alice_client, "Pigeons")
+    assert not any(k.startswith("live:") for k in groups) and live_sources == []
+    assert data["not_searched"][0]["label"].startswith("Outside sources")
+
+
+def test_outside_sources_say_what_happened(ref, alice_client, live_sources):
+    data = alice_client.get("/api/v1/search", {"q": "Pigeons Newbury", "live": "true"}).json()
+    groups = {g["key"]: g for g in data["groups"]}
+    gazette = groups["live:the-gazette"]
+    assert gazette["live"] and gazette["count"] == 1 and gazette["more"]
+    assert gazette["results"][0]["url"] == "https://example.org/1"
+    assert groups["live:historic-england"]["error"] == "This source isn't responding right now."
+    assert groups["live:openalex"]["error"] == "Didn't answer in time."
+    not_searched = {n["label"] for n in data["not_searched"]}
+    assert "The National Archives: Discovery" in not_searched  # not set up here
+    assert not any(n.startswith("Outside sources") for n in not_searched)
+    assert ("the-gazette", "Pigeons Newbury") in live_sources

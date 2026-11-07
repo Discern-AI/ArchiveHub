@@ -18,6 +18,12 @@
 - **Search** (`/search`, top bar → Search): places, pubs and businesses, checked records, names on the c.1900 map and the source directory (public), plus your map items, Archive files (names and text read from them), interview transcript lines and family-tree people (private, marked "Private"). Each group says exactly what it looked at. A **"What was searched / Not searched"** block lists forums and the services directory (not open until WP8), live sources (searched one at a time in the Explorer) and link-out sources. An empty result says plainly that it isn't proof of absence (ADR-033).
 - **Server:** `services/api/timemap` (map items, area/year queries, layers) and `services/api/search`. Places now carry where their coordinates come from (`Place.geocode_source`); Newbury, Cheap Street and Greenham Road are placed from the old map names. Locations stay as latitude/longitude (ADR-030, superseding ADR-019's PostGIS plan).
 
+## Added after the first build (7 Nov 2026)
+
+- **Listed buildings layer** on the time map (ADR-037): 52 around Cheap Street, live from Historic England, with the listing date explained.
+- **Outside sources in Search** (opt-in, ADR-037): The Gazette, Historic England and OpenAlex today; others as their keys are set (docs/CONNECTORS.md).
+- **Connectors:** 13 live sources added (ADR-034 to ADR-036); see docs/SOURCE_REGISTER.md.
+
 ## Privacy checks (tests)
 
 - Another person never sees your map items, project claims, files, transcript lines or family-tree people in the map or in Search, and can't change or delete your items.

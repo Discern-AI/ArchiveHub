@@ -56,6 +56,11 @@ function GroupCard({ g }: { g: SearchGroup }) {
             Private
           </span>
         )}
+        {g.live && (
+          <span className="rounded-full bg-tint px-2 py-0.5 text-xs font-semibold">
+            Searched live
+          </span>
+        )}
       </h3>
       <ul className="m-0 list-none p-0">
         {g.results.map((r) => (
@@ -74,22 +79,30 @@ function GroupCard({ g }: { g: SearchGroup }) {
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
+  const live = params.get("live") === "1";
   const [text, setText] = useState(q);
+  const [outside, setOutside] = useState(live);
   const results = useQuery({
-    queryKey: ["search", q],
-    queryFn: () => mapApi.search(q),
+    queryKey: ["search", q, live],
+    queryFn: () => mapApi.search(q, live),
     enabled: q.trim().length > 0,
   });
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    setParams(text.trim() ? { q: text.trim() } : {});
+    const next: Record<string, string> = {};
+    if (text.trim()) next.q = text.trim();
+    if (outside) next.live = "1";
+    setParams(next);
   }
 
   const data = results.data;
   const found = data?.groups.filter((g) => g.count > 0) ?? [];
   const empty = data?.groups.filter((g) => g.count === 0) ?? [];
-  const publicFound = found.filter((g) => g.layer === "public");
+  const publicFound = found.filter((g) => g.layer === "public" && !g.live);
+  const liveGroups = data?.groups.filter((g) => g.live) ?? [];
+  const liveFound = liveGroups.filter((g) => g.count > 0);
+  const liveProblems = liveGroups.filter((g) => g.error);
   const privateFound = found.filter((g) => g.layer === "private");
 
   return (
@@ -121,6 +134,20 @@ export function SearchPage() {
           Search
         </button>
       </form>
+      <label className="-mt-3 flex min-h-11 items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={outside}
+          onChange={(e) => setOutside(e.target.checked)}
+          className="size-5"
+        />
+        <span>
+          Also search outside sources (The Gazette, Historic England, OpenAlex and others).{" "}
+          <span className="text-muted">
+            Your search words are sent to them, so leave out the names of living people.
+          </span>
+        </span>
+      </label>
 
       {results.isPending && q && <p className="m-0 text-muted">Searching…</p>}
       {results.isError && <p className="m-0 text-warning">{(results.error as Error).message}</p>}
@@ -145,6 +172,22 @@ export function SearchPage() {
               ))}
             </div>
           )}
+          {liveFound.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <h2 className="m-0 text-lg font-semibold">Outside sources, searched live</h2>
+              <p className="m-0 text-sm text-muted">
+                A name match is a possible match, not the same person. Open each result to check it.
+              </p>
+              {liveFound.map((g) => (
+                <GroupCard key={g.key} g={g} />
+              ))}
+            </div>
+          )}
+          {liveProblems.length > 0 && (
+            <p className="m-0 text-sm text-warning">
+              {liveProblems.map((g) => `${g.label}: ${g.error}`).join(" ")}
+            </p>
+          )}
           {privateFound.length > 0 && (
             <div className="flex flex-col gap-3">
               <h2 className="m-0 text-lg font-semibold">Your private material</h2>
@@ -165,7 +208,11 @@ export function SearchPage() {
                   <strong>{g.label}</strong>
                   {g.layer === "private" ? " (yours)" : ""}: {g.searched}.{" "}
                   <span className="text-muted">
-                    {g.count === 0 ? "No matches." : `${g.count >= 50 ? "50+" : g.count} found.`}
+                    {g.error
+                      ? `Couldn't be searched: ${g.error}`
+                      : g.count === 0
+                        ? "No matches."
+                        : `${g.count >= 50 ? "50+" : g.count} found.`}
                   </span>
                 </li>
               ))}

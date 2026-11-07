@@ -59,7 +59,15 @@ function pinElement(group: MapFeature[], selectedId: string | null): HTMLButtonE
         ? "size-5 rounded-full bg-listed text-[10px]"
         : "size-7 rounded-full bg-accent"
   } ${selected ? "outline-3 outline-focus" : ""}`;
-  el.textContent = many ? String(group.length) : isPrivate ? "P" : isListed ? "L" : "";
+  el.textContent = many
+    ? String(group.length)
+    : f.kind === "family_event"
+      ? "F"
+      : isPrivate
+        ? "P"
+        : isListed
+          ? "L"
+          : "";
   return el;
 }
 

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any, Literal
 from uuid import UUID
 
 from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from ninja import Router, Schema, Status
 from ninja.errors import HttpError
 
@@ -17,7 +19,8 @@ from history.models import DatePrecision, Place
 from interviews.models import InterviewSession
 from projects.permissions import editable_projects, visible_projects
 
-from .models import ItemKind, MapItem
+from .family import EVENT_LABELS, locate_places, location_json, text_key, tree_places
+from .models import ItemKind, LocationStatus, MapItem, PlaceLocation
 from .nearby import nearby
 from .queries import BBox, item_feature, map_features
 
@@ -139,6 +142,77 @@ def what_is_here(request: HttpRequest, lat: float, lng: float, name: str = "") -
     """What else is known at a spot: c.1900 map names, records for the street, Gazette."""
     _check_point(lat, lng)
     return nearby(request.user, lat, lng, name[:200])
+
+
+# --- Places in a family tree -----------------------------------------------------------
+
+
+@router.get("/projects/{project_id}/family-places")
+def family_places(request: HttpRequest, project_id: UUID) -> dict[str, Any]:
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    places = tree_places(project)
+    uses = Counter(text_key(t) for t in _place_claim_values(project))
+    located = {loc.text_key: loc for loc in PlaceLocation.objects.filter(project=project)}
+    return {
+        "places": [
+            location_json(loc, uses.get(key, 0)) for key, loc in located.items() if key in places
+        ],
+        "not_looked_up": len([k for k in places if k not in located]),
+    }
+
+
+def _place_claim_values(project):
+    from django.contrib.contenttypes.models import ContentType
+
+    from history.models import Assertion, Person
+
+    return Assertion.objects.filter(
+        project=project,
+        subject_type=ContentType.objects.get_for_model(Person),
+        predicate__in=[f"{label} place" for label in EVENT_LABELS],
+    ).values_list("value", flat=True)
+
+
+@router.post("/projects/{project_id}/family-places/locate")
+def locate_family_places(request: HttpRequest, project_id: UUID) -> dict[str, Any]:
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    result = locate_places(project)
+    audit(request.user, "family_places.locate", project, **result)
+    return result
+
+
+class PlacePatch(Schema):
+    status: Literal["confirmed", "rejected"] | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    precision: Literal["exact", "street", "parish", "town", "inferred"] | None = None
+
+
+@router.patch("/family-places/{location_id}")
+def update_family_place(request: HttpRequest, location_id: UUID, payload: PlacePatch) -> dict:
+    loc = get_object_or_404(
+        PlaceLocation, pk=location_id, project__in=editable_projects(request.user)
+    )
+    if payload.latitude is not None or payload.longitude is not None:
+        if payload.latitude is None or payload.longitude is None:
+            raise HttpError(422, "Give both a latitude and a longitude.")
+        _check_point(payload.latitude, payload.longitude)
+        loc.latitude, loc.longitude = payload.latitude, payload.longitude
+        loc.precision = payload.precision or "inferred"
+        loc.method = "user"
+        loc.source = "Placed on the map by a project member"
+        loc.candidates = 1
+        loc.status = LocationStatus.CONFIRMED
+    elif payload.status:
+        if payload.status == "confirmed" and loc.latitude is None:
+            raise HttpError(422, "There's no location to confirm. Place it on the map instead.")
+        loc.status = payload.status
+    else:
+        raise HttpError(422, "Nothing to change.")
+    loc.decided_by, loc.decided_at = request.user, timezone.now()
+    loc.save()
+    audit(request.user, "family_places.update", loc, status=loc.status, method=loc.method)
+    return location_json(loc)
 
 
 # --- A project's own items ------------------------------------------------------------

@@ -153,6 +153,41 @@ export interface Nearby {
   notes: string[];
 }
 
+export interface FamilyPlace {
+  id: string;
+  text: string;
+  latitude: number | null;
+  longitude: number | null;
+  precision: string;
+  source: string;
+  method: string;
+  candidates: number;
+  status: "suggested" | "confirmed" | "rejected" | "not_found";
+  uses: number;
+}
+
+export const familyPlacesApi = {
+  list: (projectId: string) =>
+    request<{ places: FamilyPlace[]; not_looked_up: number }>(
+      "GET",
+      `/api/v1/projects/${projectId}/family-places`,
+    ),
+  locate: (projectId: string) =>
+    request<{ suggested: number; not_found: number }>(
+      "POST",
+      `/api/v1/projects/${projectId}/family-places/locate`,
+    ),
+  update: (
+    id: string,
+    body: {
+      status?: "confirmed" | "rejected";
+      latitude?: number;
+      longitude?: number;
+      precision?: string;
+    },
+  ) => request<FamilyPlace>("PATCH", `/api/v1/family-places/${id}`, body),
+};
+
 export const mapApi = {
   layers: () => request<MapLayers>("GET", "/api/v1/map/layers"),
   places: (q = "") =>

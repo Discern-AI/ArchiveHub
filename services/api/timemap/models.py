@@ -65,3 +65,48 @@ class MapItem(DatedMixin, BaseModel):
 
     def __str__(self) -> str:
         return self.title
+
+
+class LocationStatus(models.TextChoices):
+    SUGGESTED = "suggested", "Suggested"
+    CONFIRMED = "confirmed", "Confirmed"
+    REJECTED = "rejected", "Wrong place"
+    NOT_FOUND = "not_found", "Not found"
+
+
+class PlaceLocation(BaseModel):
+    """Where a place written in a family tree is, as suggested by a source or set by a person.
+
+    A suggestion is never treated as certain: it says where it came from and how precise
+    it is, and a person can confirm it, reject it or put it somewhere else.
+    """
+
+    project = models.ForeignKey(
+        "projects.Project", on_delete=models.CASCADE, related_name="place_locations"
+    )
+    text = models.CharField(max_length=300, help_text="The place as written in the tree")
+    text_key = models.CharField(max_length=300)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    precision = models.CharField(
+        max_length=10, choices=GeocodePrecision.choices, default=GeocodePrecision.UNKNOWN
+    )
+    source = models.CharField(max_length=300, blank=True)
+    method = models.CharField(max_length=20, blank=True)  # place | old-map-names | geonames | user
+    candidates = models.PositiveIntegerField(default=0)
+    status = models.CharField(
+        max_length=10, choices=LocationStatus.choices, default=LocationStatus.SUGGESTED
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["text"]
+        constraints = [
+            models.UniqueConstraint(fields=["project", "text_key"], name="unique_place_text")
+        ]
+
+    def __str__(self) -> str:
+        return self.text

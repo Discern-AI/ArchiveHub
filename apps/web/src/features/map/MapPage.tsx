@@ -1,10 +1,11 @@
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import {
   boxAround,
   DATE_ROLE_LABELS,
   layerForYear,
+  familyPlacesApi,
   mapApi,
   PRECISION_LABELS,
   type BBox,
@@ -218,6 +219,7 @@ function FeatureDetail({
 
 export function MapPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const layers = useQuery({ queryKey: ["map-layers"], queryFn: mapApi.layers });
   const places = useQuery({ queryKey: ["map-places"], queryFn: () => mapApi.places() });
@@ -244,6 +246,21 @@ export function MapPage() {
     params.get("item") ? `item:${params.get("item")}` : null,
   );
   const [adding, setAdding] = useState(false);
+  // Placing a family-tree place by hand (from the family page).
+  const fixId = params.get("fix");
+  const backParam = params.get("back") ?? "";
+  const fixBack = backParam.startsWith("/projects/") ? backParam : "/map";
+  const [fixError, setFixError] = useState<string | null>(null);
+  async function saveFix(lat: number, lng: number) {
+    try {
+      await familyPlacesApi.update(fixId!, { latitude: lat, longitude: lng, precision: "town" });
+      await qc.invalidateQueries({ queryKey: ["family-places"] });
+      await qc.invalidateQueries({ queryKey: ["map-features"] });
+      navigate(fixBack);
+    } catch (err) {
+      setFixError((err as Error).message);
+    }
+  }
   // Items sharing one pin, chosen on the map: the lists show just those.
   const [here, setHere] = useState<string[] | null>(null);
   const [point, setPoint] = useState<{ lat: number; lng: number } | null>(null);
@@ -322,8 +339,8 @@ export function MapPage() {
       setSelectedId(null);
       setHere(ids);
     },
-    placing: adding,
-    onPlace: (lat: number, lng: number) => setPoint({ lat, lng }),
+    placing: adding || !!fixId,
+    onPlace: (lat: number, lng: number) => (fixId ? saveFix(lat, lng) : setPoint({ lat, lng })),
   };
 
   return (
@@ -496,7 +513,31 @@ export function MapPage() {
           aria-label="What's here"
           className="flex w-full flex-col gap-3 overflow-y-auto border-t border-line bg-page p-4 md:w-[380px] md:shrink-0 md:border-t-0 md:border-l"
         >
-          {adding ? (
+          {fixId ? (
+            <div className="flex flex-col gap-3" aria-live="polite">
+              <h2 className="m-0 font-serif text-2xl font-semibold">Place it on the map</h2>
+              <p className="m-0">
+                Click the map where <strong>{params.get("label") ?? "this place"}</strong> is. It's
+                saved as your project's own placement, at town level, and its family events move
+                there.
+              </p>
+              {fixError && <p className="m-0 text-warning">{fixError}</p>}
+              <button
+                type="button"
+                onClick={() => saveFix(view.lat, view.lng)}
+                className="min-h-11 cursor-pointer self-start rounded-lg border border-control bg-surface px-3"
+              >
+                Use the middle of the map
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(fixBack)}
+                className="min-h-11 cursor-pointer self-start rounded-lg border-0 bg-transparent px-0 text-accent"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : adding ? (
             <AddItemForm
               point={point}
               view={view}

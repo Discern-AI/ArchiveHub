@@ -409,6 +409,9 @@ def map_features(
     claims = _claims(user, bbox, year_from, year_to, undated, project_titles)
     names, names_note = _map_names(bbox, year_from, year_to)
     private = _items(user, bbox, year_from, year_to, undated, project_id)
+    from .family import family_events
+
+    private += family_events(user, bbox, year_from, year_to, undated, project_titles, project_id)
     public += [c for c in claims if c.layer == PUBLIC]
     private += [
         c

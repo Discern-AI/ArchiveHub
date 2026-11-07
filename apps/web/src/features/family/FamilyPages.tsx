@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router";
 import { api, archiveApi, type PersonBrief } from "../../lib/api";
+import { FamilyPlaces } from "./FamilyPlaces";
 
 function PersonCard({
   p,
@@ -76,6 +77,7 @@ export function FamilyPage() {
           className="min-h-11 rounded-lg border border-control bg-surface px-3 font-normal"
         />
       </label>
+      {projectId && <FamilyPlaces projectId={projectId} />}
       {people.isError && <p className="text-warning">This family tree couldn't be loaded.</p>}
       {people.data?.length === 0 && (
         <p className="text-muted">

@@ -13,9 +13,11 @@ function ResultItem({ r }: { r: SearchResult }) {
     !r.link && typeof lat === "number" && typeof lng === "number"
       ? `/map?lat=${lat}&lng=${lng}&year=1900`
       : "";
+  // The title opens our own page, else the original, else the map.
+  const titleToMap = !r.link && !r.url && !!mapLink;
   return (
     <li className="flex flex-col gap-0.5 border-t border-line-soft py-2 first:border-t-0">
-      {r.link || mapLink ? (
+      {r.link || titleToMap ? (
         <Link to={r.link || mapLink} className="font-medium">
           {r.title}
         </Link>
@@ -28,11 +30,16 @@ function ResultItem({ r }: { r: SearchResult }) {
       )}
       {meta.length > 0 && <span className="text-sm text-muted">{meta.join(" · ")}</span>}
       {r.snippet && <span className="text-sm">{r.snippet}</span>}
-      {r.link && r.url && (
-        <a href={r.url} target="_blank" rel="noreferrer" className="text-sm">
-          See the original ↗
-        </a>
-      )}
+      {(r.link && r.url) || (mapLink && !titleToMap) ? (
+        <span className="flex flex-wrap gap-3 text-sm">
+          {r.link && r.url && (
+            <a href={r.url} target="_blank" rel="noreferrer">
+              See the original ↗
+            </a>
+          )}
+          {mapLink && !titleToMap && <Link to={mapLink}>Show on the time map</Link>}
+        </span>
+      ) : null}
     </li>
   );
 }

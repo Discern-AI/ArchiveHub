@@ -410,7 +410,13 @@ def _live_group(connector, query: str) -> Group:
                 date=r.date_text,
                 source=r.attribution or connector.name,
                 url=r.url,
-                extra={"connector": connector.key, "record_id": r.id, "rights": r.rights},
+                extra={
+                    "connector": connector.key,
+                    "record_id": r.id,
+                    "rights": r.rights,
+                    "latitude": r.latitude,
+                    "longitude": r.longitude,
+                },
             )
             for r in page.records
         ],

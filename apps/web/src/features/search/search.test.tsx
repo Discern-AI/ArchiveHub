@@ -112,6 +112,16 @@ describe("Search", () => {
                   live: true,
                 },
                 {
+                  ...group("live:historic-england", "Historic England", "public", [
+                    {
+                      title: "No. 6 CHEAP STREET",
+                      url: "https://historicengland.org.uk/listing/the-list/list-entry/1220923",
+                      extra: { latitude: 51.3984, longitude: -1.3214 },
+                    },
+                  ]),
+                  live: true,
+                },
+                {
                   ...group("live:openalex", "OpenAlex", "public"),
                   live: true,
                   error: "Didn't answer in time.",
@@ -131,6 +141,15 @@ describe("Search", () => {
     expect(screen.getByText("Outside sources, searched live")).toBeInTheDocument();
     expect(screen.getByText(/OpenAlex: Didn't answer in time/)).toBeInTheDocument();
     expect(calls.some((c) => c.path === "/api/v1/search?q=Spracklen&live=true")).toBe(true);
+    const listed = screen.getByRole("region", { name: "Historic England" });
+    expect(within(listed).getByRole("link", { name: /No. 6 CHEAP STREET/ })).toHaveAttribute(
+      "href",
+      "https://historicengland.org.uk/listing/the-list/list-entry/1220923",
+    );
+    expect(within(listed).getByRole("link", { name: "Show on the time map" })).toHaveAttribute(
+      "href",
+      "/map?lat=51.3984&lng=-1.3214&year=1900",
+    );
   });
 
   it("never treats no results as proof", async () => {

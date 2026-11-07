@@ -18,6 +18,7 @@ from history.models import Assertion, Method, Person
 from projects.permissions import editable_projects, visible_projects
 
 from .exporter import current_values, export_gedcom
+from .health import check_tree
 from .models import RelationKind, Relationship
 
 router = Router()
@@ -126,6 +127,13 @@ def add_claim(request: HttpRequest, project_id: UUID, person_id: UUID, payload: 
     )
     audit(request.user, "claim.add", a, predicate=predicate)
     return Status(201, {"id": str(a.id)})
+
+
+@router.get("/projects/{project_id}/tree-health")
+def tree_health(request: HttpRequest, project_id: UUID) -> dict[str, Any]:
+    """Things in the tree worth a second look. Nothing is changed."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    return check_tree(project)
 
 
 @router.get("/projects/{project_id}/gedcom", response=None)

@@ -71,6 +71,44 @@ const base = {
     json([{ id: "a", name: "Arthur Sample", living: false, birth: "ABT 1921", death: "1988" }]),
 };
 
+describe("Tree health check", () => {
+  it("lists things to check with links to the people, and changes nothing", async () => {
+    const calls = installFetch({
+      ...base,
+      "GET /api/v1/projects/p1/family-places": () => json({ places: [], not_looked_up: 0 }),
+      "GET /api/v1/projects/p1/tree-health": () =>
+        json({
+          people: 5,
+          branches: 2,
+          note: "These are things to check, not errors. Nothing has been changed or merged.",
+          findings: [
+            {
+              kind: "duplicates",
+              title: "Possibly the same person",
+              detail: "Same name, born 1780 and 1781. Only a person can decide.",
+              people: [
+                { id: "a", name: "William Carter" },
+                { id: "b", name: "William Carter" },
+              ],
+            },
+          ],
+        }),
+    });
+    renderAt("/projects/p1/people");
+    await userEvent.click(await screen.findByRole("button", { name: "Check this tree" }));
+    const panel = await screen.findByRole("region", { name: "Tree health check" });
+    expect(
+      await within(panel).findByText("Possibly the same person", { selector: "strong" }),
+    ).toBeInTheDocument();
+    expect(within(panel).getByText(/5 people in 2 groups/)).toBeInTheDocument();
+    expect(within(panel).getAllByRole("link", { name: "William Carter" })[1]).toHaveAttribute(
+      "href",
+      "/projects/p1/people/b",
+    );
+    expect(calls.some((c) => c.method !== "GET")).toBe(false);
+  });
+});
+
 describe("Places in a family tree", () => {
   it("finds locations, then lets the user confirm or reject each one", async () => {
     let located = false;

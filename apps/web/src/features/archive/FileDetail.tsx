@@ -1,3 +1,4 @@
+import { ImportReport } from "./ImportReport";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -146,6 +147,12 @@ export function FileDetail({
               Open the family tree →
             </Link>
           )}
+          {d.jobs
+            .filter((j) => j.kind === "gedcom_import" && j.status === "done")
+            .slice(0, 1)
+            .map((j) => (
+              <ImportReport key={j.id} result={j.result} />
+            ))}
 
           {d.jobs.length > 0 && (
             <ul aria-label="Processing" className="m-0 flex list-none flex-col gap-1 p-0 text-sm">

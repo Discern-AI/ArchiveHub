@@ -57,7 +57,11 @@ def test_parser_joins_continuations():
 
 def test_import_creates_people_relationships_and_claims(imported, project):
     f, job = imported
+    report = job["result"].pop("report")
     assert job["result"] == {"people": 5, "families": 2, "living_private": 2}
+    assert report["gedcom_version"] == "5.5.1" and report["made_by"] == "ArchiveHubTestData"
+    assert report["notes_not_imported"] == 1  # Tom's "keen cyclist" note
+    assert report["source_citations_not_imported"] == 0 and report["media_references"] == 0
     arthur = Person.objects.get(project=project, external_id="@I1@")
     assert arthur.name == "Arthur Sample" and arthur.living_status == "deceased"
     # No death recorded and born within 110 years: treated as living, so private.

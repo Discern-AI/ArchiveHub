@@ -18,6 +18,7 @@ from history.models import Assertion, AssertionEvidence, LivingStatus, Method, P
 
 from .gedcom import EVENTS, clean_name, parse, parse_date
 from .models import RelationKind, Relationship
+from .report import import_report
 
 PRESUMED_DEAD_AFTER = 110  # years since birth, when no death is recorded
 
@@ -128,7 +129,9 @@ def import_gedcom(f: FileAsset, user) -> dict:
                 )  # fmt: skip
         families += 1
 
+    report = import_report(records)
     f.status = "indexed"
     f.status_detail = f"Imported {len(people)} people. Open Family to see them."
+    f.metadata = {**(f.metadata or {}), "import_report": report}
     f.save()
-    return {"people": len(people), "families": families, "living_private": living}
+    return {"people": len(people), "families": families, "living_private": living, "report": report}

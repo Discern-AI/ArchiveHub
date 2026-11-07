@@ -1006,5 +1006,92 @@
     "review_status": "page_read",
     "plan": "Live photo connector built (WP6); switched on when GEOGRAPH_API_KEY is set.",
     "last_checked": "2026-11-07"
+  },
+  {
+    "key": "historic-england-nhle",
+    "name": "National Heritage List for England",
+    "kind": "database",
+    "holder": "Historic England",
+    "url": "https://historicengland.org.uk/listing/the-list/",
+    "description": "Every listed building, scheduled monument, registered park and garden, and battlefield in England, with grade, listing date and exact location.",
+    "coverage_area": "England",
+    "record_types": [
+      "listed buildings",
+      "monuments"
+    ],
+    "tags": [
+      "buildings",
+      "places",
+      "maps"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Open ArcGIS feature service, no key",
+    "licence": "Open Government Licence",
+    "conditions": "OGL. Attribution: © Historic England; contains OS data © Crown copyright and database right. Listing date is not build date.",
+    "storage_policy": "full_copy",
+    "status_label": "confirmed_live_api",
+    "tier": "A",
+    "review_status": "page_read",
+    "plan": "Live connector for listed buildings (WP6). Other layers (scheduled monuments, parks, battlefields, conservation areas, Heritage at Risk) and a time-map layer can follow.",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "the-gazette",
+    "name": "The Gazette",
+    "kind": "database",
+    "holder": "The Stationery Office for the Crown",
+    "url": "https://www.thegazette.co.uk/",
+    "description": "The UK's official public record since 1665: military commissions and promotions, honours, bankruptcies, dissolved partnerships, deceased estates.",
+    "coverage_area": "UK",
+    "period_from": 1665,
+    "record_types": [
+      "official notices",
+      "military",
+      "probate",
+      "insolvency"
+    ],
+    "tags": [
+      "people",
+      "military",
+      "probate"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Open JSON/Atom search and linked data, no key",
+    "licence": "Open Government Licence v3.0 (not covering personal data)",
+    "conditions": "OGL does not cover re-use of personal data. Fair use: identifiable User-Agent, at most 5 requests every 10 seconds, respect 429 Retry-After; bulk crawling at night only.",
+    "storage_policy": "reference_only",
+    "status_label": "confirmed_live_api",
+    "tier": "A",
+    "review_status": "page_read",
+    "plan": "Live connector (WP6), limited to notices at least 100 years old so living people stay out (ADR-035).",
+    "last_checked": "2026-11-07"
+  },
+  {
+    "key": "geonames",
+    "name": "GeoNames",
+    "kind": "gazetteer",
+    "holder": "GeoNames",
+    "url": "https://www.geonames.org/",
+    "description": "Worldwide place names with other spellings, types and locations.",
+    "coverage_area": "Worldwide",
+    "record_types": [
+      "place names"
+    ],
+    "tags": [
+      "places"
+    ],
+    "access_type": "live_api",
+    "cost": "free",
+    "api_status": "Free account name; 10,000 credits a day, 1,000 an hour",
+    "licence": "CC BY",
+    "conditions": "Commercial use allowed; credit GeoNames with a link. Premium service with an SLA for heavy use.",
+    "storage_policy": "full_copy",
+    "status_label": "potential_integration",
+    "tier": "B",
+    "review_status": "page_read",
+    "plan": "Live connector built (WP6); switched on when GEONAMES_USERNAME is set.",
+    "last_checked": "2026-11-07"
   }
 ]

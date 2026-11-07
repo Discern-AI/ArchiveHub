@@ -61,6 +61,9 @@ CONNECTOR_KEYS = Literal[
     "digitalnz",
     "trove",
     "dpla",
+    "historic-england",
+    "the-gazette",
+    "geonames",
 ]
 
 
@@ -120,7 +123,12 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
         "grid references like SU4767. 'os-names': today's place names, streets and "
         "postcodes with locations (modern only). 'trove': Australian newspapers; "
         "'digitalnz': New Zealand collections incl. Papers Past newspapers; 'dpla': US "
-        "collections (useful for relatives who emigrated). Some sources may not be set up "
+        "collections (useful for relatives who emigrated). 'historic-england': every "
+        "listed building in England with grade, listing date and exact location; add a town "
+        "to search near it ('Cheap Street Newbury'); the listing date is not the build date. "
+        "'the-gazette': official notices (commissions, honours, bankruptcies, partnerships, "
+        "deceased estates), only those at least 100 years old. 'geonames': place names "
+        "worldwide with locations and other spellings. Some sources may not be set up "
         "on this server; the result says so. Live sources receive the query: never include "
         "names of living people or private details from the user's files. A name match is "
         "a possible match, not the same person. Returns numbered records to cite.",

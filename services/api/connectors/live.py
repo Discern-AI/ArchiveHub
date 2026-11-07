@@ -13,16 +13,19 @@ import math
 import re
 import threading
 import time
+from datetime import UTC, datetime, timedelta
 from typing import Any, ClassVar
 
 from django.conf import settings
 
 from .base import (
+    AccessDenied,
     BadQuery,
     ConnectorError,
     ConnectorRecord,
     NotFound,
     Page,
+    RateLimited,
     SourceConnector,
     decode_cursor,
     encode_cursor,
@@ -810,6 +813,335 @@ def bng_to_wgs84(easting: float, northing: float) -> tuple[float, float]:
     return math.degrees(phi2), math.degrees(math.atan2(y2, x2))
 
 
+# --- Open sources (no key needed) --------------------------------------------------
+
+
+class OpenConnector(LiveConnector):
+    """A live source that needs no key; it's always set up."""
+
+    @property
+    def key_value(self) -> str:
+        return "open"
+
+
+_EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
+
+
+def _place_near(words: list[str]) -> tuple[str, tuple[float, float]] | None:
+    """A place named in the query that we can locate (our places, then c.1900 map names)."""
+    from connectors.models import DatasetRow
+    from history.models import Place
+
+    for w in words:
+        p = Place.objects.filter(name__iexact=w, latitude__isnull=False).first()
+        if p is not None:
+            return w, (float(p.latitude), float(p.longitude))
+    for w in words:
+        row = (
+            DatasetRow.objects.filter(dataset__key="old-map-names", title_lower=w.lower())
+            .exclude(latitude__isnull=True)
+            .first()
+        )
+        if row is not None:
+            return w, (row.latitude, row.longitude)
+    return None
+
+
+class HistoricEnglandConnector(OpenConnector):
+    key = "historic-england"
+    name = "National Heritage List for England (Historic England)"
+    source_key = "historic-england-nhle"
+    storage = "full_copy"  # Open Government Licence
+    licence = "Open Government Licence"
+    attribution = (
+        "© Historic England. Contains Ordnance Survey data © Crown copyright and database right"
+    )
+    description = (
+        "Every listed building in England, with its grade, the date it was listed and an exact "
+        "location. Add a town to search near it, e.g. “Cheap Street Newbury”. The date is when "
+        "it was listed, not when it was built."
+    )
+    api = (
+        "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/arcgis/rest/services/"
+        "National_Heritage_List_for_England_NHLE_v02_VIEW/FeatureServer/0/query"
+    )
+    max_page_size = 100
+    radius = 0.03  # degrees around a named town (about 2–3 km)
+
+    def _query(self, where: str, extra: dict[str, Any]) -> dict[str, Any]:
+        data = self.get(
+            self.api,
+            {
+                "where": where,
+                "outFields": "ListEntry,Name,Grade,ListDate,hyperlink",
+                "outSR": 4326,
+                "orderByFields": "ListEntry",
+                "f": "json",
+                **extra,
+            },
+        )
+        if "error" in data:
+            raise BadQuery(str(data["error"].get("message", "Search failed")))
+        return data
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        offset = decode_cursor(cursor).get("offset", 0)
+        if not isinstance(offset, int) or offset < 0:
+            raise BadQuery("Invalid cursor")
+        words = [w for w in re.findall(r"[A-Za-z0-9]+", q)]
+        near = _place_near(words)
+        extra: dict[str, Any] = {"resultOffset": offset, "resultRecordCount": size}
+        if near:
+            words = [w for w in words if w != near[0]]
+            lat, lng = near[1]
+            r = self.radius
+            extra.update(
+                {
+                    "geometry": f"{lng - r},{lat - r},{lng + r},{lat + r}",
+                    "geometryType": "esriGeometryEnvelope",
+                    "inSR": 4326,
+                    "spatialRel": "esriSpatialRelIntersects",
+                }
+            )
+        if not words and not near:
+            raise BadQuery("Search for a building name, street or town")
+        # Only letters and digits reach the query, so nothing can change its meaning.
+        where = " AND ".join(f"UPPER(Name) LIKE '%{w.upper()}%'" for w in words) or "1=1"
+        data = self._query(where, extra)
+        features = data.get("features", []) or []
+        more = bool(data.get("exceededTransferLimit")) and bool(features)
+        where_text = f" near {near[0]}" if near else ""
+        return Page(
+            records=[self._record(f) for f in features],
+            next_cursor=encode_cursor({"offset": offset + size}) if more else None,
+            searched=f"the National Heritage List for England (live) for “{q}”{where_text}",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not record_id.isdigit():
+            raise NotFound(record_id)
+        features = self._query(f"ListEntry={int(record_id)}", {"resultRecordCount": 1}).get(
+            "features"
+        )
+        if not features:
+            raise NotFound(record_id)
+        return self._record(features[0])
+
+    def _record(self, f: dict[str, Any]) -> ConnectorRecord:
+        a = f.get("attributes", {}) or {}
+        points = (f.get("geometry") or {}).get("points") or [[None, None]]
+        lng, lat = points[0][0], points[0][1]
+        listed = ""
+        if isinstance(a.get("ListDate"), int | float):
+            # Listing dates can be before 1970, which time.gmtime rejects on Windows.
+            listed = str((_EPOCH + timedelta(milliseconds=a["ListDate"])).year)
+        grade = a.get("Grade") or ""
+        entry = str(a.get("ListEntry", ""))
+        return ConnectorRecord(
+            connector=self.key,
+            id=entry,
+            title=a.get("Name") or entry,
+            description=f"Grade {grade} listed building" if grade else "Listed building",
+            record_type="listed building",
+            url=a.get("hyperlink")
+            or f"https://historicengland.org.uk/listing/the-list/list-entry/{entry}",
+            date_text=f"Listed {listed}" if listed else "",
+            latitude=_float(lat),
+            longitude=_float(lng),
+            fields={k: v for k, v in {"grade": grade, "list_entry": entry}.items() if v},
+            rights="Open Government Licence",
+            attribution=self.attribution,
+        )
+
+
+class GazetteConnector(OpenConnector):
+    key = "the-gazette"
+    name = "The Gazette (London, Edinburgh and Belfast)"
+    source_key = "the-gazette"
+    storage = "reference_only"
+    licence = "Open Government Licence (not covering personal data)"
+    attribution = "The Gazette, Crown copyright"
+    description = (
+        "The UK's official public record since 1665: military commissions and promotions, "
+        "honours, bankruptcies, partnerships dissolved, deceased estates. Only notices at least "
+        "100 years old are searched here."
+    )
+    api = "https://www.thegazette.co.uk/all-notices/notice/data.json"
+    min_interval = 2.0  # The Gazette's fair use policy: at most 5 requests every 10 seconds
+    max_page_size = 50
+    min_age_years = 100
+
+    def cutoff(self) -> str:
+        return f"{time.gmtime().tm_year - self.min_age_years}-12-31"
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        page = _page_number(cursor)
+        data = self.get(
+            self.api,
+            {
+                "text": q,
+                "results-page-size": size,
+                "results-page": page,
+                # Living people stay out by default (ADR-015): older notices only.
+                "end-publish-date": self.cutoff(),
+            },
+        )
+        entries = data.get("entry", []) or []
+        total = int(data.get("f:total") or 0)
+        more = page * size < total and bool(entries)
+        return Page(
+            records=[self._record(e) for e in entries],
+            next_cursor=encode_cursor({"page": page + 1}) if more else None,
+            searched=f"The Gazette (live) for “{q}”, notices published up to {self.cutoff()[:4]}",
+        )
+
+    PATH = re.compile(
+        r"(notice/\d+|(London|Edinburgh|Belfast)/issue/\d+/(page|supplement)/\d+(/page/\d+)?)"
+    )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        # Built from the ID without fetching: nothing beyond the link is shown.
+        if not self.PATH.fullmatch(record_id):
+            raise NotFound(record_id)
+        parts = record_id.split("/")
+        if parts[0] == "notice":
+            title = f"Gazette notice {parts[1]}"
+        else:
+            title = f"The {parts[0]} Gazette, issue {parts[2]}, {parts[3]} {parts[4]}"
+        return ConnectorRecord(
+            connector=self.key,
+            id=record_id,
+            title=title,
+            description="Open it on The Gazette to read the notice.",
+            record_type="gazette notice",
+            url=f"https://www.thegazette.co.uk/{record_id}",
+            rights="Open Government Licence (not covering personal data)",
+            attribution=self.attribution,
+        )
+
+    def _record(self, e: dict[str, Any]) -> ConnectorRecord:
+        raw_id = str(e.get("id", ""))
+        path = raw_id.split("thegazette.co.uk/", 1)[-1].removeprefix("id/")
+        text = re.sub(r"<[^>]+>", " ", _first(e.get("content")))
+        point = e.get("geo:Point") or {}
+        category = (
+            (e.get("category") or {}).get("@term", "")
+            if isinstance(e.get("category"), dict)
+            else ""
+        )
+        return ConnectorRecord(
+            connector=self.key,
+            id=path,
+            title=" ".join(_first(e.get("title")).split()) or path,
+            description=_clip(text.replace("…", "…")),
+            record_type=(category or "gazette page").lower(),
+            url=f"https://www.thegazette.co.uk/{path}",
+            date_text=_first(e.get("published"))[:10],
+            latitude=_float(point.get("geo:lat")),
+            longitude=_float(point.get("geo:long")),
+            rights="Open Government Licence (not covering personal data)",
+            attribution=self.attribution,
+        )
+
+
+class GeoNamesConnector(LiveConnector):
+    key = "geonames"
+    name = "GeoNames"
+    source_key = "geonames"
+    setting = "GEONAMES_USERNAME"
+    setup_note = "Needs a free GeoNames account name with web services switched on."
+    storage = "full_copy"  # CC BY 4.0
+    licence = "CC BY 4.0"
+    attribution = "GeoNames (geonames.org)"
+    description = (
+        "Place names worldwide with other spellings and locations: towns, villages, farms, "
+        "hills. Useful for finding where a place in an old record is."
+    )
+    api = "https://secure.geonames.org"
+    max_page_size = 100
+
+    def _check(self, data: dict[str, Any]) -> dict[str, Any]:
+        status = data.get("status")
+        if isinstance(status, dict):
+            code = int(status.get("value", 0))
+            if code == 10:
+                raise AccessDenied(str(status.get("message")))
+            if code in (18, 19, 20):
+                raise RateLimited(str(status.get("message")))
+            if code in (11, 15):
+                raise NotFound(str(status.get("message")))
+            raise BadQuery(str(status.get("message", "Search failed")))
+        return data
+
+    def search(self, query: str, cursor: str | None = None, page_size: int = 25) -> Page:
+        q = _require_query(query, self.name)
+        size = _size(page_size, self.max_page_size)
+        offset = decode_cursor(cursor).get("offset", 0)
+        if not isinstance(offset, int) or offset < 0:
+            raise BadQuery("Invalid cursor")
+        data = self._check(
+            self.get(
+                f"{self.api}/searchJSON",
+                {
+                    "q": q,
+                    "maxRows": size,
+                    "startRow": offset,
+                    "style": "MEDIUM",
+                    "username": self.require_key(),
+                },
+            )
+        )
+        places = data.get("geonames", []) or []
+        total = int(data.get("totalResultsCount") or 0)
+        more = offset + size < total and bool(places)
+        return Page(
+            records=[self._record(p) for p in places],
+            next_cursor=encode_cursor({"offset": offset + size}) if more else None,
+            searched=f"GeoNames (live) for “{q}”",
+        )
+
+    def get_record(self, record_id: str) -> ConnectorRecord:
+        if not record_id.isdigit():
+            raise NotFound(record_id)
+        data = self._check(
+            self.get(
+                f"{self.api}/getJSON",
+                {"geonameId": record_id, "username": self.require_key()},
+            )
+        )
+        if not data.get("geonameId"):
+            raise NotFound(record_id)
+        return self._record(data)
+
+    def _record(self, p: dict[str, Any]) -> ConnectorRecord:
+        gid = str(p.get("geonameId", ""))
+        where = ", ".join(v for v in (p.get("adminName1"), p.get("countryName")) if v)
+        return ConnectorRecord(
+            connector=self.key,
+            id=gid,
+            title=p.get("name") or p.get("toponymName") or gid,
+            description=", ".join(v for v in (p.get("fcodeName"), where) if v),
+            record_type=str(p.get("fclName") or "place"),
+            url=f"https://www.geonames.org/{gid}",
+            latitude=_float(p.get("lat")),
+            longitude=_float(p.get("lng")),
+            fields={
+                k: v
+                for k, v in {
+                    "population": p.get("population"),
+                    "country": p.get("countryCode"),
+                }.items()
+                if v
+            },
+            rights="CC BY 4.0",
+            attribution=self.attribution,
+        )
+
+
 LIVE_CONNECTORS: tuple[LiveConnector, ...] = (
     EuropeanaConnector(),
     TNADiscoveryConnector(),
@@ -818,4 +1150,7 @@ LIVE_CONNECTORS: tuple[LiveConnector, ...] = (
     DigitalNZConnector(),
     TroveConnector(),
     DPLAConnector(),
+    HistoricEnglandConnector(),
+    GazetteConnector(),
+    GeoNamesConnector(),
 )

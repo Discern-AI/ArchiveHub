@@ -8,13 +8,21 @@ Each connector stays switched off, and is listed in the Explorer as "not availab
 | The National Archives: Discovery | `TNA_DISCOVERY_ENABLED=true` | Email webmaster@nationalarchives.gov.uk with the server's IP address, the site's link and how it's used | **Nothing returned may be cached or stored.** At most 3,000 calls a day, one a second. Beta service, no guarantee | Yes |
 | Geograph | `GEOGRAPH_API_KEY` | Request a key on geograph.org.uk (Help → API) | Photos CC BY-SA 2.0: credit the photographer, say it's Creative Commons, link the photo. No bulk collection or model training via the live API | Yes |
 | OS Names | `OS_DATA_HUB_KEY` | Create a project in the OS Data Hub (free plan) and add the OS Names API | Open Government Licence. Show "Contains OS data © Crown copyright and database right" | No (documented format) |
+| GeoNames | `GEONAMES_USERNAME` | Create a free account at geonames.org and switch on free web services in the account page | CC BY: credit GeoNames with a link. Commercial use allowed. 10,000 credits a day, 1,000 an hour | No (documented format) |
 | DigitalNZ (incl. Papers Past) | `DIGITALNZ_API_KEY` | Create an account at digitalnz.org, then "My API key" | Commercial use only with a key and only for selected metadata. Name the original source and link via `source_url`. 10,000 calls a day | Yes |
 | Trove (Australia) | `TROVE_API_KEY` | Apply on trove.nla.gov.au. **Commercial use needs the NLA's explicit permission** (commercial access level) | Acknowledge Trove and the NLA. Keys expire after 12 months | No (documented format) |
 | DPLA (USA) | `DPLA_API_KEY` | Request a key through the DPLA API (it's emailed to you) | Metadata CC0. Item rights vary. Their API terms page couldn't be read automatically: confirm before launch | No (documented format) |
 
 Not built: **FamilySearch.** Its API is closed to the public; production access needs an approved Innovator Program application, a compatibility review and signed agreements.
 
-Already working without keys: Wikidata, old map names (c.1900), ArchiveHub's checked records.
+Already working without keys: Wikidata, old map names (c.1900), ArchiveHub's checked records, the National Heritage List for England and The Gazette.
+
+## Connected without a key
+
+| Source | What it gives | Terms |
+|---|---|---|
+| National Heritage List for England (Historic England) | Listed buildings with grade, listing date and exact location | Open Government Licence; credit Historic England and Ordnance Survey |
+| The Gazette | Official notices at least 100 years old | Open Government Licence (not covering personal data); at most one request every 2 seconds |
 
 ## What each adds
 

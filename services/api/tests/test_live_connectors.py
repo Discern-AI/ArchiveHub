@@ -136,11 +136,54 @@ OS_ENTRY = {
 }
 
 
+HE_FEATURE = {
+    "attributes": {
+        "ListEntry": 1220923,
+        "Name": "No. 6 CHEAP STREET",
+        "Grade": "II",
+        "ListDate": 431308800000,
+        "hyperlink": "https://historicengland.org.uk/listing/the-list/list-entry/1220923",
+    },
+    "geometry": {"points": [[-1.32138815234494, 51.3983980369856]]},
+}
+HE_OLD = {  # listed before 1970: a negative timestamp
+    **HE_FEATURE,
+    "attributes": {**HE_FEATURE["attributes"], "ListEntry": 1220925, "ListDate": -607737600000},
+}
+GAZ_ENTRY = {
+    "id": "https://www.thegazette.co.uk/Edinburgh/issue/12396/page/995",
+    "title": "The Edinburgh Gazette, Issue 12396, Page 995",
+    "published": "1911-10-06T00:00:00",
+    "content": "<div><p>Temporary Assistant Postmen — Newbury…</p></div>",
+}
+GAZ_NOTICE = {
+    "id": "https://www.thegazette.co.uk/id/notice/3679551",
+    "title": " A Name ",
+    "published": "1920-11-21T01:00:05",
+    "category": {"@term": "Deceased Estates"},
+    "geo:Point": {"geo:lat": "51.6", "geo:long": "-1.2"},
+    "content": "<div>Address of Deceased</div>",
+}
+GEONAME = {
+    "geonameId": 2641741,
+    "name": "Newbury",
+    "lat": "51.40148",
+    "lng": "-1.32471",
+    "fcodeName": "seat of a second-order administrative division",
+    "fclName": "city, village,...",
+    "adminName1": "England",
+    "countryName": "United Kingdom",
+    "countryCode": "GB",
+    "population": 41075,
+}
+
+
 @pytest.fixture
 def calls(monkeypatch, settings):
     for k, v in KEYS.items():
         setattr(settings, k, v)
     settings.TNA_DISCOVERY_ENABLED = True
+    settings.GEONAMES_USERNAME = "geo-user"
     seen: list[dict] = []
 
     def fake(url, params, timeout=10.0, headers=None):
@@ -200,6 +243,30 @@ def calls(monkeypatch, settings):
             off = p.get("offset", 0)
             entry = OS_ENTRY if off == 0 else {**OS_ENTRY, "ID": "osgb2", "NAME1": "Cheap Street"}
             return {"header": {"totalresults": 2}, "results": [{"GAZETTEER_ENTRY": entry}]}
+        if "arcgis.com" in url:
+            if p["where"].startswith("ListEntry="):
+                n = int(p["where"].split("=")[1])
+                return {
+                    "features": [
+                        f for f in (HE_FEATURE, HE_OLD) if f["attributes"]["ListEntry"] == n
+                    ]
+                }
+            if p["resultOffset"] == 0:
+                return {"features": [HE_FEATURE], "exceededTransferLimit": True}
+            return {"features": [HE_OLD]}
+        if "thegazette" in url:
+            entry = GAZ_ENTRY if p["results-page"] == 1 else GAZ_NOTICE
+            return {"f:total": "2", "entry": [entry]}
+        if "geonames" in url:
+            if url.endswith("getJSON"):
+                return (
+                    GEONAME
+                    if p["geonameId"] == "2641741"
+                    else {"status": {"value": 15, "message": "no record"}}
+                )
+            if p["startRow"] == 0:
+                return {"totalResultsCount": 2, "geonames": [GEONAME]}
+            return {"totalResultsCount": 2, "geonames": [{**GEONAME, "geonameId": 1}]}
         raise AssertionError(f"unexpected {url}")
 
     monkeypatch.setattr(sources, "http_get_json", fake)
@@ -214,6 +281,9 @@ CASES = {
     "trove": ("Newbury Berkshire", "12345678"),
     "dpla": ("Newbury", DPLA_DOC["id"]),
     "os-names": ("Cheap Street Newbury", f"{OS_ENTRY['ID']}~Cheap Street"),
+    "historic-england": ("Cheap Street", "1220923"),
+    "the-gazette": ("Spracklen Newbury", "Edinburgh/issue/12396/page/995"),
+    "geonames": ("Newbury", "2641741"),
 }
 
 
@@ -256,11 +326,15 @@ def test_contract_unknown_record_and_bad_input(case):
         connector.search("   ")
 
 
-@pytest.mark.parametrize("key", sorted(CASES))
+OPEN = {"historic-england", "the-gazette"}  # no key needed
+
+
+@pytest.mark.parametrize("key", sorted(set(CASES) - OPEN))
 def test_without_a_key_it_says_so_and_calls_nothing(key, monkeypatch, settings):
     for k in KEYS:
         setattr(settings, k, "")
     settings.TNA_DISCOVERY_ENABLED = False
+    settings.GEONAMES_USERNAME = ""
 
     def never(*a, **kw):
         raise AssertionError("no request without a key")
@@ -379,3 +453,69 @@ def test_bng_to_wgs84_matches_ordnance_survey():
     assert lat == pytest.approx(52.65798, abs=0.0001) and lng == pytest.approx(1.71605, abs=0.0001)
     lat, lng = bng_to_wgs84(216666, 771288)
     assert lat == pytest.approx(56.7969, abs=0.001) and lng == pytest.approx(-5.0037, abs=0.001)
+
+
+def test_open_sources_are_always_set_up(settings):
+    for key in OPEN:
+        assert CONNECTORS[key].describe()["configured"] is True
+
+
+def test_historic_england_searches_near_a_named_town(calls):
+    load_all()  # Newbury has a location
+    page = CONNECTORS["historic-england"].search("Cheap Street Newbury")
+    sent = calls[-1]["params"]
+    assert sent["where"] == "UPPER(Name) LIKE '%CHEAP%' AND UPPER(Name) LIKE '%STREET%'"
+    assert sent["geometryType"] == "esriGeometryEnvelope" and sent["inSR"] == 4326
+    assert "near Newbury" in page.searched
+    record = page.records[0]
+    assert record.date_text == "Listed 1983" and record.latitude == pytest.approx(51.3984)
+    old = CONNECTORS["historic-england"].get_record("1220925")
+    assert old.date_text == "Listed 1950"  # before 1970
+    # Only letters and digits reach the query.
+    CONNECTORS["historic-england"].search("Cheap' OR 1=1 --")
+    assert "'" not in calls[-1]["params"]["where"].replace("LIKE '%", "").replace("%'", "")
+
+
+def test_gazette_only_searches_notices_a_century_old(calls):
+    page = CONNECTORS["the-gazette"].search("Spracklen", page_size=1)
+    cutoff = calls[-1]["params"]["end-publish-date"]
+    import time
+
+    assert cutoff == f"{time.gmtime().tm_year - 100}-12-31"
+    assert f"up to {cutoff[:4]}" in page.searched
+    notice = (
+        CONNECTORS["the-gazette"]
+        .search("Spracklen", cursor=page.next_cursor, page_size=1)
+        .records[0]
+    )
+    assert notice.id == "notice/3679551" and notice.record_type == "deceased estates"
+    # Opening a record never fetches it: only the link is shown.
+    before = len(calls)
+    r = CONNECTORS["the-gazette"].get_record("notice/3679551")
+    assert len(calls) == before and r.url == "https://www.thegazette.co.uk/notice/3679551"
+
+
+def test_gazette_keeps_to_its_fair_use_rate(calls, monkeypatch):
+    from connectors.live import GazetteConnector
+
+    slept = []
+    monkeypatch.setattr("connectors.live.time.sleep", lambda s: slept.append(s))
+    GazetteConnector._last = 0.0
+    CONNECTORS["the-gazette"].search("Newbury")
+    CONNECTORS["the-gazette"].search("Newbury")
+    assert slept and 1.0 < slept[-1] <= 2.0
+
+
+def test_geonames_errors_are_mapped(calls, monkeypatch):
+    from connectors.base import AccessDenied, RateLimited
+
+    def status(value):
+        def fake(url, params, timeout=10.0, headers=None):
+            return {"status": {"value": value, "message": "x"}}
+
+        return fake
+
+    for value, error in ((10, AccessDenied), (19, RateLimited), (15, NotFound)):
+        monkeypatch.setattr(sources, "http_get_json", status(value))
+        with pytest.raises(error):
+            CONNECTORS["geonames"].search("Newbury")

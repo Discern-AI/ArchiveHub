@@ -6,6 +6,19 @@ import type { AttachedRecord } from "../../lib/chat";
 const button =
   "min-h-11 cursor-pointer rounded-lg border border-control bg-surface px-3 font-medium disabled:cursor-not-allowed disabled:opacity-50";
 
+/** An image we may show: public-domain museum images, or Geograph photos with credit. */
+export function recordImage(r: ConnectorRecord): { src: string; credit: string } | null {
+  const text = (v: unknown) => (typeof v === "string" ? v : "");
+  const image = text(r.fields.image);
+  if (image.startsWith("https://")) return { src: image, credit: "Public domain" };
+  const thumb = text(r.fields.thumbnail);
+  if (r.connector === "geograph" && thumb.startsWith("https://")) {
+    const who = text(r.fields.photographer);
+    return { src: thumb, credit: `Photo${who ? ` © ${who}` : ""}, CC BY-SA 2.0, via Geograph` };
+  }
+  return null;
+}
+
 function FieldList({ fields }: { fields: Record<string, unknown> }) {
   const entries = Object.entries(fields).filter(
     ([, v]) => v !== null && v !== "" && v !== undefined,
@@ -93,13 +106,42 @@ export function ExplorerTab({
         </div>
         <h3 className="m-0 font-serif text-xl font-semibold">{r.title}</h3>
         {r.date_text && <div className="text-sm text-muted">{r.date_text}</div>}
+        {(() => {
+          const img = recordImage(r);
+          return img ? (
+            <figure className="m-0 flex flex-col gap-1">
+              <img
+                src={img.src}
+                alt={r.title}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="max-h-64 self-start rounded-lg border border-line object-contain"
+                onError={(e) => (e.currentTarget.style.display = "none")}
+              />
+              <figcaption className="text-[13px] text-muted">
+                {r.url ? (
+                  <a href={r.url} target="_blank" rel="noreferrer">
+                    {img.credit}
+                  </a>
+                ) : (
+                  img.credit
+                )}
+              </figcaption>
+            </figure>
+          ) : null;
+        })()}
         {r.description && <p className="m-0">{r.description}</p>}
         {r.latitude !== null && r.longitude !== null && (
           <div className="text-sm text-muted">
-            Map position: {r.latitude.toFixed(5)}, {r.longitude.toFixed(5)}
+            Map position: {r.latitude.toFixed(5)}, {r.longitude.toFixed(5)} ·{" "}
+            <a href={`/map?lat=${r.latitude}&lng=${r.longitude}`}>Show on the time map</a>
           </div>
         )}
-        <FieldList fields={r.fields} />
+        <FieldList
+          fields={Object.fromEntries(
+            Object.entries(r.fields).filter(([k]) => k !== "image" && k !== "thumbnail"),
+          )}
+        />
         {r.url && (
           <a href={r.url} target="_blank" rel="noreferrer">
             Open the original

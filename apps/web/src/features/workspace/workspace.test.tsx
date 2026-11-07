@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import { AppRoutes } from "../../app/routes";
 import { installFetch, json, sseResponse } from "../../test/fakeServer";
+import { recordImage } from "./ExplorerTab";
 
 const USER = { id: "u1", email: "alice@example.com", display: "alice" };
 const CHAT = { id: "c1", project_id: "p1", title: "Pigeons", created_at: "", updated_at: "" };
@@ -235,5 +236,38 @@ describe("Workspace", () => {
     expect(
       await within(panel).findByRole("button", { name: "Used in this project" }),
     ).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+describe("recordImage", () => {
+  const base = {
+    connector: "met-museum",
+    id: "1",
+    title: "Side Chair",
+    description: "",
+    record_type: "",
+    url: "https://www.metmuseum.org/x",
+    date_text: "",
+    latitude: null,
+    longitude: null,
+    rights: "",
+    attribution: "",
+  };
+  it("shows public-domain museum images and credited Geograph photos only", () => {
+    expect(
+      recordImage({ ...base, fields: { image: "https://images.metmuseum.org/a.jpg" } }),
+    ).toEqual({ src: "https://images.metmuseum.org/a.jpg", credit: "Public domain" });
+    expect(
+      recordImage({
+        ...base,
+        connector: "geograph",
+        fields: { thumbnail: "https://s0.geograph.org.uk/t.jpg", photographer: "Lewis Clarke" },
+      })?.credit,
+    ).toBe("Photo © Lewis Clarke, CC BY-SA 2.0, via Geograph");
+    // A Europeana preview has per-item rights, so it isn't shown.
+    expect(
+      recordImage({ ...base, connector: "europeana", fields: { preview: "https://x/p.jpg" } }),
+    ).toBeNull();
+    expect(recordImage({ ...base, fields: { image: "http://insecure/x.jpg" } })).toBeNull();
   });
 });

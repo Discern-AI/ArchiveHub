@@ -12,6 +12,8 @@ Drafts for the requests only the owner can make. Fill in the [brackets], send, t
 | 6 | West Berkshire Museum | Launch partnership | Not sent |
 | 7 | National Library of Australia (Trove) | Commercial use of Trove | Not sent |
 | 8 | Open Library, UK PlanIt | Permission for commercial use | Not sent |
+| 9 | Free UK Genealogy | Bulk FreeBMD, FreeREG, FreeCEN indexes | Not sent |
+| 10 | UK Data Service | I-CeM census microdata | Not sent |
 
 ---
 
@@ -121,3 +123,23 @@ Restart the API after adding keys. Each source then appears in the Explorer, Sea
 **UK PlanIt**, via planit.org.uk's contact page:
 
 > ArchiveHub would like to show planning applications near a building on our time map (reference, date, description and a link to the council's page), using your API at modest volumes. We're a commercial service. Is that acceptable, and is there anything you'd like us to credit or pay?
+
+## 9. Free UK Genealogy: bulk data for research
+
+**Where:** freeukgenealogy.org.uk/bulk-data-for-research (read their terms first)
+
+> Hello,
+>
+> ArchiveHub is a family and local history platform piloting in Newbury and West Berkshire. We'd like to explore bulk access to FreeBMD, FreeREG and FreeCEN indexes so people can find entries alongside their own records, with every result credited to Free UK Genealogy and its volunteers and linked back to your sites.
+>
+> Public benefit: people would be pointed to original records and official sources (GRO, record offices) rather than paywalls, and we'd like to support the volunteer projects financially as the platform grows. We'd follow whatever scope and terms you set, including no redistribution of the data.
+>
+> Could we talk about whether this fits your bulk data programme?
+>
+> [name, website, email]
+
+## 10. UK Data Service: I-CeM census microdata
+
+**Where:** UK Data Service enquiries.
+
+> ArchiveHub is a family and local history platform. We're interested in two things: (1) the statistical I-CeM data to describe occupations, households and migration in a place and period, shown as context (never about named individuals); and (2) whether named-record access could ever be licensed for a public historical research service, and on what terms. Could you advise on both?

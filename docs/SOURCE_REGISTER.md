@@ -375,6 +375,54 @@ These answer "what was it like?" in the words of people at the time. Rules: a fe
 - **DNA services:** genetic data is highly sensitive. Not before specialist advice.
 - **Living-people datasets** (Companies House, electoral data, Land Registry ownership, recent Gazette notices, police data): useful for businesses and buildings, but they can be used to find someone. No "people search", and the same living-people rules as everywhere else.
 
+## 11. Records by life event: where the originals are
+
+Commercial sites mostly license, digitise and index records held by archives, and those licences are usually non-exclusive. So for each kind of record we note who holds the original, whether there's a free or independent route, and what it costs. This table is the start of a "where to find this record" guide for users. Items marked **Checked** were confirmed on 7 Nov 2026; the rest are leads.
+
+| Life event | Where the originals or indexes are | Free or independent route | Cost and notes |
+|---|---|---|---|
+| Births and deaths, England and Wales | General Register Office (GRO) | **Checked:** free historical index online: births over 100 years old, deaths 1837–1957 | Online View image about £3, PDF about £8 (check current fees); needs the GRO index reference; images aren't certified copies. No API; link and guide |
+| Births, marriages, deaths (indexes) | GRO; FreeBMD (volunteers) | FreeBMD free search | **Checked:** Free UK Genealogy invites bulk-data enquiries for research with clear public benefit (terms not published) |
+| Baptisms, marriages, burials (parish registers) | County record offices (Royal Berkshire Archives for us); FreeREG transcriptions | FreeREG free search | Record office licences to commercial sites are often non-exclusive: ask about ours |
+| Census 1841–1921 | The National Archives; FreeCEN (partial); I-CeM (research microdata, 1851–1911) | FreeCEN free search; 1921 free to view at Kew, Manchester and the National Library of Wales | I-CeM names and addresses need a special licence; the statistical version could feed context |
+| Military service | The National Archives (MOD records transferring, about 10m); CWGC; regimental museums; IWM; RAF Museum; National Museum of the Royal Navy; National Army Museum | Discovery catalogue (connector built) | **Checked:** TNA charges for MOD service record searches and copies from 2 Feb 2026; Ancestry is digitising about a third, publishing people born over 100 years ago in tranches. Never imply someone fought in a battle because their unit did |
+| School and university | Schools, county record offices, university archives; Archives Hub (350+ institutions) | Archives Hub has SRU and OAI-PMH interfaces | Reuse terms for Hub descriptions not found: ask Jisc. Cambridge Alumni Database (c.1200–1900) is experimental; reuse questions go to the university |
+| Work and occupations | Trade directories; occupational censuses; CAMPOP (Cambridge) | Leicester directories; Internet Archive | CAMPOP datasets "used by researchers worldwide"; access terms on request |
+| Business and bankruptcy | The Gazette (live), Companies House, trade directories | The Gazette connector | |
+| Residence, land and houses | Census, electoral registers, directories, tithe maps (c.1840), 1910 Valuation Office Survey, deeds | Record offices | Electoral registers name living people: handle with care |
+| Taxation | Hearth tax, land tax, valuation rolls | Record offices, TNA | |
+| Poverty and welfare | Poor Law union records, workhouse registers, settlement examinations | Record offices; explanations now in the glossary | |
+| Crime, courts, prisons | Quarter sessions, assizes, prison registers, coroners' inquests, police gazettes; Old Bailey, Digital Panopticon | Old Bailey Online, Digital Panopticon | |
+| Immigration and emigration | Passenger lists, naturalisation (TNA) | Trove, DigitalNZ, DPLA connectors built | |
+| Probate | Probate calendar from 1858 | gov.uk probate search (no API) | |
+| Religion | Parish, chapel and nonconformist registers (TNA RG 4 etc.) | | |
+| Scotland | ScotlandsPeople / National Records of Scotland (statutory registers from 1855, also wills, valuations, prison registers) | | Paid images; privacy cut-offs for online images (reported as 100 years births, 75 marriages, 50 deaths: check) |
+| Ireland and Northern Ireland | IrishGenealogy.ie; GRONI | IrishGenealogy.ie free search | GRONI paid |
+
+**Directory of government APIs:** the [UK Government API Catalogue](https://www.api.gov.uk/) lists APIs from public bodies; being listed doesn't mean public or commercial access.
+
+### Sport
+
+| Source | What it gives | Status | Notes |
+|---|---|---|---|
+| [engsoccerdata](https://github.com/jalapic/engsoccerdata) | English league results 1888 onwards, FA Cup from 1871 | Candidate | A listing says non-commercial use with citation; check the repo's licence |
+| [Sean Elvidge's England results](https://seanelvidge.com/blog/2024/All_England_football_league_results) | Top four divisions, updated often | Candidate | Builds on engsoccerdata; licence not found |
+| [schochastics/football-data](https://github.com/schochastics/football-data) | 1.2m results, 207 leagues, 1888–2023 (Parquet) | Candidate | Licence not stated |
+| OpenFootball | Fixtures and results | Candidate | Licence to check |
+| StatsBomb Open Data | Modern match events | Not for us | Modern, research terms |
+| Cricsheet | Ball-by-ball cricket data | Candidate | Licence to check |
+| ESPNcricinfo, Olympedia | Scorecards, Olympians | Link out | No bulk reuse |
+| MCC Collections, World Rugby Museum, club archives | Objects, photos, records | Partner | |
+| Local newspapers | Match reports naming local players | Partner | The richest source for Newbury clubs |
+
+### Genealogy software and services
+
+| Name | Note |
+|---|---|
+| Gramps Web / Gramps Web API | Suggested as the engine; we keep it as a design reference because it's AGPL (ADR-010). Our own importer already reads GEDCOM 5.5.1 and 7 lines; GedZip (media bundled) is a later addition |
+| GEDCOM 7 and GedZip | FamilySearch specification; GedZip packages media with the tree |
+| MyHeritage, TheGenealogist | Commercial; users can import their own GEDCOM exports |
+
 ---
 
 ## Changing this list

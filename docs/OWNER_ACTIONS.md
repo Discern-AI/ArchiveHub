@@ -58,6 +58,11 @@ After adding keys, four connectors still need their first live run: **Trove, DPL
 | HM Land Registry / Royal Mail | Whether Price Paid addresses can be shown in a property history feature | Legal question | Later |
 | FamilySearch | Innovator Program (closed API; long process) | Application | Later |
 | Mass Observation (The Keep), Great Diary Project, UK Data Service | Access to testimony collections | Later | Later |
+| Free UK Genealogy | Bulk access to FreeBMD, FreeREG, FreeCEN indexes (their research data programme) | OUTREACH.md §9 | Not sent |
+| UK Data Service | I-CeM census microdata (statistics now; ask about named records) | OUTREACH.md §10 | Not sent |
+| Jisc Archives Hub | Reuse terms for catalogue descriptions via their SRU/OAI-PMH interfaces | Short email | Not sent |
+| CAMPOP (Cambridge) | Historical occupation datasets for context | Short email | Not sent |
+| Cambridge Alumni Database | Reuse of the experimental alumni database | Short email | Not sent |
 
 ## 4. Partners to contact
 

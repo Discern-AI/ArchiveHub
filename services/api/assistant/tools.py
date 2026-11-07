@@ -47,6 +47,10 @@ class CompareClaimsInput(_Input):
     predicate: str | None = Field(default=None, max_length=60)
 
 
+class ExplainTermInput(_Input):
+    term: str = Field(min_length=1, max_length=100)
+
+
 class SearchArchiveInput(_Input):
     query: str = Field(min_length=1, max_length=200)
 
@@ -150,6 +154,19 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
     ),
 ]
 
+TOOL_SPECS.append(
+    (
+        "explain_term",
+        "Explain an old term found in a record: money (guinea, shilling, 9/6, £ s d), Poor "
+        "Law words (union, guardians, settlement examination, overseer of the poor), or an "
+        "abbreviation written on an Ordnance Survey map (P.H., B.M., S.P). Returns checked "
+        "explanations with numbered sources to cite. Map abbreviations often have several "
+        "meanings: give them all unless the context decides. An explanation describes the "
+        "period, never a particular person.",
+        ExplainTermInput,
+    )
+)
+
 TOOL_LABELS = {
     "search_source_directory": "Searching the source directory",
     "search_records": "Searching records",
@@ -157,6 +174,7 @@ TOOL_LABELS = {
     "compare_claims": "Comparing what the sources say",
     "search_connector": "Searching a connected source",
     "search_archive": "Searching your Archive",
+    "explain_term": "Looking up an old term",
 }
 
 
@@ -215,6 +233,48 @@ class ToolKit:
         if e.record:
             return self.cite_record(e.record)
         return self.cite("file", f"{e.file_id}:{e.location}", e.title, "", "Your Archive")
+
+    def _explain_term(self, args: ExplainTermInput) -> dict[str, Any]:
+        from history.glossary import abbreviation, search_terms
+
+        out: dict[str, Any] = {
+            "note": "Explanations describe the period, not a particular person.",
+        }
+        found = search_terms(args.term)
+        out["explanations"] = [
+            {
+                "cite": self.cite(
+                    "glossary",
+                    t["key"],
+                    t["term"],
+                    t["sources"][0]["url"],
+                    t["sources"][0]["title"],
+                ),
+                "term": t["term"],
+                "meaning": t["meaning"],
+                "kind": t["kind"],
+                "checked_on": t["checked_on"],
+            }
+            for t in found
+        ]
+        abbr = abbreviation(args.term)
+        if abbr:
+            out["map_abbreviation"] = {
+                "cite": self.cite(
+                    "glossary",
+                    f"abbr:{abbr['abbr']}",
+                    f"OS abbreviation {abbr['abbr']}",
+                    abbr["source_url"],
+                    abbr["source"],
+                ),  # fmt: skip
+                "abbreviation": abbr["abbr"],
+                "possible_meanings": abbr["meanings"],
+            }
+        if found or abbr:
+            self.log("Searched", f"ArchiveHub's checked explanations for “{args.term}”")
+        else:
+            self.log("Not found", f"No checked explanation of “{args.term}” yet")
+        return out
 
     def cite_connector(self, r: ConnectorRecord, source_name: str) -> int:
         connector = get_connector(r.connector)

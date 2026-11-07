@@ -23,6 +23,10 @@
 - **Listed buildings layer** on the time map (ADR-037): 52 around Cheap Street, live from Historic England, with the listing date explained.
 - **Outside sources in Search** (opt-in, ADR-037): The Gazette, Historic England and OpenAlex today; others as their keys are set (docs/CONNECTORS.md).
 - **What else is known here?** on any map item: c.1900 map names within 150 m (with OS abbreviations explained), records for the street, and Gazette notices for it, searched live.
+- **Family trees on the map** (ADR-038): suggested locations for places in a tree, checked by people; births, baptisms, deaths and burials as private pins, never for living people.
+- **Save to project** from Search, map items and Gazette notices into the Research Basket.
+- **Protected areas** (ADR-039): conservation areas, scheduled monuments, parks and gardens, battlefields.
+- **Explanations of old terms** (ADR-039): old money, Poor Law terms and map abbreviations, checked against named sources, for the assistant and Search.
 - **Pictures in the Explorer** where allowed (public-domain museum images; Geograph photos credited), and "Show on the time map" for located records.
 - **Connectors:** 13 live sources added (ADR-034 to ADR-036); see docs/SOURCE_REGISTER.md.
 

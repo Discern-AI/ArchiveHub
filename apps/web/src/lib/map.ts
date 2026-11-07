@@ -137,6 +137,7 @@ export interface Nearby {
   map_names: {
     title: string;
     meaning: string;
+    meaning_source?: string;
     distance_m: number;
     record_id: string;
     latitude: number;

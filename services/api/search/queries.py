@@ -357,7 +357,49 @@ def _people(user, words) -> Group:
     )
 
 
-PUBLIC_GROUPS = [_places, _organisations, _records, _map_names, _directory]
+def _explanations(words) -> Group:
+    """Checked explanations of old terms and map abbreviations (history/glossary.py)."""
+    from history.glossary import abbreviation, search_terms
+
+    query = " ".join(words)
+    results = [
+        Result(
+            id=f"term:{t['key']}",
+            title=t["term"],
+            snippet=t["meaning"],
+            source=t["sources"][0]["title"],
+            url=t["sources"][0]["url"],
+            extra={"kind": t["kind"]},
+        )
+        for t in search_terms(query, limit=PER_GROUP)
+    ]
+    if len(words) == 1:
+        abbr = abbreviation(words[0].upper()) or abbreviation(words[0])
+        if abbr:
+            results.insert(
+                0,
+                Result(
+                    id=f"abbr:{abbr['abbr']}",
+                    title=f"{abbr['abbr']} on Ordnance Survey maps",
+                    snippet=abbr["text"].capitalize(),
+                    source=abbr["source"],
+                    url=abbr["source_url"],
+                ),
+            )
+    return Group(
+        key="explanations",
+        label="Explanations of old terms",
+        layer="public",
+        searched=(
+            "ArchiveHub's checked explanations of old money, Poor Law terms and map abbreviations"
+        ),
+        results=results,
+        count=len(results),
+        more=False,
+    )
+
+
+PUBLIC_GROUPS = [_places, _organisations, _records, _map_names, _directory, _explanations]
 PRIVATE_GROUPS = [_map_items, _files, _transcripts, _people]
 
 

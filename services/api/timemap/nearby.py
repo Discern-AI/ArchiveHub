@@ -14,6 +14,7 @@ from typing import Any
 from connectors.base import ConnectorError
 from connectors.models import DatasetRow
 from connectors.sources import get_connector
+from history.glossary import abbreviation
 from history.models import Place
 from projects.permissions import visible_projects
 
@@ -21,33 +22,6 @@ from .queries import PRIVATE, BBox, _claims, _records
 
 NAME_RADIUS_M = 150
 MAX_NAMES = 10
-
-# Standard abbreviations on Ordnance Survey large-scale maps of the period.
-OS_ABBREVIATIONS = {
-    "B.M.": "bench mark (height marker)",
-    "B.P.": "boundary post",
-    "B.S.": "boundary stone",
-    "Ch.": "church",
-    "Chap.": "chapel",
-    "F.B.": "footbridge",
-    "F.P.": "footpath",
-    "G.P.": "guide post (signpost)",
-    "L.B.": "letter box",
-    "M.P.": "mile post",
-    "M.S.": "mile stone",
-    "P": "pump",
-    "P.": "pump",
-    "P.H.": "public house",
-    "P.O.": "post office",
-    "S.P": "signal post",
-    "S.P.": "signal post",
-    "S.Ps": "signal posts",
-    "Sch.": "school",
-    "T.C.B.": "telephone call box",
-    "W": "well",
-    "W.": "well",
-    "W.M.": "weighing machine",
-}
 
 
 def _metres(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -62,6 +36,14 @@ def _box(lat: float, lng: float, metres: float) -> BBox:
     return BBox(lng - dlng, lat - dlat, lng + dlng, lat + dlat)
 
 
+def _meaning(title: str) -> dict[str, str]:
+    """What an Ordnance Survey abbreviation may mean; several meanings are all given."""
+    found = abbreviation(title)
+    if not found:
+        return {"meaning": "", "meaning_source": ""}
+    return {"meaning": found["text"], "meaning_source": found["source_url"]}
+
+
 def _old_map_names(lat: float, lng: float) -> list[dict[str, Any]]:
     box = _box(lat, lng, NAME_RADIUS_M)
     rows = DatasetRow.objects.filter(dataset__key="old-map-names").filter(box.q())[:200]
@@ -69,7 +51,7 @@ def _old_map_names(lat: float, lng: float) -> list[dict[str, Any]]:
         {
             "title": r.title,
             "distance_m": round(_metres(lat, lng, r.latitude, r.longitude)),
-            "meaning": OS_ABBREVIATIONS.get(r.title.strip(), ""),
+            **_meaning(r.title),
             "record_id": r.external_id,
             "latitude": r.latitude,
             "longitude": r.longitude,

@@ -390,6 +390,7 @@ def test_what_else_is_known_here(ref, alice, alice_client, project, monkeypatch)
     assert data["street"] == "Cheap Street, Newbury"
     assert [n["title"] for n in data["map_names"]] == ["P.H.", "Corn Exchange"]  # nearest first
     assert data["map_names"][0]["meaning"] == "public house"
+    assert data["map_names"][0]["meaning_source"] == "https://maps.nls.uk/os/abbrev/p.html"
     assert any("Pigeons, 5 Cheap Street" in f["title"] for f in data["public"])
     assert [f["title"] for f in data["private"]] == ["The Pigeons: family story Grandad drank here"]
     assert sent == ['"Cheap Street" Newbury']  # only the street, never anything of the user's

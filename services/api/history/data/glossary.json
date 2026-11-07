@@ -1,0 +1,581 @@
+{
+ "_about": "Explanations in our own words, each checked against its source on 2026-11-07. Map abbreviations are from the National Library of Scotland's list compiled by Dr Richard Oliver; many have several meanings, and the map's context decides which.",
+ "abbreviations": [
+  {
+   "abbr": "BM",
+   "meanings": [
+    "bench mark"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/b.html"
+  },
+  {
+   "abbr": "BP",
+   "meanings": [
+    "boundary post or plate",
+    "bridle path"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/b.html"
+  },
+  {
+   "abbr": "BS",
+   "meanings": [
+    "boundary stone"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/b.html"
+  },
+  {
+   "abbr": "Ch",
+   "meanings": [
+    "church"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/c.html"
+  },
+  {
+   "abbr": "Chap",
+   "meanings": [
+    "chapel"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/c.html"
+  },
+  {
+   "abbr": "CH",
+   "meanings": [
+    "chase",
+    "club house",
+    "coach house",
+    "coal house"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/c.html"
+  },
+  {
+   "abbr": "Cemy",
+   "meanings": [
+    "cemetery"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/c.html"
+  },
+  {
+   "abbr": "Cott",
+   "meanings": [
+    "cottage"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/c.html"
+  },
+  {
+   "abbr": "FB",
+   "meanings": [
+    "filter bed",
+    "foot bridge"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/f.html"
+  },
+  {
+   "abbr": "FP",
+   "meanings": [
+    "face of paling",
+    "fire plug",
+    "foot path"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/f.html"
+  },
+  {
+   "abbr": "GP",
+   "meanings": [
+    "gas plug",
+    "guide post (signpost)"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/g.html"
+  },
+  {
+   "abbr": "LB",
+   "meanings": [
+    "letter box",
+    "London Borough"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/l.html"
+  },
+  {
+   "abbr": "LC",
+   "meanings": [
+    "level crossing"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/l.html"
+  },
+  {
+   "abbr": "Lo",
+   "meanings": [
+    "lodge"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/l.html"
+  },
+  {
+   "abbr": "MP",
+   "meanings": [
+    "mile post",
+    "mooring post"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/m.html"
+  },
+  {
+   "abbr": "MS",
+   "meanings": [
+    "mews",
+    "mile stone"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/m.html"
+  },
+  {
+   "abbr": "P",
+   "meanings": [
+    "pump",
+    "post",
+    "pillar",
+    "pole",
+    "pylon",
+    "plug",
+    "pool",
+    "paling",
+    "passage",
+    "path",
+    "pavement",
+    "place",
+    "pond",
+    "post office (small scales)"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/p.html"
+  },
+  {
+   "abbr": "PH",
+   "meanings": [
+    "public house"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/p.html"
+  },
+  {
+   "abbr": "PO",
+   "meanings": [
+    "post office (large scales)"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/p.html"
+  },
+  {
+   "abbr": "Ph",
+   "meanings": [
+    "parish"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/p.html"
+  },
+  {
+   "abbr": "PC",
+   "meanings": [
+    "public convenience"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/p.html"
+  },
+  {
+   "abbr": "Pp",
+   "meanings": [
+    "pump"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/p.html"
+  },
+  {
+   "abbr": "SP",
+   "meanings": [
+    "signal post",
+    "sewer pipe",
+    "spur"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/s.html"
+  },
+  {
+   "abbr": "SB",
+   "meanings": [
+    "signal box"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/s.html"
+  },
+  {
+   "abbr": "Sch",
+   "meanings": [
+    "school"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/s.html"
+  },
+  {
+   "abbr": "Smy",
+   "meanings": [
+    "smithy"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/s.html"
+  },
+  {
+   "abbr": "Sta",
+   "meanings": [
+    "station"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/s.html"
+  },
+  {
+   "abbr": "TCB",
+   "meanings": [
+    "telephone call box"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/t.html"
+  },
+  {
+   "abbr": "Tk",
+   "meanings": [
+    "tank",
+    "track"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/t.html"
+  },
+  {
+   "abbr": "Tr",
+   "meanings": [
+    "trough"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/t.html"
+  },
+  {
+   "abbr": "TH",
+   "meanings": [
+    "town hall",
+    "tool house (?)"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/t.html"
+  },
+  {
+   "abbr": "Twr",
+   "meanings": [
+    "tower"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/t.html"
+  },
+  {
+   "abbr": "W",
+   "meanings": [
+    "well",
+    "west",
+    "wall",
+    "weir",
+    "water",
+    "wood",
+    "walk",
+    "way",
+    "wharf",
+    "watershed"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/w.html"
+  },
+  {
+   "abbr": "WM",
+   "meanings": [
+    "weighing machine",
+    "water main (?)",
+    "witness mark"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/w.html"
+  },
+  {
+   "abbr": "WB",
+   "meanings": [
+    "weighbridge",
+    "weighing machine"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/w.html"
+  },
+  {
+   "abbr": "WT",
+   "meanings": [
+    "water tap"
+   ],
+   "source_url": "https://maps.nls.uk/os/abbrev/w.html"
+  }
+ ],
+ "terms": [
+  {
+   "key": "pound",
+   "term": "Pound (£)",
+   "also": [
+    "libra",
+    "l"
+   ],
+   "kind": "money",
+   "meaning": "The main unit of British money before 1971, divided into 20 shillings (240 pence). The £ sign comes from the Latin libra.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "shilling",
+   "term": "Shilling (s)",
+   "also": [
+    "bob",
+    "s."
+   ],
+   "kind": "money",
+   "meaning": "One twentieth of a pound, divided into 12 pence. Written 's'; also called a 'bob'.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "penny",
+   "term": "Penny (d)",
+   "also": [
+    "pence",
+    "d",
+    "denarius"
+   ],
+   "kind": "money",
+   "meaning": "One twelfth of a shilling, divided into two halfpennies or four farthings. Written 'd', from the Latin denarius.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "halfpenny",
+   "term": "Halfpenny (½d)",
+   "also": [
+    "ha'penny",
+    "ob"
+   ],
+   "kind": "money",
+   "meaning": "Half a penny. In old accounts it may be written 'ob'.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "farthing",
+   "term": "Farthing (¼d)",
+   "also": [
+    "qua",
+    "fourth-thing"
+   ],
+   "kind": "money",
+   "meaning": "A quarter of a penny (the word means 'a fourth-thing'). In old accounts it may be written 'qua'.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "guinea",
+   "term": "Guinea",
+   "also": [
+    "gn",
+    "gns"
+   ],
+   "kind": "money",
+   "meaning": "One pound and one shilling (21 shillings).",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "crown",
+   "term": "Crown",
+   "also": [],
+   "kind": "money",
+   "meaning": "Five shillings (5s).",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "half-crown",
+   "term": "Half a crown",
+   "also": [
+    "half crown",
+    "half-crown"
+   ],
+   "kind": "money",
+   "meaning": "Two shillings and sixpence (2s 6d).",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "mark",
+   "term": "Mark",
+   "also": [],
+   "kind": "money",
+   "meaning": "An accounting unit worth two-thirds of a pound (13s 4d). It was never a coin.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "groat",
+   "term": "Groat",
+   "also": [],
+   "kind": "money",
+   "meaning": "A coin in circulation until 1662, briefly revived in the mid-nineteenth century.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "lsd",
+   "term": "£ s d",
+   "also": [
+    "pounds shillings and pence",
+    "9/6",
+    "nine and six"
+   ],
+   "kind": "money",
+   "meaning": "How amounts were written before 1971, e.g. £1 9s 6d or £1.9.6. Shillings and pence alone could be written 9s 6d or 9/6, said 'nine and six'. Britain changed to decimal currency on 15 February 1971.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Money",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/weightsandmeasures/money.aspx"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "poor-law-union",
+   "term": "Poor law union",
+   "also": [
+    "union",
+    "poor law unions"
+   ],
+   "kind": "poor law",
+   "meaning": "From 1834, parishes in England and Wales were grouped into poor law unions to run poor relief together, reporting to the new Poor Law Commission. To find a union's records you usually need to know its name.",
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "board-of-guardians",
+   "term": "Board of guardians",
+   "also": [
+    "guardians",
+    "guardians of the poor"
+   ],
+   "kind": "poor law",
+   "meaning": "The body that ran a poor law union, elected by ratepayers from the union's parishes.",
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "workhouse",
+   "term": "Workhouse",
+   "also": [
+    "union workhouse",
+    "workhouse master",
+    "matron"
+   ],
+   "kind": "poor law",
+   "meaning": "The institution where poor people were housed and set to work. A workhouse master and matron supervised its day-to-day running for the board of guardians.",
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "settlement",
+   "term": "Settlement (parish of settlement)",
+   "also": [
+    "parish of settlement",
+    "settled"
+   ],
+   "kind": "poor law",
+   "meaning": "The parish responsible for a poor person, generally their parish of birth. Disputes over which parish had to pay could end up at quarter sessions.",
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "settlement-examination",
+   "term": "Settlement examination",
+   "also": [
+    "examination"
+   ],
+   "kind": "poor law",
+   "meaning": "A statement made to justices of the peace by someone whose parish of settlement was in doubt. They often describe a person's life and work.",
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  },
+  {
+   "key": "overseer-of-the-poor",
+   "term": "Overseer of the poor",
+   "also": [
+    "overseers",
+    "overseers of the poor"
+   ],
+   "kind": "poor law",
+   "meaning": "Before 1834, poor relief was mostly run locally by each parish. Overseers of the poor, with the churchwardens, kept the parish's poor accounts.",
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws"
+    }
+   ],
+   "checked_on": "2026-11-07"
+  }
+ ]
+}

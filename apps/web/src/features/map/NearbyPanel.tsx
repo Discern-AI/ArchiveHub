@@ -65,10 +65,30 @@ export function NearbyPanel({ f }: { f: MapFeature }) {
                 {d.map_names.map((n) => (
                   <li key={n.record_id}>
                     <strong>{n.title}</strong>
-                    {n.meaning ? ` (${n.meaning})` : ""}, {n.distance_m} m away
+                    {n.meaning && (
+                      <>
+                        {" "}
+                        (
+                        {n.meaning_source ? (
+                          <a href={n.meaning_source} target="_blank" rel="noreferrer">
+                            {n.meaning}
+                          </a>
+                        ) : (
+                          n.meaning
+                        )}
+                        )
+                      </>
+                    )}
+                    , {n.distance_m} m away
                   </li>
                 ))}
               </ul>
+            )}
+            {d.map_names.some((n) => n.meaning) && (
+              <p className="m-0 text-xs text-muted">
+                Abbreviations from the National Library of Scotland's list; many have several
+                meanings, and the map itself decides which.
+              </p>
             )}
           </div>
 

@@ -139,6 +139,55 @@ describe("Where to look next", () => {
   });
 });
 
+describe("Family chart", () => {
+  it("draws ancestors and children, hides living people's dates, and refocuses on click", async () => {
+    installFetch({
+      ...base,
+      "GET /api/v1/projects/p1/family-places": () => json({ places: [], not_looked_up: 0 }),
+      "GET /api/v1/projects/p1/tree-graph": () =>
+        json({
+          people: [
+            { id: "w", name: "Walter Sample", sex: "M", living: false, born: 1890, died: null },
+            { id: "a", name: "Arthur Sample", sex: "M", living: false, born: 1921, died: 1988 },
+            { id: "e", name: "Edith Fictional", sex: "F", living: false, born: 1923, died: 1991 },
+            { id: "c", name: "Alice Sample", sex: "F", living: true, born: null, died: null },
+          ],
+          links: [
+            { from: "w", to: "a", kind: "parent" },
+            { from: "a", to: "c", kind: "parent" },
+            { from: "e", to: "c", kind: "parent" },
+            { from: "a", to: "e", kind: "spouse" },
+          ],
+        }),
+    });
+    renderAt("/projects/p1/people");
+    const chart = await screen.findByRole("region", { name: "Family chart" });
+    // Starts on the best-connected person: Arthur, with his father above and daughter below.
+    expect(
+      within(chart).getByRole("group", { name: "Family chart for Arthur Sample" }),
+    ).toBeInTheDocument();
+    expect(
+      within(chart).getByRole("button", { name: "Walter Sample, born 1890" }),
+    ).toBeInTheDocument();
+    expect(within(chart).getByRole("button", { name: "Alice Sample, Living" })).toBeInTheDocument();
+    // Partners sit beside the person.
+    expect(
+      within(chart).getByRole("button", { name: "Edith Fictional, 1923–1991" }),
+    ).toBeInTheDocument();
+    await userEvent.click(within(chart).getByRole("button", { name: "Alice Sample, Living" }));
+    expect(
+      within(chart).getByRole("group", { name: "Family chart for Alice Sample" }),
+    ).toBeInTheDocument();
+    expect(
+      within(chart).getByRole("button", { name: "Edith Fictional, 1923–1991" }),
+    ).toBeInTheDocument();
+    expect(within(chart).getByRole("link", { name: "Open Alice Sample's page" })).toHaveAttribute(
+      "href",
+      "/projects/p1/people/c",
+    );
+  });
+});
+
 describe("Tree health check", () => {
   it("lists things to check with links to the people, and changes nothing", async () => {
     const calls = installFetch({

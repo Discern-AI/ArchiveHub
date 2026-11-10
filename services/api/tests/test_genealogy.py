@@ -194,3 +194,14 @@ def test_gedcom_7_export(imported, alice_client, project):
         assert GEDCOM7_DATE.fullmatch(good), good
     for bad in ("summer 1952", "c.1900", "1990-1992"):
         assert not GEDCOM7_DATE.fullmatch(bad), bad
+
+
+def test_tree_graph(imported, alice_client, bob_client, project):
+    data = alice_client.get(f"/api/v1/projects/{project.id}/tree-graph").json()
+    by_name = {p["name"]: p for p in data["people"]}
+    assert by_name["Arthur Sample"]["born"] == 1921 and by_name["Arthur Sample"]["died"] == 1988
+    alice = by_name["Alice Sample"]
+    assert alice["living"] and alice["born"] is None  # living: no dates on the chart
+    arthur_id = by_name["Arthur Sample"]["id"]
+    assert {"from": arthur_id, "to": alice["id"], "kind": "parent"} in data["links"]
+    assert bob_client.get(f"/api/v1/projects/{project.id}/tree-graph").status_code == 404

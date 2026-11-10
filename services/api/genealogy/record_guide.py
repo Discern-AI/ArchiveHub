@@ -97,8 +97,7 @@ def _civil(event: str, year: int, place: str) -> list[Route]:
             Route(
                 "GRO historical index and register image",
                 "General Register Office",
-                f"The {event} index with the mother's maiden name, then an image or PDF of "
-                "the register entry, which adds details such as parents or cause of death.",
+                f"The {event} index, then an image or PDF of the register entry itself.",
                 "free" if online else "paid",
                 "Index free to search; Online View image about £3, PDF about £8 (check "
                 "current fees). Needs the GRO index reference. Images aren't certified "
@@ -114,7 +113,7 @@ def _civil(event: str, year: int, place: str) -> list[Route]:
             Route(
                 "Marriage certificate",
                 "General Register Office or the local register office",
-                "The full entry: ages, addresses, occupations and fathers' names.",
+                "A copy of the full register entry.",
                 "paid",
                 "Order with the index reference from FreeBMD.",
                 TNA_BMD,

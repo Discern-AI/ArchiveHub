@@ -152,8 +152,44 @@ def where_to_look_for(request: HttpRequest, project_id: UUID, person_id: UUID) -
     return {
         "steps": [s.to_dict() for s in steps],
         "note": "Where records would be if they exist; a search may find nothing. "
-        "Ticked routes were checked against official guidance.",
+        "Routes marked as leads haven't been checked against official guidance yet.",
     }
+
+
+@router.get("/projects/{project_id}/tree-graph")
+def tree_graph(request: HttpRequest, project_id: UUID) -> dict[str, Any]:
+    """Everyone in the tree with the links between them, for drawing the chart."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    people = list(Person.objects.filter(project=project))
+    values = current_values(project, [p.id for p in people])
+
+    def year(v, *labels):
+        for label in labels:
+            a = v.get(f"{label} date")
+            if a is not None and (a.year_from or a.year_to):
+                return a.year_from or a.year_to
+        return None
+
+    nodes = []
+    for p in people:
+        v = values.get(p.id, {})
+        living = p.living_status != LivingStatus.DECEASED
+        nodes.append(
+            {
+                "id": str(p.id),
+                "name": v["name"].value if "name" in v else p.name,
+                "sex": p.sex,
+                "living": living,
+                # Living people's dates stay off the chart, as on the family page.
+                "born": None if living else year(v, "birth", "baptism"),
+                "died": None if living else year(v, "death", "burial"),
+            }
+        )
+    links = [
+        {"from": str(r.person_id), "to": str(r.relative_id), "kind": r.kind}
+        for r in Relationship.objects.filter(project=project)
+    ]
+    return {"people": nodes, "links": links}
 
 
 @router.get("/projects/{project_id}/tree-health")

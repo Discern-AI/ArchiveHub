@@ -259,3 +259,14 @@ The protected areas layer now covers Great Britain, not just England.
 - Northern Ireland isn't connected: DfC's service is for its own viewer and states no licence (ADR-046), so the map says so. All-capitals names are shown in title case.
 - The panel says outlines are a guide and the official designation record is what counts, as HES asks.
 
+## ADR-048 — Update 1 and Addendum v3 shape the next builds
+
+**Status:** Accepted (2026-11-10)
+
+The owner's two update documents ([updates/](updates/)) add to SPEC.md without replacing it; where Update 1 disagrees with SPEC.md, Update 1 wins.
+- **Order:** WP9 (Lifeline view and migration map) is next, then WP10 imports and tree tools, WP11 Life Story and galleries, WP12 Explain this record and Life and times, WP13 lineages and record ordering, WP14 Life Report and culture links. WP7 (Home) and WP8 (Connect and payments) move after these; record ordering in WP13 needs WP8's payments, so its paid part waits.
+- **Sources:** every source the documents name is in SOURCE_REGISTER.md §12 and, where it holds data, the in-app source directory (49 added, marked not checked unless we read the terms). Terms the documents report are leads, not facts, until a terms page is read.
+- **Code:** licences of all 106 repos named were checked on GitHub on 10 November 2026 and recorded with a decision. GPL and AGPL code is studied, not copied; code with no licence, an unrecognised one or a non-commercial one is used for ideas only. The Lifeline is written from scratch: Time Travel Map (GPL-3.0) is a design reference only.
+- **Evidence labels:** our documented, remembered, inferred and disputed stay; "corroborated" and "contextual" may be added when a feature needs them.
+- **Scope:** Berkshire, Oxford and Newbury examples in the documents are pilot data, not limits (ADR-043).
+

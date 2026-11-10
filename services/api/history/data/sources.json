@@ -1211,5 +1211,1391 @@
     "review_status": "page_read",
     "plan": "Imported with import_ni_listed_buildings and shown on the time map with the other UK lists (ADR-046).",
     "last_checked": "2026-11-10"
+  },
+  {
+    "key": "yale-center-british-art",
+    "name": "Yale Center for British Art",
+    "kind": "museum collection",
+    "holder": "Yale University",
+    "url": "https://britishart.yale.edu/terms",
+    "description": "British art, including landscapes and rural scenes.",
+    "coverage_area": "Britain",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Public domain images (reported)",
+    "conditions": "Update 1 reports: public domain images can be used without permission or fees; commercial use isn't addressed on that page. Check before showing in a paid product.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Culture items for the Life Report (WP14). First art source to connect.",
+    "last_checked": null
+  },
+  {
+    "key": "cleveland-museum-art",
+    "name": "Cleveland Museum of Art Open Access",
+    "kind": "museum collection",
+    "holder": "Cleveland Museum of Art",
+    "url": "https://www.clevelandart.org/open-access-api",
+    "description": "64,000+ artwork records and 37,000+ images, with an API (openaccess-api.clevelandart.org) and GitHub downloads.",
+    "coverage_area": "Worldwide art",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "CC0 (GitHub repo licence confirmed CC0-1.0 on 10 Nov 2026)",
+    "conditions": "Update 1 reports: CC0, commercial use allowed. Check each item's open-access flag.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "partly_checked",
+    "plan": "Culture items for the Life Report (WP14). First art source to connect.",
+    "last_checked": null
+  },
+  {
+    "key": "getty-open-content",
+    "name": "Getty Open Content",
+    "kind": "museum collection",
+    "holder": "J. Paul Getty Trust",
+    "url": "https://www.getty.edu/about/whatwedo/opencontent.html",
+    "description": "160,000+ images, including paintings, prints, maps and 19th-century photographs.",
+    "coverage_area": "Worldwide art",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks",
+      "photographs",
+      "maps"
+    ],
+    "tags": [
+      "art",
+      "culture",
+      "photographs"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "CC0 (reported)",
+    "conditions": "Update 1 reports: CC0 images, commercial use allowed.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Culture items for the Life Report (WP14). First art source to connect.",
+    "last_checked": null
+  },
+  {
+    "key": "british-library-flickr",
+    "name": "British Library illustrations on Flickr Commons",
+    "kind": "media library",
+    "holder": "British Library",
+    "url": "https://www.libraryjournal.com/story/british-library-adds-1-million-public-domain-images-taken-from-17th-18th-and-19th-century-books-to-flickr-commons",
+    "description": "About 1 million illustrations from 17th–19th century books.",
+    "coverage_area": "Mostly Britain",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "illustrations"
+    ],
+    "tags": [
+      "art",
+      "culture",
+      "books"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Public domain (reported)",
+    "conditions": "Update 1 reports: public domain. Captions are thin, so items need tagging before matching.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Illustrations for the Life Report once tagged (WP14).",
+    "last_checked": null
+  },
+  {
+    "key": "national-gallery-london",
+    "name": "National Gallery (London)",
+    "kind": "museum collection",
+    "holder": "National Gallery",
+    "url": "https://www.nationalgallery.org.uk/paintings",
+    "description": "Western European paintings, c.1250–1900.",
+    "coverage_area": "Europe",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "metadata",
+    "cost": "free",
+    "licence": "Data CC0, texts CC BY, images non-commercial (reported)",
+    "conditions": "Update 1 reports: data CC0 and texts CC BY, but images non-commercial only. Use data and link to images.",
+    "storage_policy": "metadata_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Data only; link out for images.",
+    "last_checked": null
+  },
+  {
+    "key": "tate-collection",
+    "name": "Tate collection",
+    "kind": "museum collection",
+    "holder": "Tate",
+    "url": "https://www.tate.org.uk/art",
+    "description": "British and modern art. A metadata snapshot is on GitHub (tategallery/collection).",
+    "coverage_area": "Britain",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "metadata",
+    "cost": "free",
+    "licence": "Metadata CC0 (GitHub repo CC0-1.0)",
+    "conditions": "Update 1 reports: metadata CC0, image reuse not covered. The GitHub data is an old snapshot.",
+    "storage_policy": "metadata_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Data only; link out for images.",
+    "last_checked": null
+  },
+  {
+    "key": "moma-collection",
+    "name": "MoMA collection data",
+    "kind": "dataset",
+    "holder": "Museum of Modern Art",
+    "url": "https://github.com/MuseumofModernArt/collection",
+    "description": "Modern artwork and artist metadata.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art"
+    ],
+    "access_type": "metadata",
+    "cost": "free",
+    "licence": "CC0-1.0 (GitHub, 10 Nov 2026)",
+    "conditions": "Metadata only; image rights are separate.",
+    "storage_policy": "metadata_only",
+    "status_label": "downloadable_dataset",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Low priority: mostly 20th century.",
+    "last_checked": null
+  },
+  {
+    "key": "art-uk",
+    "name": "Art UK",
+    "kind": "catalogue",
+    "holder": "Art UK",
+    "url": "https://artuk.org/",
+    "description": "Paintings and sculpture in UK public collections, many tied to places.",
+    "coverage_area": "UK",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art",
+      "culture",
+      "places"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Varies by artwork",
+    "conditions": "Update 1 reports: permissions vary by artwork; no API mentioned (see artuk.org/about/image-use).",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; ask about a partnership for local artworks.",
+    "last_checked": null
+  },
+  {
+    "key": "government-art-collection",
+    "name": "Government Art Collection",
+    "kind": "museum collection",
+    "holder": "DCMS",
+    "url": "https://artcollection.culture.gov.uk/",
+    "description": "Art owned by the UK government, including topographical views.",
+    "coverage_area": "UK",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art"
+    ],
+    "access_type": "external_only",
+    "cost": "paid",
+    "licence": "Paid licence (reported)",
+    "conditions": "Update 1 reports: a paid licence is needed for reproduction.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out.",
+    "last_checked": null
+  },
+  {
+    "key": "ashmolean",
+    "name": "Ashmolean Museum collections",
+    "kind": "museum collection",
+    "holder": "University of Oxford",
+    "url": "https://www.ashmolean.org/collections",
+    "description": "Art and objects, including Oxford views.",
+    "coverage_area": "Worldwide; Oxford",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks",
+      "objects"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; check terms.",
+    "last_checked": null
+  },
+  {
+    "key": "british-museum",
+    "name": "British Museum collection",
+    "kind": "museum collection",
+    "holder": "British Museum",
+    "url": "https://www.britishmuseum.org/collection",
+    "description": "Prints, drawings and objects, including satirical prints and topographical views.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks",
+      "objects",
+      "prints"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; check terms.",
+    "last_checked": null
+  },
+  {
+    "key": "national-galleries-scotland",
+    "name": "National Galleries of Scotland",
+    "kind": "museum collection",
+    "holder": "National Galleries of Scotland",
+    "url": "https://www.nationalgalleries.org/",
+    "description": "Scottish art and portraits.",
+    "coverage_area": "Scotland",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks",
+      "portraits"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; check terms.",
+    "last_checked": null
+  },
+  {
+    "key": "london-picture-archive",
+    "name": "London Picture Archive",
+    "kind": "photo archive",
+    "holder": "London Metropolitan Archives",
+    "url": "https://www.londonpicturearchive.org.uk/",
+    "description": "Historical images of London streets and buildings.",
+    "coverage_area": "London",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "photographs",
+      "prints"
+    ],
+    "tags": [
+      "places",
+      "photographs"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; check terms.",
+    "last_checked": null
+  },
+  {
+    "key": "nga-us-open-access",
+    "name": "National Gallery of Art (US) open access",
+    "kind": "museum collection",
+    "holder": "National Gallery of Art, Washington",
+    "url": "https://www.nga.gov/open-access-policy",
+    "description": "Open images and artwork data where marked.",
+    "coverage_area": "Worldwide art",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks"
+    ],
+    "tags": [
+      "art"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Open where marked (reported)",
+    "conditions": "Addendum v3 reports open images where indicated; not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Later art source.",
+    "last_checked": null
+  },
+  {
+    "key": "digital-bodleian",
+    "name": "Digital Bodleian",
+    "kind": "library",
+    "holder": "Bodleian Libraries",
+    "url": "https://digital.bodleian.ox.ac.uk/",
+    "description": "Digitised books, manuscripts, prints, ballads and maps, with IIIF.",
+    "coverage_area": "Worldwide; Oxford",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "manuscripts",
+      "prints",
+      "maps",
+      "ballads"
+    ],
+    "tags": [
+      "culture",
+      "books",
+      "maps"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; IIIF viewing later.",
+    "last_checked": null
+  },
+  {
+    "key": "iconclass",
+    "name": "Iconclass",
+    "kind": "dataset",
+    "holder": "Iconclass",
+    "url": "https://github.com/iconclass/data",
+    "description": "Subject codes for what artworks show (harvest, market, soldier...).",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "subject codes"
+    ],
+    "tags": [
+      "art",
+      "vocabulary"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "licence": "CC0-1.0 (GitHub, 10 Nov 2026)",
+    "conditions": "Update 1 reports: CC0.",
+    "storage_policy": "full_copy",
+    "status_label": "downloadable_dataset",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Subject tagging for culture items, linked to HISCO job codes (WP14).",
+    "last_checked": null
+  },
+  {
+    "key": "wikisource",
+    "name": "Wikisource",
+    "kind": "library",
+    "holder": "Wikimedia Foundation",
+    "url": "https://en.wikisource.org/",
+    "description": "Proofread transcriptions of public domain texts.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "texts"
+    ],
+    "tags": [
+      "literature",
+      "books"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked; licence varies by page.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Public domain passages for the Life Report.",
+    "last_checked": null
+  },
+  {
+    "key": "standard-ebooks",
+    "name": "Standard Ebooks",
+    "kind": "library",
+    "holder": "Standard Ebooks",
+    "url": "https://standardebooks.org/",
+    "description": "Carefully produced editions of public domain books (sources on GitHub).",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "texts"
+    ],
+    "tags": [
+      "literature"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Check each edition's rights.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Clean public domain texts.",
+    "last_checked": null
+  },
+  {
+    "key": "poetry-archive",
+    "name": "Poetry Archive",
+    "kind": "media library",
+    "holder": "Poetry Archive",
+    "url": "https://poetryarchive.org/",
+    "description": "10,369 poems, many read by the poets.",
+    "coverage_area": "Mostly English-language",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "poems",
+      "recordings"
+    ],
+    "tags": [
+      "literature",
+      "audio"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Not stated",
+    "conditions": "Update 1 reports: free to listen to; reuse terms not stated.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out.",
+    "last_checked": null
+  },
+  {
+    "key": "poetry-foundation",
+    "name": "Poetry Foundation",
+    "kind": "website",
+    "holder": "Poetry Foundation",
+    "url": "https://www.poetryfoundation.org/",
+    "description": "Poems and poet biographies.",
+    "coverage_area": "Mostly English-language",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "poems"
+    ],
+    "tags": [
+      "literature"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Addendum v3: metadata and discovery only; don't bulk copy poems.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out.",
+    "last_checked": null
+  },
+  {
+    "key": "oed",
+    "name": "Oxford English Dictionary",
+    "kind": "database",
+    "holder": "Oxford University Press",
+    "url": "https://www.oed.com/",
+    "description": "Historical meanings of words, with dated quotations.",
+    "coverage_area": "English",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "dictionary"
+    ],
+    "tags": [
+      "language",
+      "vocabulary"
+    ],
+    "access_type": "external_only",
+    "cost": "paid",
+    "licence": "Subscription",
+    "conditions": "Subscription and licensing needed.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; licence later for Explain this record.",
+    "last_checked": null
+  },
+  {
+    "key": "hardys-wessex",
+    "name": "Hardy's Wessex (fictional places)",
+    "kind": "website",
+    "holder": "Wikipedia (secondary)",
+    "url": "https://en.wikipedia.org/wiki/Thomas_Hardy%27s_Wessex",
+    "description": "Hardy's fictional names for real places.",
+    "coverage_area": "South and south-west England",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "fictional places"
+    ],
+    "tags": [
+      "literature",
+      "places"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Update 1 reports: in Jude the Obscure 'Kennetbridge' is Newbury (or possibly Hungerford), 'Alfredston' Wantage, 'Aldbrickham' Reading and 'Christminster' Oxford. Secondary source; check against a Hardy scholar before storing.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Seed for FictionalPlace links (WP14) once checked.",
+    "last_checked": null
+  },
+  {
+    "key": "literary-atlas-wales",
+    "name": "A Literary Atlas of Wales",
+    "kind": "website",
+    "holder": "Swansea University and partners",
+    "url": "https://www.swansea.ac.uk/arts-and-humanities/arts-and-humanities-research/our-recent-research-projects/a-new-literary-geography/",
+    "description": "Twelve novels mapped to real places.",
+    "coverage_area": "Wales",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "literary geography"
+    ],
+    "tags": [
+      "literature",
+      "places"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Unclear",
+    "conditions": "Update 1 reports: a design model; data terms unclear.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Design reference for literary maps.",
+    "last_checked": null
+  },
+  {
+    "key": "vwml",
+    "name": "Vaughan Williams Memorial Library",
+    "kind": "archive",
+    "holder": "English Folk Dance and Song Society",
+    "url": "https://www.vwml.org/",
+    "description": "Folk songs, the Roud indexes and the Full English archive.",
+    "coverage_area": "England and beyond",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "songs",
+      "folklore"
+    ],
+    "tags": [
+      "folk",
+      "music",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Permission beyond private study (reported)",
+    "conditions": "Update 1 reports: permission needed beyond private study (VWML licensing page).",
+    "storage_policy": "reference_only",
+    "status_label": "partner_collection",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Ask for permission to link and quote (WP14).",
+    "last_checked": null
+  },
+  {
+    "key": "roud-folk-song-index",
+    "name": "Roud Folk Song Index",
+    "kind": "catalogue",
+    "holder": "Vaughan Williams Memorial Library",
+    "url": "https://en.wikipedia.org/wiki/Roud_Folk_Song_Index",
+    "description": "Index of English-language folk songs and their variants.",
+    "coverage_area": "English-speaking world",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "songs"
+    ],
+    "tags": [
+      "folk",
+      "music"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Update 1 reports: its own pages weren't reachable; hosted by the VWML.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Via the VWML.",
+    "last_checked": null
+  },
+  {
+    "key": "traditional-ballad-index",
+    "name": "Traditional Ballad Index",
+    "kind": "catalogue",
+    "holder": "California State University, Fresno",
+    "url": "https://balladindex.org/",
+    "description": "Scholarly index of ballads and folk songs.",
+    "coverage_area": "English-speaking world",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "songs"
+    ],
+    "tags": [
+      "folk",
+      "music"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked; check reuse of downloadable data.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out.",
+    "last_checked": null
+  },
+  {
+    "key": "bodleian-broadside-ballads",
+    "name": "Bodleian broadside ballads",
+    "kind": "archive",
+    "holder": "Bodleian Libraries",
+    "url": "https://www.bodleian.ox.ac.uk/collections-and-resources/special-collections/finding-aids-and-catalogues/ballads",
+    "description": "Nearly 30,000 printed ballads with woodcuts, 16th–20th century.",
+    "coverage_area": "Britain",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "ballads",
+      "woodcuts"
+    ],
+    "tags": [
+      "folk",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Not stated",
+    "conditions": "Update 1 reports: now in SOLO, images planned for the end of 2026; reuse terms not stated.",
+    "storage_policy": "reference_only",
+    "status_label": "partner_collection",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Ask for permission (WP14).",
+    "last_checked": null
+  },
+  {
+    "key": "english-broadside-ballad-archive",
+    "name": "English Broadside Ballad Archive",
+    "kind": "archive",
+    "holder": "University of California, Santa Barbara",
+    "url": "https://en.wikipedia.com/wiki/English_Broadside_Ballad_Archive",
+    "description": "Early modern ballads and woodcuts.",
+    "coverage_area": "England",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "ballads",
+      "woodcuts"
+    ],
+    "tags": [
+      "folk",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Update 1 reports: terms not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out.",
+    "last_checked": null
+  },
+  {
+    "key": "child-ballads",
+    "name": "Child Ballads (online transcription)",
+    "kind": "website",
+    "holder": "Peter Robins (transcription)",
+    "url": "https://peterrobins.co.uk/ballads/",
+    "description": "Francis James Child's 305 ballads with 1,216 variants, published 1882–1898.",
+    "coverage_area": "England and Scotland",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "ballads"
+    ],
+    "tags": [
+      "folk",
+      "literature"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Original public domain; transcription terms not stated",
+    "conditions": "Update 1 reports: the original is old enough to be public domain, but this site's transcriptions don't state terms. Prefer a public domain scan.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Public domain ballad texts (WP14).",
+    "last_checked": null
+  },
+  {
+    "key": "halliwell-nursery-rhymes",
+    "name": "Halliwell: The Nursery Rhymes of England",
+    "kind": "library",
+    "holder": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/32415",
+    "description": "J. O. Halliwell-Phillipps' Victorian collection of nursery rhymes.",
+    "coverage_area": "England",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "rhymes"
+    ],
+    "tags": [
+      "folk",
+      "literature"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "licence": "Public domain (Gutenberg terms apply to their edition)",
+    "conditions": "Title confirmed on Project Gutenberg 10 Nov 2026. Follow Gutenberg's trademark and licence rules.",
+    "storage_policy": "full_copy",
+    "status_label": "downloadable_dataset",
+    "tier": "C",
+    "review_status": "partly_checked",
+    "plan": "Public domain rhymes for the Life Report (WP14).",
+    "last_checked": null
+  },
+  {
+    "key": "halliwell-popular-rhymes",
+    "name": "Halliwell: Popular Rhymes and Nursery Tales",
+    "kind": "library",
+    "holder": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/35707",
+    "description": "J. O. Halliwell-Phillipps' collection of popular rhymes and tales.",
+    "coverage_area": "England",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "rhymes",
+      "folk tales"
+    ],
+    "tags": [
+      "folk",
+      "literature"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "licence": "Public domain (Gutenberg terms apply to their edition)",
+    "conditions": "Title confirmed on Project Gutenberg 10 Nov 2026.",
+    "storage_policy": "full_copy",
+    "status_label": "downloadable_dataset",
+    "tier": "C",
+    "review_status": "partly_checked",
+    "plan": "Public domain rhymes and tales (WP14).",
+    "last_checked": null
+  },
+  {
+    "key": "oxfordshire-folklore-notes",
+    "name": "Oxfordshire folklore notes (Bodleian)",
+    "kind": "archive",
+    "holder": "Bodleian Libraries",
+    "url": "https://archives.bodleian.ox.ac.uk/repositories/2/archival_objects/38363",
+    "description": "Early 20th-century folklore notes catalogued by village.",
+    "coverage_area": "Oxfordshire",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "folklore"
+    ],
+    "tags": [
+      "folk"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Update 1 reports: archive material.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out.",
+    "last_checked": null
+  },
+  {
+    "key": "folklore-county-surveys",
+    "name": "Folklore Society county surveys",
+    "kind": "website",
+    "holder": "Pitt Rivers Museum (England: The Other Within)",
+    "url": "https://england.prm.ox.ac.uk/englishness-Folklore-surveys.html",
+    "description": "History of the county folklore surveys begun in 1893.",
+    "coverage_area": "England",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "folklore"
+    ],
+    "tags": [
+      "folk"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Update 1 reports: Berkshire wasn't in the 1897 allocation.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Reference for which counties have surveys.",
+    "last_checked": null
+  },
+  {
+    "key": "folklore-society",
+    "name": "The Folklore Society",
+    "kind": "website",
+    "holder": "The Folklore Society",
+    "url": "https://folklore-society.com/",
+    "description": "Folklore literature, customs and children's lore.",
+    "coverage_area": "Britain",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "folklore"
+    ],
+    "tags": [
+      "folk"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "partner_collection",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Possible partner for checked folklore explanations.",
+    "last_checked": null
+  },
+  {
+    "key": "efdss",
+    "name": "English Folk Dance and Song Society",
+    "kind": "archive",
+    "holder": "EFDSS",
+    "url": "https://www.efdss.org/",
+    "description": "Home of the VWML and the Full English digital archive.",
+    "coverage_area": "England",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "songs",
+      "dance"
+    ],
+    "tags": [
+      "folk",
+      "music"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "partner_collection",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "With the VWML.",
+    "last_checked": null
+  },
+  {
+    "key": "tobar-an-dualchais",
+    "name": "Tobar an Dualchais",
+    "kind": "media library",
+    "holder": "Tobar an Dualchais",
+    "url": "https://www.tobarandualchais.co.uk/",
+    "description": "Scottish traditional song, story and oral testimony recordings.",
+    "coverage_area": "Scotland",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "recordings",
+      "oral history"
+    ],
+    "tags": [
+      "folk",
+      "audio",
+      "testimony"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "partner_collection",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; ask about a partnership.",
+    "last_checked": null
+  },
+  {
+    "key": "itma",
+    "name": "Irish Traditional Music Archive",
+    "kind": "archive",
+    "holder": "ITMA",
+    "url": "https://www.itma.ie/",
+    "description": "Irish traditional music recordings, songs and manuscripts.",
+    "coverage_area": "Ireland",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "recordings",
+      "songs"
+    ],
+    "tags": [
+      "folk",
+      "music"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "partner_collection",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; ask about a partnership.",
+    "last_checked": null
+  },
+  {
+    "key": "bfi-storytrails",
+    "name": "BFI StoryTrails",
+    "kind": "media library",
+    "holder": "British Film Institute",
+    "url": "https://player.bfi.org.uk/free/collection/storytrails-the-peoples-map",
+    "description": "Free films linking local stories and archive footage to 15 towns and cities.",
+    "coverage_area": "UK (15 places)",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "film"
+    ],
+    "tags": [
+      "film",
+      "places"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Update 1 reports: free to watch; the wider Britain on Film archive still needs checking.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out from places.",
+    "last_checked": null
+  },
+  {
+    "key": "cambridge-alumni",
+    "name": "Cambridge Alumni Database (ACAD)",
+    "kind": "database",
+    "holder": "University of Cambridge",
+    "url": "https://venn.lib.cam.ac.uk/",
+    "description": "Members of Cambridge University, about 1200–1900.",
+    "coverage_area": "Cambridge (members from everywhere)",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "university registers"
+    ],
+    "tags": [
+      "education",
+      "people"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "Ask",
+    "conditions": "Update 1 reports: experimental; ask about reuse.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Where to look: university education.",
+    "last_checked": null
+  },
+  {
+    "key": "get-information-schools",
+    "name": "Get Information About Schools",
+    "kind": "official service",
+    "holder": "Department for Education",
+    "url": "https://get-information-schools.service.gov.uk/",
+    "description": "Register of schools in England, including closed ones.",
+    "coverage_area": "England",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "schools"
+    ],
+    "tags": [
+      "education"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked; assess the download.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Historic school identifiers for education records.",
+    "last_checked": null
+  },
+  {
+    "key": "hesa",
+    "name": "HESA",
+    "kind": "official service",
+    "holder": "Jisc (HESA)",
+    "url": "https://www.hesa.ac.uk/",
+    "description": "Higher education statistics.",
+    "coverage_area": "UK",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "statistics"
+    ],
+    "tags": [
+      "education",
+      "statistics"
+    ],
+    "access_type": "external_only",
+    "cost": "mixed",
+    "licence": "Licence needed for some products",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Context only.",
+    "last_checked": null
+  },
+  {
+    "key": "our-world-in-data",
+    "name": "Our World in Data",
+    "kind": "database",
+    "holder": "Global Change Data Lab",
+    "url": "https://ourworldindata.org/",
+    "description": "Long-run statistics on health, population and living standards.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "statistics"
+    ],
+    "tags": [
+      "statistics",
+      "context"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Life and times context, labelled as population figures (WP12).",
+    "last_checked": null
+  },
+  {
+    "key": "gapminder",
+    "name": "Gapminder data",
+    "kind": "dataset",
+    "holder": "Gapminder Foundation",
+    "url": "https://www.gapminder.org/data/",
+    "description": "Long-run indicators for countries.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "statistics"
+    ],
+    "tags": [
+      "statistics",
+      "context"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Life and times context (WP12).",
+    "last_checked": null
+  },
+  {
+    "key": "british-library-sounds",
+    "name": "British Library Sounds",
+    "kind": "media library",
+    "holder": "British Library",
+    "url": "https://sounds.bl.uk/",
+    "description": "Recorded sound, oral history and dialect recordings.",
+    "coverage_area": "UK",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "recordings",
+      "oral history"
+    ],
+    "tags": [
+      "audio",
+      "testimony"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Named as a testimony lead in Update 1 reports; not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out.",
+    "last_checked": null
+  },
+  {
+    "key": "fitzwilliam-museum",
+    "name": "Fitzwilliam Museum",
+    "kind": "museum collection",
+    "holder": "University of Cambridge",
+    "url": "https://fitzmuseum.cam.ac.uk/",
+    "description": "Art and objects.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "artworks",
+      "objects"
+    ],
+    "tags": [
+      "art",
+      "culture"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Named as a lead in Update 1 reports; not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Link out; check terms.",
+    "last_checked": null
+  },
+  {
+    "key": "chronicling-america",
+    "name": "Chronicling America",
+    "kind": "newspaper",
+    "holder": "Library of Congress",
+    "url": "https://chroniclingamerica.loc.gov/",
+    "description": "Digitised US newspapers.",
+    "coverage_area": "United States",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "newspapers"
+    ],
+    "tags": [
+      "newspapers"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "The Library of Congress API blocked our server with a bot challenge earlier; ask for access.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "US newspapers for emigrant families.",
+    "last_checked": null
+  },
+  {
+    "key": "crossref",
+    "name": "Crossref",
+    "kind": "database",
+    "holder": "Crossref",
+    "url": "https://www.crossref.org/",
+    "description": "Metadata for scholarly articles and books.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "research"
+    ],
+    "tags": [
+      "research"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Named as a lead in Update 1 reports; not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "potential_integration",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Research papers as context, alongside OpenAlex.",
+    "last_checked": null
+  },
+  {
+    "key": "arxiv",
+    "name": "arXiv",
+    "kind": "database",
+    "holder": "Cornell University",
+    "url": "https://arxiv.org/",
+    "description": "Preprints, including history of science.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "research"
+    ],
+    "tags": [
+      "research"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Named as a lead in Update 1 reports; not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Low priority.",
+    "last_checked": null
+  },
+  {
+    "key": "pubmed",
+    "name": "PubMed",
+    "kind": "database",
+    "holder": "US National Library of Medicine",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/",
+    "description": "Medical literature, including history of medicine and disease.",
+    "coverage_area": "Worldwide",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "research"
+    ],
+    "tags": [
+      "research",
+      "medicine"
+    ],
+    "access_type": "external_only",
+    "cost": "free",
+    "licence": "",
+    "conditions": "Named as a lead in Update 1 reports; not checked.",
+    "storage_policy": "reference_only",
+    "status_label": "external_only",
+    "tier": "C",
+    "review_status": "not_checked",
+    "plan": "Context for historical causes of death; never a claim about a person.",
+    "last_checked": null
   }
 ]

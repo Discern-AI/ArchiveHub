@@ -430,6 +430,219 @@ Commercial sites mostly license, digitise and index records held by archives, an
 
 ---
 
+## 12. From Update 1 and Addendum v3 (10 Nov 2026)
+
+New sources and repos from the two update documents in [updates/](updates/). Sources already listed above aren't repeated. Terms are as the documents report them unless marked as checked by us; treat them as leads until a terms page is read. Each data source is also in the in-app source directory, so the assistant can point to it.
+
+### Art and images
+
+| Source | What it gives | Terms (as reported) | Plan |
+|---|---|---|---|
+| [Yale Center for British Art](https://britishart.yale.edu/terms) | British art, including landscapes and rural scenes. | Update 1 reports: public domain images can be used without permission or fees; commercial use isn't addressed on that page. Check before showing in a paid product. | Culture items for the Life Report (WP14). First art source to connect. |
+| [Cleveland Museum of Art Open Access](https://www.clevelandart.org/open-access-api) | 64,000+ artwork records and 37,000+ images, with an API (openaccess-api.clevelandart.org) and GitHub downloads. | Update 1 reports: CC0, commercial use allowed. Check each item's open-access flag. | Culture items for the Life Report (WP14). First art source to connect. |
+| [Getty Open Content](https://www.getty.edu/about/whatwedo/opencontent.html) | 160,000+ images, including paintings, prints, maps and 19th-century photographs. | Update 1 reports: CC0 images, commercial use allowed. | Culture items for the Life Report (WP14). First art source to connect. |
+| [British Library illustrations on Flickr Commons](https://www.libraryjournal.com/story/british-library-adds-1-million-public-domain-images-taken-from-17th-18th-and-19th-century-books-to-flickr-commons) | About 1 million illustrations from 17th–19th century books. | Update 1 reports: public domain. Captions are thin, so items need tagging before matching. | Illustrations for the Life Report once tagged (WP14). |
+| [National Gallery (London)](https://www.nationalgallery.org.uk/paintings) | Western European paintings, c.1250–1900. | Update 1 reports: data CC0 and texts CC BY, but images non-commercial only. Use data and link to images. | Data only; link out for images. |
+| [Tate collection](https://www.tate.org.uk/art) | British and modern art. A metadata snapshot is on GitHub (tategallery/collection). | Update 1 reports: metadata CC0, image reuse not covered. The GitHub data is an old snapshot. | Data only; link out for images. |
+| [MoMA collection data](https://github.com/MuseumofModernArt/collection) | Modern artwork and artist metadata. | Metadata only; image rights are separate. | Low priority: mostly 20th century. |
+| [Art UK](https://artuk.org/) | Paintings and sculpture in UK public collections, many tied to places. | Update 1 reports: permissions vary by artwork; no API mentioned (see artuk.org/about/image-use). | Link out; ask about a partnership for local artworks. |
+| [Government Art Collection](https://artcollection.culture.gov.uk/) | Art owned by the UK government, including topographical views. | Update 1 reports: a paid licence is needed for reproduction. | Link out. |
+| [Ashmolean Museum collections](https://www.ashmolean.org/collections) | Art and objects, including Oxford views. | Not checked. | Link out; check terms. |
+| [British Museum collection](https://www.britishmuseum.org/collection) | Prints, drawings and objects, including satirical prints and topographical views. | Not checked. | Link out; check terms. |
+| [National Galleries of Scotland](https://www.nationalgalleries.org/) | Scottish art and portraits. | Not checked. | Link out; check terms. |
+| [London Picture Archive](https://www.londonpicturearchive.org.uk/) | Historical images of London streets and buildings. | Not checked. | Link out; check terms. |
+| [National Gallery of Art (US) open access](https://www.nga.gov/open-access-policy) | Open images and artwork data where marked. | Addendum v3 reports open images where indicated; not checked. | Later art source. |
+| [Digital Bodleian](https://digital.bodleian.ox.ac.uk/) | Digitised books, manuscripts, prints, ballads and maps, with IIIF. | Not checked. | Link out; IIIF viewing later. |
+| [Iconclass](https://github.com/iconclass/data) | Subject codes for what artworks show (harvest, market, soldier...). | Update 1 reports: CC0. | Subject tagging for culture items, linked to HISCO job codes (WP14). |
+
+### Literature and poetry
+
+| Source | What it gives | Terms (as reported) | Plan |
+|---|---|---|---|
+| [Wikisource](https://en.wikisource.org/) | Proofread transcriptions of public domain texts. | Not checked; licence varies by page. | Public domain passages for the Life Report. |
+| [Standard Ebooks](https://standardebooks.org/) | Carefully produced editions of public domain books (sources on GitHub). | Check each edition's rights. | Clean public domain texts. |
+| [Poetry Archive](https://poetryarchive.org/) | 10,369 poems, many read by the poets. | Update 1 reports: free to listen to; reuse terms not stated. | Link out. |
+| [Poetry Foundation](https://www.poetryfoundation.org/) | Poems and poet biographies. | Addendum v3: metadata and discovery only; don't bulk copy poems. | Link out. |
+| [Oxford English Dictionary](https://www.oed.com/) | Historical meanings of words, with dated quotations. | Subscription and licensing needed. | Link out; licence later for Explain this record. |
+| [Hardy's Wessex (fictional places)](https://en.wikipedia.org/wiki/Thomas_Hardy%27s_Wessex) | Hardy's fictional names for real places. | Update 1 reports: in Jude the Obscure 'Kennetbridge' is Newbury (or possibly Hungerford), 'Alfredston' Wantage, 'Aldbrickham' Reading and 'Christminster' Oxford. Secondary source; check against a Hardy scholar before storing. | Seed for FictionalPlace links (WP14) once checked. |
+| [A Literary Atlas of Wales](https://www.swansea.ac.uk/arts-and-humanities/arts-and-humanities-research/our-recent-research-projects/a-new-literary-geography/) | Twelve novels mapped to real places. | Update 1 reports: a design model; data terms unclear. | Design reference for literary maps. |
+
+### Ballads, folk songs, rhymes and folklore
+
+| Source | What it gives | Terms (as reported) | Plan |
+|---|---|---|---|
+| [Vaughan Williams Memorial Library](https://www.vwml.org/) | Folk songs, the Roud indexes and the Full English archive. | Update 1 reports: permission needed beyond private study (VWML licensing page). | Ask for permission to link and quote (WP14). |
+| [Roud Folk Song Index](https://en.wikipedia.org/wiki/Roud_Folk_Song_Index) | Index of English-language folk songs and their variants. | Update 1 reports: its own pages weren't reachable; hosted by the VWML. | Via the VWML. |
+| [Traditional Ballad Index](https://balladindex.org/) | Scholarly index of ballads and folk songs. | Not checked; check reuse of downloadable data. | Link out. |
+| [Bodleian broadside ballads](https://www.bodleian.ox.ac.uk/collections-and-resources/special-collections/finding-aids-and-catalogues/ballads) | Nearly 30,000 printed ballads with woodcuts, 16th–20th century. | Update 1 reports: now in SOLO, images planned for the end of 2026; reuse terms not stated. | Ask for permission (WP14). |
+| [English Broadside Ballad Archive](https://en.wikipedia.com/wiki/English_Broadside_Ballad_Archive) | Early modern ballads and woodcuts. | Update 1 reports: terms not checked. | Link out. |
+| [Child Ballads (online transcription)](https://peterrobins.co.uk/ballads/) | Francis James Child's 305 ballads with 1,216 variants, published 1882–1898. | Update 1 reports: the original is old enough to be public domain, but this site's transcriptions don't state terms. Prefer a public domain scan. | Public domain ballad texts (WP14). |
+| [Halliwell: The Nursery Rhymes of England](https://www.gutenberg.org/ebooks/32415) | J. O. Halliwell-Phillipps' Victorian collection of nursery rhymes. | Title confirmed on Project Gutenberg 10 Nov 2026. Follow Gutenberg's trademark and licence rules. | Public domain rhymes for the Life Report (WP14). |
+| [Halliwell: Popular Rhymes and Nursery Tales](https://www.gutenberg.org/ebooks/35707) | J. O. Halliwell-Phillipps' collection of popular rhymes and tales. | Title confirmed on Project Gutenberg 10 Nov 2026. | Public domain rhymes and tales (WP14). |
+| [Oxfordshire folklore notes (Bodleian)](https://archives.bodleian.ox.ac.uk/repositories/2/archival_objects/38363) | Early 20th-century folklore notes catalogued by village. | Update 1 reports: archive material. | Link out. |
+| [Folklore Society county surveys](https://england.prm.ox.ac.uk/englishness-Folklore-surveys.html) | History of the county folklore surveys begun in 1893. | Update 1 reports: Berkshire wasn't in the 1897 allocation. | Reference for which counties have surveys. |
+| [The Folklore Society](https://folklore-society.com/) | Folklore literature, customs and children's lore. | Not checked. | Possible partner for checked folklore explanations. |
+| [English Folk Dance and Song Society](https://www.efdss.org/) | Home of the VWML and the Full English digital archive. | Not checked. | With the VWML. |
+| [Tobar an Dualchais](https://www.tobarandualchais.co.uk/) | Scottish traditional song, story and oral testimony recordings. | Not checked. | Link out; ask about a partnership. |
+| [Irish Traditional Music Archive](https://www.itma.ie/) | Irish traditional music recordings, songs and manuscripts. | Not checked. | Link out; ask about a partnership. |
+
+### Film
+
+| Source | What it gives | Terms (as reported) | Plan |
+|---|---|---|---|
+| [BFI StoryTrails](https://player.bfi.org.uk/free/collection/storytrails-the-peoples-map) | Free films linking local stories and archive footage to 15 towns and cities. | Update 1 reports: free to watch; the wider Britain on Film archive still needs checking. | Link out from places. |
+
+### People, schools and statistics
+
+| Source | What it gives | Terms (as reported) | Plan |
+|---|---|---|---|
+| [Cambridge Alumni Database (ACAD)](https://venn.lib.cam.ac.uk/) | Members of Cambridge University, about 1200–1900. | Update 1 reports: experimental; ask about reuse. | Where to look: university education. |
+| [Get Information About Schools](https://get-information-schools.service.gov.uk/) | Register of schools in England, including closed ones. | Not checked; assess the download. | Historic school identifiers for education records. |
+| [HESA](https://www.hesa.ac.uk/) | Higher education statistics. | Not checked. | Context only. |
+| [Our World in Data](https://ourworldindata.org/) | Long-run statistics on health, population and living standards. | Not checked. | Life and times context, labelled as population figures (WP12). |
+| [Gapminder data](https://www.gapminder.org/data/) | Long-run indicators for countries. | Not checked. | Life and times context (WP12). |
+
+### Research, newspapers and sound
+
+| Source | What it gives | Terms (as reported) | Plan |
+|---|---|---|---|
+| [British Library Sounds](https://sounds.bl.uk/) | Recorded sound, oral history and dialect recordings. | Named as a testimony lead in Update 1 reports; not checked. | Link out. |
+| [Fitzwilliam Museum](https://fitzmuseum.cam.ac.uk/) | Art and objects. | Named as a lead in Update 1 reports; not checked. | Link out; check terms. |
+| [Chronicling America](https://chroniclingamerica.loc.gov/) | Digitised US newspapers. | The Library of Congress API blocked our server with a bot challenge earlier; ask for access. | US newspapers for emigrant families. |
+| [Crossref](https://www.crossref.org/) | Metadata for scholarly articles and books. | Named as a lead in Update 1 reports; not checked. | Research papers as context, alongside OpenAlex. |
+| [arXiv](https://arxiv.org/) | Preprints, including history of science. | Named as a lead in Update 1 reports; not checked. | Low priority. |
+| [PubMed](https://pubmed.ncbi.nlm.nih.gov/) | Medical literature, including history of medicine and disease. | Named as a lead in Update 1 reports; not checked. | Context for historical causes of death; never a claim about a person. |
+
+### Bringing trees home from other sites
+
+| Site | Export route | What's missing (as reported) |
+|---|---|---|
+| [Ancestry](https://help-redir.ancestry.com/hc/en-ca/articles/53933352542867-Uploading-and-Downloading-Trees) | The tree owner downloads a GEDCOM | Photos and media; outside services are blocked from downloading them |
+| [MyHeritage](https://www.myheritage.com/help/en/articles/12851866-how-do-i-download-export-a-gedcom-file-of-my-family-tree-from-my-family-site) | GEDCOM export from Manage Trees | Photo files ([help](https://www.myheritage.com/help/en/articles/12851303-do-my-photos-transfer-with-a-gedcom-file)), though links can be included |
+| [Findmypast](https://www.myheritage.com/help/en/articles/12851478-how-can-i-export-a-gedcom-of-my-family-tree-from-findmypast) | GEDCOM export from the tree page | Contents not documented |
+| [FamilySearch](https://familysearch.org/innovate/export) | Through listed apps only, up to eight generations, GEDCOM 7 | Photos, and spouses other than the preferred one |
+
+### Code to learn from
+
+Licences checked on GitHub on 10 November 2026 (API or repo page). The rule from Update 1 applies: don't reuse code with no licence or a non-commercial one, and only study GPL and AGPL code. "Licence file (type not recognised)" means GitHub couldn't classify it: read it before any use.
+
+| Repo | What's useful | Licence | Decision | Shapes |
+|---|---|---|---|---|
+| [gmarcon/webtrees-time-travel-map](https://github.com/gmarcon/webtrees-time-travel-map) | Timeline slider, alive-count chart and autoplay. | GPL-3.0 | Study only; don't copy code | Lifeline (WP9) |
+| [connorkeetch/kinwhere](https://github.com/connorkeetch/kinwhere) | GEDCOM to ancestry map, migration view and research hints. | MIT | May reuse with credit, after review | Lifeline (WP9) |
+| [oh-kay-blanket/family-plot](https://github.com/oh-kay-blanket/family-plot) | 3D tree positioned by birth year, with photos. | GPL-3.0 | Study only; don't copy code | Lifeline (WP9) |
+| [n1kozor/Tree-Monk](https://github.com/n1kozor/Tree-Monk) | Investigation board, historic maps and timelines. Update 1 reports a non-commercial licence. | Licence file (type not recognised) | Ideas only: non-commercial | Brick-wall board (later) |
+| [donatso/family-chart](https://github.com/donatso/family-chart) | Editable tree built on D3. | MIT | May reuse with credit, after review | Tree tools (WP10) |
+| [ErikGartner/dTree](https://github.com/ErikGartner/dTree) | Trees with multiple parents, built on D3. | MIT | May reuse with credit, after review | Tree tools (WP10) |
+| [BenPortner/js_family_tree](https://github.com/BenPortner/js_family_tree) | Interactive tree using d3-dag. | GPL-3.0 | Study only; don't copy code | Tree tools (WP10) |
+| [nliautaud/gedcom-svg-fanchart](https://github.com/nliautaud/gedcom-svg-fanchart) | Fan charts from GEDCOM. | MIT | May reuse with credit, after review | Tree tools (WP10) |
+| [davorg-cpan/svg-timeline-genealogy](https://github.com/davorg-cpan/svg-timeline-genealogy) | Genealogy timelines in SVG. | None found | Read the licence file first | Lifeline (WP9) |
+| [michelesalvador/GedcomGraph](https://github.com/michelesalvador/GedcomGraph) | Tree layouts on top of GEDCOM. | GPL-3.0 | Study only; don't copy code | Tree tools (WP10) |
+| [dedovskaya/Tam-VR](https://github.com/dedovskaya/Tam-VR) | Exploring a tree in virtual reality. | None found | Read the licence file first | Ideas only |
+| [picnicprojects/fanchart3d](https://github.com/picnicprojects/fanchart3d) | A GEDCOM fan chart as a 3D object. | None found | Read the licence file first | Ideas only |
+| [DenisSergeevitch/ex-ussr-kinship-research](https://github.com/DenisSergeevitch/ex-ussr-kinship-research) | Evidence grades, places as they were at the time, name variants. | MIT | May reuse with credit, after review | Evidence model; places through time |
+| [mattprusak/autoresearch-genealogy](https://github.com/mattprusak/autoresearch-genealogy) | Research prompts and templates. | MIT | May reuse with credit, after review | Assistant prompts |
+| [igormel81/genealogy-mcp](https://github.com/igormel81/genealogy-mcp) | MCP server knowing 171 archives, with links and plans. | MIT | May reuse with credit, after review | Where to look; source directory |
+| [mjsmulligan/irish-genealogy-research](https://github.com/mjsmulligan/irish-genealogy-research) | Record-linkage scores, household-based matching. | Licence file (type not recognised) | Read the licence file first | Merge suggestions (WP10) |
+| [DigitalArchivst/Open-Genealogy](https://github.com/DigitalArchivst/Open-Genealogy) | Prompts based on the genealogical proof standard. | Custom (not recognised) | Read the licence file first | Ideas only |
+| [cabout-me/gramps-mcp](https://github.com/cabout-me/gramps-mcp) | AI assistant tools for a Gramps tree. | AGPL-3.0 | Study only; don't copy code | Ideas only |
+| [elboletaire/family-tree-kit](https://github.com/elboletaire/family-tree-kit) | Agent-built trees where every fact needs a document. | MIT | May reuse with credit, after review | Evidence rules |
+| [Kinprove/genealogy-research-recipes](https://github.com/Kinprove/genealogy-research-recipes) | Research recipes for DNA and record searches. | Custom (not recognised) | Read the licence file first | Ideas only |
+| [ACiDekCZ/strom-research](https://github.com/ACiDekCZ/strom-research) | AI parish register research. | AGPL-3.0 | Study only; don't copy code | Ideas only |
+| [sodejm/AncestryLLM](https://github.com/sodejm/AncestryLLM) | Local tools for GEDCOM and RootsMagic. | MIT | May reuse with credit, after review | Imports (WP10) |
+| [bartfeenstra/betty](https://github.com/bartfeenstra/betty) | Encyclopedia-style family history websites. | GPL-3.0 | Study only; don't copy code | Home / publishing |
+| [tymrtn/family-book](https://github.com/tymrtn/family-book) | Private, self-hosted family tree and archive. | MIT | May reuse with credit, after review | Ideas |
+| [adityaimamz/WarisanAI](https://github.com/adityaimamz/WarisanAI) | Family archive with stories, photos and timelines. | MIT | May reuse with credit, after review | Life Story (WP11) |
+| [linyuanguo/Yugraphy](https://github.com/linyuanguo/Yugraphy) | AI that reads printed family books. | Licence file (type not recognised) | Read the licence file first | Ideas only |
+| [yojowa/familylore-plugin](https://github.com/yojowa/familylore-plugin) | Reads handwritten family letters. | MIT | May reuse with credit, after review | Handwriting |
+| [Scheldt-LLC/genealogy_ai](https://github.com/Scheldt-LLC/genealogy_ai) | Extracts details from documents with OCR and AI. | MIT | May reuse with credit, after review | Document reading |
+| [dekochka/genea-metric-books-transcriber-scripts](https://github.com/dekochka/genea-metric-books-transcriber-scripts) | Transcribes handwritten register images. | Custom (not recognised) | Read the licence file first | Ideas only |
+| [jon-mqn/genealogical_record_linkage](https://github.com/jon-mqn/genealogical_record_linkage) | Machine learning for matching records. | Unlicense | May reuse with credit, after review | Merge suggestions (WP10) |
+| [SultanOrazbayev/awesome-usa-census-linkage](https://github.com/SultanOrazbayev/awesome-usa-census-linkage) | List of census linkage projects. | None found | Read the licence file first | Reading list |
+| [mumuy/relationship](https://github.com/mumuy/relationship) | The correct term for any relative (Chinese kinship). | MIT | May reuse with credit, after review | Relationship naming |
+| [jammyfu/xiangsheng-genealogy](https://github.com/jammyfu/xiangsheng-genealogy) | Master-to-apprentice performance lineages. | MIT | May reuse with credit, after review | Lineages (WP13) |
+| [spear34000/Gwageo_Explorer](https://github.com/spear34000/Gwageo_Explorer) | 84,525 people who passed Korean civil service exams. | MIT | May reuse with credit, after review | Lineages (WP13) |
+| [awesomelena/european-dynasties](https://github.com/awesomelena/european-dynasties) | Royal and noble marriages. | MIT | May reuse with credit, after review | Lineages (WP13) |
+| [lmallez/wikidata-tree-generator](https://github.com/lmallez/wikidata-tree-generator) | Trees of historical figures from Wikidata. | MIT | May reuse with credit, after review | Lineages (WP13) |
+| [samwilson/wabmd](https://github.com/samwilson/wabmd) | Matching an official index to Wikidata. | None found | Read the licence file first | Ideas only |
+| [crouffer/obsidian-bible-vault](https://github.com/crouffer/obsidian-bible-vault) | 4,427 linked people and places. | MIT | May reuse with credit, after review | Ideas |
+| [metmuseum/openaccess](https://github.com/metmuseum/openaccess) | Met artwork metadata (CSV). | CC0-1.0 | Data reusable (CC0) | Culture items (WP14) |
+| [ClevelandMuseumArt/openaccess](https://github.com/ClevelandMuseumArt/openaccess) | Cleveland artwork metadata and eligible images. | CC0-1.0 | Data reusable (CC0) | Culture items (WP14) |
+| [tategallery/collection](https://github.com/tategallery/collection) | Tate artwork metadata snapshot. | CC0-1.0 | Data reusable (CC0) | Culture items (WP14) |
+| [MuseumofModernArt/collection](https://github.com/MuseumofModernArt/collection) | MoMA artwork metadata. | CC0-1.0 | Data reusable (CC0) | Culture items (WP14) |
+| [art-institute-of-chicago/api-data](https://github.com/art-institute-of-chicago/api-data) | Art Institute of Chicago data dump. | None found | Read the licence file first | Culture items (WP14) |
+| [georgeblck/art-datasets](https://github.com/georgeblck/art-datasets) | Directory of art datasets. | None found | Read the licence file first | Reading list |
+| [iconclass/data](https://github.com/iconclass/data) | Iconclass subject codes. | CC0-1.0 | Data reusable (CC0) | Culture items (WP14) |
+| [GLAM-Workbench/digitalnz](https://github.com/GLAM-Workbench/digitalnz) | DigitalNZ notebooks. | MIT | May reuse with credit, after review | Connector examples |
+| [GLAM-Workbench/trove-newspapers](https://github.com/GLAM-Workbench/trove-newspapers) | Trove newspaper notebooks. | MIT | May reuse with credit, after review | Connector examples |
+| [GLAM-Workbench/trove-newspaper-harvester](https://github.com/GLAM-Workbench/trove-newspaper-harvester) | Trove newspaper harvester. | MIT | May reuse with credit, after review | Connector examples |
+| [booknlp/booknlp](https://github.com/booknlp/booknlp) | Characters, quotations and places in novels. | MIT | May reuse with credit, after review | Literature (WP14) |
+| [cltk/cltk](https://github.com/cltk/cltk) | Pre-modern language pipelines. | MIT | May reuse with credit, after review | Later |
+| [stanfordnlp/stanza](https://github.com/stanfordnlp/stanza) | Named entities and sentence analysis. | Licence file (type not recognised) | Read the licence file first | Document reading |
+| [standardebooks/tools](https://github.com/standardebooks/tools) | EPUB production and validation. | Licence file (type not recognised) | Read the licence file first | Report export |
+| [garethbjohnson/gutendex](https://github.com/garethbjohnson/gutendex) | Self-hostable Project Gutenberg catalogue API. | MIT | May reuse with credit, after review | Literature (WP14) |
+| [cuthbertLab/music21](https://github.com/cuthbertLab/music21) | Analysing tunes and variants. | BSD-3-Clause | May reuse with credit, after review | Folk songs (later) |
+| [humdrum-tools/humdrum-data](https://github.com/humdrum-tools/humdrum-data) | Structured music corpora. | None found | Read the licence file first | Folk songs (later) |
+| [humdrum-tools/verovio-humdrum-viewer](https://github.com/humdrum-tools/verovio-humdrum-viewer) | Score rendering. | None found | Read the licence file first | Folk songs (later) |
+| [humdrum-tools/humdrum-documentation](https://github.com/humdrum-tools/humdrum-documentation) | Music format documentation. | None found | Read the licence file first | Reading list |
+| [docuracy/Locolligo](https://github.com/docuracy/Locolligo) | Geolocating heritage collection metadata. | Custom (not recognised) | Read the licence file first | Places |
+| [inception-project/inception](https://github.com/inception-project/inception) | Human-assisted text annotation. Now at eclipse-inception/inception. | Apache-2.0 | May reuse with credit, after review | Later |
+| [annotorious/annotorious](https://github.com/annotorious/annotorious) | Annotate people, objects and buildings on images. | BSD-3-Clause | May reuse with credit, after review | Galleries (WP11) |
+| [dpla/dpla-frontend](https://github.com/dpla/dpla-frontend) | Federated search interface. | MIT | May reuse with credit, after review | Design reference |
+| [wikimedia/mediawiki](https://github.com/wikimedia/mediawiki) | Wikisource platform. | Licence file (type not recognised) | Read the licence file first | Use the API instead |
+| [quarto-dev/quarto-cli](https://github.com/quarto-dev/quarto-cli) | HTML, PDF and Word output. | MIT | May reuse with credit, after review | Life Report export (WP14) |
+| [jgm/pandoc](https://github.com/jgm/pandoc) | Document conversion. | GPL-2.0 | Study only; don't copy code | Life Report export (WP14) |
+| [typst/typst](https://github.com/typst/typst) | Print-quality typesetting. | Apache-2.0 | May reuse with credit, after review | Life Report export (WP14) |
+| [citation-js/citation-js](https://github.com/citation-js/citation-js) | Citation formatting. | MIT | May reuse with credit, after review | Life Report bibliography (WP14) |
+| [zotero/translation-server](https://github.com/zotero/translation-server) | Bibliographic metadata from web pages. | Licence file (type not recognised) | Read the licence file first | Saving finds |
+| [Allmaps/Allmaps](https://github.com/Allmaps/Allmaps) | Georeferencing IIIF map images. | None found | Read the licence file first | Time map |
+| [geneweb/geneweb](https://github.com/geneweb/geneweb) | Large genealogy trees. | GPL-2.0 | Study only; don't copy code | Comparison |
+| [gramps-project/gramps](https://github.com/gramps-project/gramps) | Genealogy desktop data model. | GPL-2.0 | Study only; don't copy code | Import/export target |
+| [gramps-project/gramps-web](https://github.com/gramps-project/gramps-web) | Genealogy web UI. | AGPL-3.0 | Study only; don't copy code | Comparison |
+| [gramps-project/gramps-web-api](https://github.com/gramps-project/gramps-web-api) | Genealogy backend. | AGPL-3.0 | Study only; don't copy code | Comparison |
+| [fisharebest/webtrees](https://github.com/fisharebest/webtrees) | Genealogy web engine. | GPL-3.0 | Study only; don't copy code | Comparison |
+| [collectiveaccess/providence](https://github.com/collectiveaccess/providence) | Archive cataloguing. | GPL-3.0 | Study only; don't copy code | Partners' systems |
+| [omeka/omeka-s](https://github.com/omeka/omeka-s) | Heritage publishing. | GPL-3.0 | Study only; don't copy code | Partners' systems |
+| [tropy/tropy](https://github.com/tropy/tropy) | Research photo metadata. | Licence file (type not recognised) | Read the licence file first | Imports |
+| [paperless-ngx/paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) | OCR and document management. | GPL-3.0 | Study only; don't copy code | Design reference |
+| [archivesspace/archivesspace](https://github.com/archivesspace/archivesspace) | Archival finding aids. | Custom (not recognised) | Read the licence file first | Partners' systems |
+| [artefactual/atom](https://github.com/artefactual/atom) | Archival descriptions. | AGPL-3.0 | Study only; don't copy code | Partners' systems |
+| [OpenRefine/OpenRefine](https://github.com/OpenRefine/OpenRefine) | Cleaning and reconciliation. | BSD-3-Clause | May reuse with credit, after review | Data cleaning |
+| [opensanctions/nomenklatura](https://github.com/opensanctions/nomenklatura) | Entity-resolution decisions. | MIT | May reuse with credit, after review | Merge suggestions |
+| [opensanctions/rigour](https://github.com/opensanctions/rigour) | Name normalisation. | MIT | May reuse with credit, after review | Merge suggestions |
+| [opensanctions/yente](https://github.com/opensanctions/yente) | Entity matching service. | MIT | May reuse with credit, after review | Merge suggestions |
+| [dedupeio/dedupe](https://github.com/dedupeio/dedupe) | Duplicate matching. | MIT | May reuse with credit, after review | Merge suggestions (WP10) |
+| [maplibre/maplibre-gl-js](https://github.com/maplibre/maplibre-gl-js) | Web maps (in use). | Licence file (type not recognised) | Read the licence file first | Time map, Lifeline map |
+| [openlayers/openlayers](https://github.com/openlayers/openlayers) | Raster map services. | BSD-2-Clause | May reuse with credit, after review | Time map |
+| [postgis/postgis](https://github.com/postgis/postgis) | Spatial database. | GPL-2.0 and others | Study only; don't copy code | Later, at scale |
+| [protomaps/PMTiles](https://github.com/protomaps/PMTiles) | Tile packaging. | Licence file (type not recognised) | Read the licence file first | Self-hosted tiles |
+| [mourner/suncalc](https://github.com/mourner/suncalc) | Sun position. | BSD-2-Clause | May reuse with credit, after review | Photo dating aid |
+| [skyfielders/python-skyfield](https://github.com/skyfielders/python-skyfield) | Astronomy. | MIT | May reuse with credit, after review | Photo dating aid |
+| [duckdb/duckdb](https://github.com/duckdb/duckdb) | Querying CSV and Parquet. | MIT | May reuse with credit, after review | Data imports |
+| [apache/superset](https://github.com/apache/superset) | Admin analytics. | Apache-2.0 | May reuse with credit, after review | Optional |
+| [TanStack/table](https://github.com/TanStack/table) | Tables. | MIT | May reuse with credit, after review | Database browser |
+| [TanStack/virtual](https://github.com/TanStack/virtual) | Virtualised long lists. | MIT | May reuse with credit, after review | Lifeline rows (WP9) |
+| [ProjectMirador/mirador](https://github.com/ProjectMirador/mirador) | IIIF document viewer. | Apache-2.0 | May reuse with credit, after review | Record viewer |
+| [UniversalViewer/universalviewer](https://github.com/UniversalViewer/universalviewer) | IIIF viewer. | Custom (not recognised) | Read the licence file first | Record viewer |
+| [opensearch-project/OpenSearch](https://github.com/opensearch-project/OpenSearch) | Full-text search at scale. | Apache-2.0 | May reuse with credit, after review | Later |
+| [tesseract-ocr/tesseract](https://github.com/tesseract-ocr/tesseract) | Printed text OCR (in use). | Apache-2.0 | May reuse with credit, after review | Document reading |
+| [mittagessen/kraken](https://github.com/mittagessen/kraken) | Historical text OCR. | Apache-2.0 | May reuse with credit, after review | Document reading |
+| [openai/whisper](https://github.com/openai/whisper) | Speech recognition. | MIT | May reuse with credit, after review | Interviews |
+| [ggml-org/whisper.cpp](https://github.com/ggml-org/whisper.cpp) | Local speech recognition. | MIT | May reuse with credit, after review | Interviews |
+| [discourse/discourse](https://github.com/discourse/discourse) | Community forums. | GPL-2.0 | Study only; don't copy code | Connect |
+| [internetarchive/heritrix3](https://github.com/internetarchive/heritrix3) | Web preservation. | Licence file (type not recognised) | Read the licence file first | Later |
+| [internetarchive/bookreader](https://github.com/internetarchive/bookreader) | Digitised book viewer. | AGPL-3.0 | Study only; don't copy code | Later |
+| [FamilySearch/GEDCOM](https://github.com/FamilySearch/GEDCOM) | GEDCOM 7 specification and test files. | Apache-2.0 | May reuse with credit, after review | Imports and exports (in use) |
+| [statsbomb/open-data](https://github.com/statsbomb/open-data) | Football event data. Now at hudl/open-data. | Licence file (type not recognised) | Read the licence file first | Sport (later) |
+
+### Ideas to borrow (Update 1)
+
+1. Explainable evidence grades (ex-USSR Kinship Research).
+2. Places recorded as they were named and governed at the time.
+3. Autoplay through time (Time Travel Map: study only, GPL-3.0).
+4. Household-based record matching (Irish Genealogy Research Assistant: licence unclear, ideas only).
+5. A brick-wall investigation board (TreeMonk: ideas only).
+
 ## Changing this list
 
 When a source changes status, update its row here and, where relevant: [DATA_SOURCES.md](DATA_SOURCES.md), `services/api/history/data/sources.json` (the in-product source directory), [CONNECTORS.md](CONNECTORS.md) for keyed connectors, and an ADR in [DECISIONS.md](DECISIONS.md) for anything affecting data rights.

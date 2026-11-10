@@ -59,6 +59,14 @@ export function FamilyPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {!!people.data?.length && (
+            <Link
+              to={`/projects/${projectId}/lifeline`}
+              className="flex min-h-11 items-center rounded-lg border border-accent px-4 font-semibold no-underline"
+            >
+              Lifeline
+            </Link>
+          )}
           <Link to={`/archive?project=${projectId}`} className="flex min-h-11 items-center">
             Import a GEDCOM file
           </Link>

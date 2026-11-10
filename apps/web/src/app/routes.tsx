@@ -8,6 +8,7 @@ import { ProjectPage } from "../features/projects/ProjectPage";
 import { ComingSoon } from "../components/ComingSoon";
 import { ArchivePage } from "../features/archive/ArchivePage";
 import { FamilyPage, PersonPage } from "../features/family/FamilyPages";
+import { LifelinePage } from "../features/lifeline/LifelinePage";
 import { InterviewPage } from "../features/interview/InterviewPage";
 import { MapPage } from "../features/map/MapPage";
 import { SearchPage } from "../features/search/SearchPage";
@@ -43,6 +44,7 @@ export function AppRoutes() {
           <Route path="forums" element={<ComingSoon title="Forums" pkg="WP8" />} />
           <Route path="archive" element={<ArchivePage />} />
           <Route path="projects/:projectId/people" element={<FamilyPage />} />
+          <Route path="projects/:projectId/lifeline" element={<LifelinePage />} />
           <Route path="projects/:projectId/people/:personId" element={<PersonPage />} />
           <Route path="interviews/:interviewId" element={<InterviewPage />} />
           <Route path="homepage" element={<ComingSoon title="Homepage" pkg="WP7" />} />

@@ -71,6 +71,74 @@ const base = {
     json([{ id: "a", name: "Arthur Sample", living: false, birth: "ABT 1921", death: "1988" }]),
 };
 
+describe("Where to look next", () => {
+  it("shows the records that could exist, with access, cost and unchecked leads marked", async () => {
+    installFetch({
+      ...base,
+      "GET /api/v1/projects/p1/people/a": () =>
+        json({
+          id: "a",
+          name: "Arthur Sample",
+          living: false,
+          birth: "ABT 1921",
+          death: "1988",
+          parents: [],
+          partners: [],
+          children: [],
+          facts: [],
+        }),
+      "GET /api/v1/projects/p1/people/a/where-to-look": () =>
+        json({
+          note: "Where records would be if they exist; a search may find nothing.",
+          steps: [
+            {
+              event: "birth",
+              year: "1921",
+              why: "Civil registration of the birth.",
+              routes: [
+                {
+                  title: "GRO historical index and register image",
+                  holder: "General Register Office",
+                  what_it_gives: "The birth index with the mother's maiden name.",
+                  access: "free",
+                  cost: "Index free to search; Online View image about £3.",
+                  url: "https://www.gro.gov.uk/gro/content/certificates/faq.asp",
+                  source: "General Register Office FAQ",
+                  checked: true,
+                },
+              ],
+            },
+            {
+              event: "military service",
+              year: "if they served",
+              why: "Service records.",
+              routes: [
+                {
+                  title: "Commonwealth War Graves Commission",
+                  holder: "CWGC",
+                  what_it_gives: "Burial or memorial.",
+                  access: "free",
+                  cost: "",
+                  url: "https://www.cwgc.org/",
+                  source: "CWGC",
+                  checked: false,
+                },
+              ],
+            },
+          ],
+        }),
+    });
+    renderAt("/projects/p1/people/a");
+    await userEvent.click(await screen.findByRole("button", { name: "Where to look next" }));
+    const panel = await screen.findByRole("region", { name: "Where to look next" });
+    expect(
+      await within(panel).findByRole("link", { name: /GRO historical index/ }),
+    ).toHaveAttribute("href", "https://www.gro.gov.uk/gro/content/certificates/faq.asp");
+    expect(within(panel).getByText(/about £3/)).toBeInTheDocument();
+    expect(within(panel).getAllByText(/A lead: not yet checked/)).toHaveLength(1);
+  });
+});
+
 describe("Tree health check", () => {
   it("lists things to check with links to the people, and changes nothing", async () => {
     const calls = installFetch({

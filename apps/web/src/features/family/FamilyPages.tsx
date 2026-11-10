@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router";
 import { api, archiveApi, type PersonBrief } from "../../lib/api";
 import { FamilyPlaces } from "./FamilyPlaces";
 import { TreeHealth } from "./TreeHealth";
+import { WhereToLook } from "./WhereToLook";
 
 function PersonCard({
   p,
@@ -265,6 +266,7 @@ export function PersonPage() {
           </p>
         )}
       </form>
+      {projectId && personId && <WhereToLook projectId={projectId} personId={personId} />}
     </div>
   );
 }

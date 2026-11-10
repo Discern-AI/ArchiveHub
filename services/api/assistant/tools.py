@@ -51,6 +51,13 @@ class ExplainTermInput(_Input):
     term: str = Field(min_length=1, max_length=100)
 
 
+class WhereToLookInput(_Input):
+    birth_year: int | None = Field(default=None, ge=1500, le=2100)
+    birth_place: str = Field(default="", max_length=200)
+    death_year: int | None = Field(default=None, ge=1500, le=2100)
+    death_place: str = Field(default="", max_length=200)
+
+
 class SearchArchiveInput(_Input):
     query: str = Field(min_length=1, max_length=200)
 
@@ -167,6 +174,18 @@ TOOL_SPECS.append(
     )
 )
 
+TOOL_SPECS.append(
+    (
+        "where_to_look",
+        "Given a person's birth and/or death year and place, list the records that could "
+        "exist for them (civil registration, parish registers, censuses, the 1939 Register, "
+        "military service, probate), who holds each, whether it's free or paid and roughly "
+        "what it costs, with sources to cite. Use it to suggest next steps. Only for people "
+        "who have died; it says where a record would be, not that one exists.",
+        WhereToLookInput,
+    )
+)
+
 TOOL_LABELS = {
     "search_source_directory": "Searching the source directory",
     "search_records": "Searching records",
@@ -175,6 +194,7 @@ TOOL_LABELS = {
     "search_connector": "Searching a connected source",
     "search_archive": "Searching your Archive",
     "explain_term": "Looking up an old term",
+    "where_to_look": "Working out where records would be",
 }
 
 
@@ -275,6 +295,38 @@ class ToolKit:
         else:
             self.log("Not found", f"No checked explanation of “{args.term}” yet")
         return out
+
+    def _where_to_look(self, args: WhereToLookInput) -> dict[str, Any]:
+        from genealogy.record_guide import record_office_for, where_to_look
+
+        facts = {}
+        if args.birth_year or args.birth_place:
+            facts["birth"] = {"year": args.birth_year, "place": args.birth_place}
+        if args.death_year or args.death_place:
+            facts["death"] = {"year": args.death_year, "place": args.death_place}
+        steps = where_to_look(facts, record_office_for(f"{args.birth_place} {args.death_place}"))
+        out = []
+        for step in steps:
+            routes = []
+            for r in step.routes:
+                routes.append(
+                    {
+                        "cite": self.cite("guide", f"{step.event}:{step.year}:{r.title}", r.title,
+                                          r.url, r.source or r.holder) if r.url else None,
+                        "record": r.title,
+                        "held_by": r.holder,
+                        "gives": r.what_it_gives,
+                        "access": r.access,
+                        "cost": r.cost or None,
+                        "checked": r.checked,
+                    }
+                )  # fmt: skip
+            out.append({"event": step.event, "year": step.year, "why": step.why, "routes": routes})
+        self.log("Searched", "ArchiveHub's record-finding guide (where records would be)")
+        return {
+            "steps": out,
+            "note": "Where records would be if they exist. Unchecked routes are leads only.",
+        }
 
     def cite_connector(self, r: ConnectorRecord, source_name: str) -> int:
         connector = get_connector(r.connector)

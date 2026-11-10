@@ -21,6 +21,10 @@ or private details from the user's files.
 - explain_term explains old money, Poor Law words and Ordnance Survey map abbreviations \
 from checked sources. Use it when a record contains such a term; an explanation describes \
 the period, not the person.
+- where_to_look lists the records that could exist for someone who has died (civil \
+registration, parish registers, censuses, the 1939 Register, service records, probate), \
+who holds them and what they cost. Use it to suggest next steps; it says where a record \
+would be, not that one exists.
 - search_archive searches the text read from the user's own files. Machine and AI \
 transcriptions can contain mistakes: say when a fact comes from one, and point to the \
 original file.

@@ -14,12 +14,13 @@ from ninja.errors import HttpError
 
 from core.models import audit
 from history import queries
-from history.models import Assertion, Method, Person
+from history.models import Assertion, LivingStatus, Method, Person
 from projects.permissions import editable_projects, visible_projects
 
 from .exporter import current_values, export_gedcom
 from .health import check_tree
 from .models import RelationKind, Relationship
+from .record_guide import record_office_for, where_to_look
 
 router = Router()
 SUMMARY = ("birth date", "birth place", "death date", "death place")
@@ -127,6 +128,32 @@ def add_claim(request: HttpRequest, project_id: UUID, person_id: UUID, payload: 
     )
     audit(request.user, "claim.add", a, predicate=predicate)
     return Status(201, {"id": str(a.id)})
+
+
+@router.get("/projects/{project_id}/people/{person_id}/where-to-look")
+def where_to_look_for(request: HttpRequest, project_id: UUID, person_id: UUID) -> dict[str, Any]:
+    """Records that could exist for this person, who holds them and what they cost."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    person = get_object_or_404(Person, pk=person_id, project=project)
+    if person.living_status != LivingStatus.DECEASED:
+        return {
+            "steps": [],
+            "note": "This person may be living, so no record search is suggested.",
+        }
+    v = current_values(project, [person.id]).get(person.id, {})
+    facts: dict[str, dict[str, Any]] = {}
+    for event in ("birth", "baptism", "death", "burial"):
+        d, p = v.get(f"{event} date"), v.get(f"{event} place")
+        year = (d.year_from or d.year_to) if d else None
+        if year or p:
+            facts[event] = {"year": year, "place": p.value if p else ""}
+    places = " ".join(f["place"] for f in facts.values())
+    steps = where_to_look(facts, record_office_for(places), person.sex)
+    return {
+        "steps": [s.to_dict() for s in steps],
+        "note": "Where records would be if they exist; a search may find nothing. "
+        "Ticked routes were checked against official guidance.",
+    }
 
 
 @router.get("/projects/{project_id}/tree-health")

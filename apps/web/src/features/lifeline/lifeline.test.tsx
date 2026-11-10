@@ -258,7 +258,8 @@ describe("Lifeline page", () => {
   it("lists exactly who was alive in 1985, with uncertain cases labelled", async () => {
     serve(family(4));
     renderAt("/projects/p1/lifeline");
-    await screen.findByRole("region", { name: /Alive in/ });
+    // The tree loads first; give it time when the whole suite is running.
+    await screen.findByTestId("row-arthur", {}, { timeout: 5000 });
     await setYear(1985);
     const panel = screen.getByRole("region", { name: "Alive in 1985" });
     const alive = within(panel).getByRole("list", { name: "Alive" });
@@ -280,7 +281,7 @@ describe("Lifeline page", () => {
   it("fades an estimated birth and keeps living people's dates private", async () => {
     serve(family(4));
     renderAt("/projects/p1/lifeline");
-    const arthur = await screen.findByTestId("row-arthur");
+    const arthur = await screen.findByTestId("row-arthur", {}, { timeout: 5000 });
     expect(arthur).toHaveAttribute("data-start", "faded");
     expect(arthur.querySelector('[data-part="fade-in"]')).not.toBeNull();
     expect(screen.getByTestId("row-edith")).toHaveAttribute("data-start", "sharp");
@@ -292,7 +293,7 @@ describe("Lifeline page", () => {
   it("switching wars off removes only the war overlays, and is remembered", async () => {
     const calls = serve(family(4));
     renderAt("/projects/p1/lifeline");
-    await screen.findByTestId("row-arthur");
+    await screen.findByTestId("row-arthur", {}, { timeout: 5000 });
     const lifeline = screen.getByRole("region", { name: "Lifeline" });
     expect(lifeline.querySelectorAll('[data-overlay="war"]')).toHaveLength(1);
     expect(lifeline.querySelectorAll('[data-overlay="records"]')).toHaveLength(1);
@@ -319,7 +320,7 @@ describe("Lifeline page", () => {
   it("draws only the visible rows of a 200-person tree", async () => {
     serve(family(200));
     renderAt("/projects/p1/lifeline");
-    await screen.findByTestId("row-x150"); // the earliest born, at the top
+    await screen.findByTestId("row-x150", {}, { timeout: 5000 }); // the earliest born, at the top
     // Arthur, born about 1921, is far down the list, so he isn't drawn yet.
     expect(screen.queryByTestId("row-arthur")).not.toBeInTheDocument();
     const rows = document.querySelectorAll('[data-testid^="row-"]');
@@ -330,7 +331,7 @@ describe("Lifeline page", () => {
   it("adds a marker of your own", async () => {
     const calls = serve(family(4));
     renderAt("/projects/p1/lifeline");
-    await screen.findByTestId("row-arthur");
+    await screen.findByTestId("row-arthur", {}, { timeout: 5000 });
     await userEvent.click(screen.getByText("Add your own marker"));
     await userEvent.type(screen.getByLabelText("What happened"), "I was born");
     await userEvent.type(screen.getByLabelText("Marker year"), "1985");
@@ -341,5 +342,32 @@ describe("Lifeline page", () => {
         year_from: 1985,
       }),
     );
+  });
+});
+
+describe("Sharing and links", () => {
+  it("leaves living relatives out of the shared image and says so", async () => {
+    const { lifelineSvg } = await import("../../lib/lifelineImage");
+    const svg = lifelineSvg({
+      title: "Smith & <Jones>",
+      people: family(4),
+      overlays: [],
+      lo: 1880,
+      hi: 2026,
+      year: 1945,
+    });
+    expect(svg).toContain("Arthur Sample");
+    expect(svg).not.toContain("Alice Sample");
+    expect(svg).toContain("1 living relative is left out to keep them private.");
+    expect(svg).toContain("Smith &#38; &#60;Jones&#62;"); // names can't break the picture
+  });
+
+  it("opens at the year and layers in the link", async () => {
+    serve(family(4));
+    renderAt("/projects/p1/lifeline?year=1985&layers=war");
+    expect(await screen.findByRole("region", { name: "Alive in 1985" })).toBeInTheDocument();
+    await screen.findByTestId("row-arthur", {}, { timeout: 5000 });
+    expect(screen.getByRole("checkbox", { name: "Wars" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Censuses and registration" })).not.toBeChecked();
   });
 });

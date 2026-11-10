@@ -29,7 +29,10 @@ function Sources({ items }: { items: NonNullable<Message["sources"]> }) {
         {items.map((s) => (
           <li key={s.n} className="flex gap-2">
             <span className="shrink-0 font-semibold text-muted">[{s.n}]</span>
-            {s.url ? (
+            {s.url?.startsWith("/") ? (
+              // A page in ArchiveHub, such as the Lifeline at a year: open it here.
+              <Link to={s.url}>{s.label}</Link>
+            ) : s.url ? (
               <a href={s.url} target="_blank" rel="noreferrer">
                 {s.label}
               </a>

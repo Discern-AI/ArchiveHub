@@ -151,3 +151,56 @@ def test_builtin_overlays_reload_cleanly():
     assert OverlayEvent.objects.filter(project=None, key="census-1921").get().date_text == (
         "19 June 1921"
     )
+
+
+def _row(start=None, end=None, places=(), living=False):
+    def w(earliest, latest, c="exact"):
+        return {"earliest": earliest, "latest": latest, "certainty": c, "text": "", "from": "birth"}
+
+    return {
+        "name": "X",
+        "living": living,
+        "start": w(*start) if start else None,
+        "end": w(*end) if end else None,
+        "places": list(places),
+    }
+
+
+def test_status_rules_match_the_page():
+    from genealogy.lifeline import status_at, why_uncertain
+
+    exact = _row((1900, 1900), (1980, 1980))
+    about = _row((1845, 1855, "about"), (1920, 1920))
+    no_death = _row((1880, 1880))
+    assert [status_at(exact, y) for y in (1950, 1899, 1983, 2000)] == [
+        "alive", "soon-born", "recently-died", "not-alive"
+    ]  # fmt: skip
+    assert status_at(about, 1850) == "uncertain" and why_uncertain(about, 1850) == "born about 1850"
+    assert status_at(about, 1860) == "alive"
+    assert status_at(no_death, 1950) == "uncertain"
+    assert why_uncertain(no_death, 1950) == "death not recorded"
+    assert status_at(_row(living=True), 1985) == "private"
+    resident = _row(
+        (1880, 1880), places=[{"kind": "residence", "year_from": 1921, "year_to": 1921}]
+    )
+    assert status_at(resident, 1915) == "alive" and status_at(resident, 1930) == "uncertain"
+
+
+def test_assistant_lifeline_tool(imported, alice, bob, project):
+    import json
+
+    from assistant.tools import ToolKit
+
+    kit = ToolKit(user=alice, project_id=project.id)
+    out, error = kit.run("lifeline", {"year": 1900, "layers": ["war"]})
+    data = json.loads(out)
+    assert not error and data["project"] == "Example family"
+    assert data["alive"] == ["Ada Example"]  # about 1850 to 1920; Ben born 1880 too:
+    assert {"name": "Ben Example", "why": "death not recorded"} in data["possibly_alive"]
+    assert data["living_not_counted"] == 1 and "Cara" not in out  # never named
+    [cite] = kit.cited_in(f"[{data['cite']}]")
+    assert cite["url"] == f"/projects/{project.id}/lifeline?year=1900&layers=war"
+    # Someone else can't reach this tree, even by naming it.
+    other = json.loads(ToolKit(user=bob).run("lifeline", {"year": 1900, "project": "Example"})[0])
+    assert other["choose_project"] == [] and "no family tree" in other["note"]
+    assert kit.run("lifeline", {"year": 99})[1] is True  # out of range

@@ -13,7 +13,9 @@ From [Update 1](updates/UPDATE-1_Build_Specification.pdf) (ADR-048). Open it fro
 - **Grouping and filters**: by surname or generation; a person's direct line (ancestors and descendants); find by name or place.
 - **Linked map**: each person's last recorded place by the chosen year, with dashed lines joining their recorded places in date order. The map is made once and its data swapped as the year moves. It frames the family's places on first load. Faint points are suggested locations not yet checked.
 - **Residences**: GEDCOM RESI records are imported in file order (`Residence`), and their places are located like other tree places.
-- **Print** for a paper copy; the phone layout stacks the controls, bars and map, with the map behind one button.
+- **Print** for a paper copy, and **Save as image** (PNG, or SVG if the browser can't draw it) for sharing or a poster. The image leaves living relatives out and says how many.
+- **Phones**: controls, bars and map stack, with the map behind one button. Drag sideways along the bars with a finger to move through the years; vertical swipes still scroll.
+- **Chat**: the assistant's `lifeline` tool answers "who was alive in 1985?" or "show both World Wars" from the chat's family tree, saying who was only possibly alive and why, and cites a link that opens the Lifeline at that year with those layers (`?year=1985&layers=war`). Living relatives are counted, never named. The same rules run on the server and the page, tested with the same cases.
 
 ## Rules kept
 
@@ -32,13 +34,12 @@ From [Update 1](updates/UPDATE-1_Build_Specification.pdf) (ADR-048). Open it fro
 | 3 | Turning off "wars" removes only war overlays | Passes |
 | 4 | An estimated birth shows a faded start, not a sharp one | Passes |
 | 5 | Moving the slider updates the map without a full reload | Passes: the map is mounted once and its data swapped |
-| 6 | A shared export has no details of living people unless the owner allows it | Passes for print: living people's details are never sent to the page. There's no separate share or export yet |
+| 6 | A shared export has no details of living people unless the owner allows it | Passes: living people's details never reach the page, and the shared image leaves them out with a note. An owner option to include them isn't built |
 
 ## Still to do in WP9
 
-- Chat commands ("show who was alive in 1985", "highlight both World Wars").
-- A timeline poster and a shareable image (print works now).
-- Swiping through years on a phone.
+- An owner option to include living relatives in a private export.
+- The assistant can't yet change a Lifeline that's already open; it links to a new view.
 - Timing with a real 200-person tree on a mid-range laptop; the owner's sister's exported tree is the first real test (Update 1).
 - Migration paths for a whole household or branch side by side.
 

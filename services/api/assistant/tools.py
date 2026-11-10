@@ -58,6 +58,14 @@ class WhereToLookInput(_Input):
     death_place: str = Field(default="", max_length=200)
 
 
+class LifelineInput(_Input):
+    year: int = Field(ge=1000, le=2200)
+    layers: list[Literal["war", "records", "law", "calendar", "family", "custom"]] = Field(
+        default_factory=list, max_length=6
+    )
+    project: str = Field(default="", max_length=200)
+
+
 class SearchArchiveInput(_Input):
     query: str = Field(min_length=1, max_length=200)
 
@@ -189,6 +197,19 @@ TOOL_SPECS.append(
     )
 )
 
+TOOL_SPECS.append(
+    (
+        "lifeline",
+        "Who in the user's family tree the records place alive in a year, who was possibly "
+        "alive (with why: an approximate date, or no recorded death), and a link that opens "
+        "the Lifeline at that year with chosen layers (war, records, law, calendar, family, "
+        "custom). Use it for questions like 'who was alive in 1985' or 'show both World "
+        "Wars'. Living relatives are only counted, never named. Uses the chat's project, or "
+        "the user's only family tree; if they have several, give the project name.",
+        LifelineInput,
+    )
+)
+
 TOOL_LABELS = {
     "search_source_directory": "Searching the source directory",
     "search_records": "Searching records",
@@ -198,6 +219,7 @@ TOOL_LABELS = {
     "search_archive": "Searching your Archive",
     "explain_term": "Looking up an old term",
     "where_to_look": "Working out where records would be",
+    "lifeline": "Looking at the family Lifeline",
 }
 
 
@@ -231,6 +253,7 @@ class Citation:
 @dataclass
 class ToolKit:
     user: Any
+    project_id: Any = None  # the chat's project, if it has one
     citations: dict[tuple[str, str], Citation] = field(default_factory=dict)
     checked: list[dict[str, str]] = field(default_factory=list)
     # Questions where sources disagree, so the UI can offer "Compare sources".
@@ -333,6 +356,50 @@ class ToolKit:
         return {
             "steps": out,
             "note": "Where records would be if they exist. Unchecked routes are leads only.",
+        }
+
+    def _lifeline(self, args: LifelineInput) -> dict[str, Any]:
+        from genealogy.lifeline import alive_in
+        from history.models import Person
+        from projects.permissions import visible_projects
+
+        trees = visible_projects(self.user).filter(
+            id__in=Person.objects.filter(project__isnull=False).values("project_id")
+        )
+        project = None
+        if args.project:
+            project = trees.filter(title__icontains=args.project.strip()).first()
+        elif self.project_id:
+            project = trees.filter(pk=self.project_id).first()
+        if project is None:
+            options = list(trees.values_list("title", flat=True)[:10])
+            if len(options) == 1:
+                project = trees.first()
+            else:
+                self.log("Not found", "Which family tree to use")
+                return {
+                    "choose_project": options,
+                    "note": "No family tree chosen. Ask which one, or say there isn't one yet."
+                    if options
+                    else "The user has no family tree yet; suggest importing a GEDCOM file.",
+                }
+        found = alive_in(project, self.user, args.year)
+        layers = ",".join(args.layers) or "war,records,law,calendar,family,custom"
+        n = self.cite(
+            "lifeline",
+            f"{project.id}:{args.year}:{layers}",
+            f"Lifeline: {project.title}, {args.year}",
+            f"/projects/{project.id}/lifeline?year={args.year}&layers={layers}",
+            "Your family tree",
+        )
+        self.log("Searched", f"The Lifeline of {project.title} for {args.year}")
+        return {
+            "cite": n,
+            "project": project.title,
+            "year": args.year,
+            **found,
+            "note": "From the tree's own records. 'Possibly alive' means a date is approximate "
+            "or a death isn't recorded. Living relatives are private: only counted.",
         }
 
     def cite_connector(self, r: ConnectorRecord, source_name: str) -> int:

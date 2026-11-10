@@ -178,3 +178,98 @@ def lifeline(project, user) -> dict[str, Any]:
         "this_year": date.today().year,
         "about_years": ABOUT_YEARS,
     }
+
+
+# --- Who was alive in a year (the same rules as the Lifeline page) -----------------
+
+MAX_LIFE = 105
+NEAR_YEARS = 5
+
+
+def spans(row: dict[str, Any]) -> tuple[int | None, int | None, int | None, int | None]:
+    """(possible_from, possible_to, sure_from, sure_to) for a Lifeline row."""
+    s, e = row["start"], row["end"]
+    res = [
+        pl["year_to"] if pl["year_to"] is not None else pl["year_from"]
+        for pl in row["places"]
+        if pl["kind"] == "residence" and (pl["year_from"] is not None or pl["year_to"] is not None)
+    ]
+    sure_from = s["latest"] if s else None
+    if res:
+        sure_from = min(res) if sure_from is None else min(sure_from, min(res))
+    sure_to = e["earliest"] if e else None
+    if res:
+        sure_to = max(res) if sure_to is None else max(sure_to, max(res))
+    possible_from = s["earliest"] if s else None
+    possible_to = e["latest"] if e else None
+    known_to = possible_to if possible_to is not None else sure_to
+    known_from = possible_from if possible_from is not None else sure_from
+    if possible_from is None:
+        possible_from = known_to - MAX_LIFE if known_to is not None else sure_from
+    if possible_to is None:
+        possible_to = known_from + MAX_LIFE if known_from is not None else sure_to
+    if s and s["earliest"] is None and sure_from is not None and known_to is not None:
+        possible_from = min(sure_from, known_to - MAX_LIFE)
+    return possible_from, possible_to, sure_from, sure_to
+
+
+def status_at(row: dict[str, Any], year: int) -> str:
+    if row["living"]:
+        return "private"
+    pf, pt, sf, st = spans(row)
+    if pf is None or pt is None:
+        return "not-alive"
+    if sf is not None and st is not None and sf <= year <= st:
+        return "alive"
+    if pf <= year <= pt:
+        return "uncertain"
+    if row["end"] and year > pt and year - pt <= NEAR_YEARS:
+        return "recently-died"
+    if row["start"] and year < pf and pf - year <= NEAR_YEARS:
+        return "soon-born"
+    return "not-alive"
+
+
+def end_label(e: dict[str, Any] | None) -> str:
+    if not e:
+        return ""
+    c = e["certainty"]
+    if c == "about":
+        return f"about {(e['earliest'] + e['latest']) // 2}"
+    if c == "before":
+        return f"before {e['latest']}"
+    if c == "after":
+        return f"after {e['earliest']}"
+    if c == "range":
+        return f"{e['earliest']}–{e['latest']}"
+    if c in ("baptised", "buried"):
+        return f"{c} {e['latest']}"
+    return str(e["earliest"] if e["earliest"] is not None else e["latest"])
+
+
+def why_uncertain(row: dict[str, Any], year: int) -> str:
+    _, _, sf, st = spans(row)
+    if not row["start"]:
+        return "birth not recorded"
+    if not row["end"]:
+        return "death not recorded"
+    if sf is None or year < sf:
+        return f"born {end_label(row['start'])}"
+    if st is None or year > st:
+        return f"died {end_label(row['end'])}"
+    return "dates approximate"
+
+
+def alive_in(project, user, year: int) -> dict[str, Any]:
+    """Who the records place alive in a year. Living people are counted, never named."""
+    data = lifeline(project, user)
+    out: dict[str, Any] = {"alive": [], "possibly_alive": [], "living_not_counted": 0}
+    for row in data["people"]:
+        status = status_at(row, year)
+        if status == "alive":
+            out["alive"].append(row["name"])
+        elif status == "uncertain":
+            out["possibly_alive"].append({"name": row["name"], "why": why_uncertain(row, year)})
+        elif status == "private":
+            out["living_not_counted"] += 1
+    return out

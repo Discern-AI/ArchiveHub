@@ -18,7 +18,7 @@ import {
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 import { api, ApiError } from "../../lib/api";
 import {
   aliveCounts,
@@ -35,6 +35,7 @@ import {
   type Overlay,
   type Status,
 } from "../../lib/lifeline";
+import { downloadLifelineImage } from "../../lib/lifelineImage";
 import { mapApi } from "../../lib/map";
 
 const LifelineMap = lazy(() => import("./LifelineMap"));
@@ -89,14 +90,22 @@ export function LifelinePage() {
   });
   const layers = useQuery({ queryKey: ["map-layers"], queryFn: mapApi.layers });
 
-  const [year, setYear] = useState<number | null>(null);
+  // A link (for example from the assistant) can open it at a year with chosen layers.
+  const [params] = useSearchParams();
+  const linkedYear = Number(params.get("year"));
+  const linkedLayers = params.get("layers");
+  const [year, setYear] = useState<number | null>(
+    Number.isInteger(linkedYear) && linkedYear > 0 ? linkedYear : null,
+  );
   const [playing, setPlaying] = useState(false);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [speed, setSpeed] = useState(5);
   const [groupBy, setGroupBy] = useState<"none" | "surname" | "generation">("none");
   const [focus, setFocus] = useState("");
   const [q, setQ] = useState("");
-  const [kinds, setKinds] = useState<string[] | null>(null);
+  const [kinds, setKinds] = useState<string[] | null>(
+    linkedLayers !== null ? linkedLayers.split(",").filter(Boolean) : null,
+  );
   const [selected, setSelected] = useState<string | null>(null);
   const [openOverlay, setOpenOverlay] = useState<Overlay | null>(null);
   const [showMap, setShowMap] = useState(true);
@@ -106,7 +115,7 @@ export function LifelinePage() {
   const d = data.data;
   const range = useMemo(() => (d ? yearRange(d) : ([1850, 2026] as [number, number])), [d]);
   const [lo, hi] = range;
-  const current = year ?? Math.min(hi, Math.max(lo, 1900));
+  const current = Math.min(hi, Math.max(lo, year ?? 1900));
   const activeKinds = kinds ?? d?.kinds ?? [];
 
   const savePreset = useMutation({
@@ -241,13 +250,36 @@ export function LifelinePage() {
             Living relatives keep their dates private, so they aren't placed in time.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="min-h-11 cursor-pointer rounded-lg border border-control bg-surface px-4 print:hidden"
-        >
-          Print
-        </button>
+        <div className="flex gap-2 print:hidden">
+          <button
+            type="button"
+            disabled={!shown.length}
+            onClick={() =>
+              downloadLifelineImage(
+                {
+                  title: project.data?.title ?? "Family Lifeline",
+                  people: shown,
+                  overlays,
+                  lo,
+                  hi,
+                  year: current,
+                },
+                `lifeline-${current}`,
+              )
+            }
+            className="min-h-11 cursor-pointer rounded-lg border border-control bg-surface px-4"
+            title="A picture of this Lifeline. Living relatives are left out."
+          >
+            Save as image
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="min-h-11 cursor-pointer rounded-lg border border-control bg-surface px-4"
+          >
+            Print
+          </button>
+        </div>
       </div>
 
       <section aria-label="Controls" className="flex flex-col gap-3 print:hidden">
@@ -499,13 +531,27 @@ export function LifelinePage() {
               >
                 <div
                   className="relative"
-                  style={{ height: virtualizer.getTotalSize(), width: nameW + plotW }}
+                  style={{
+                    height: virtualizer.getTotalSize(),
+                    width: nameW + plotW,
+                    // Vertical swipes scroll; sideways drags (mouse or finger) move the year.
+                    touchAction: "pan-y",
+                  }}
                   onPointerDown={(e) => {
                     if ((e.target as HTMLElement).closest("a,button")) return;
                     const rect = e.currentTarget.getBoundingClientRect();
-                    if (e.clientX - rect.left > nameW)
-                      setYear(yearAt(e.clientX - rect.left - nameW));
+                    if (e.clientX - rect.left <= nameW) return;
+                    dragging.current = true;
+                    e.currentTarget.setPointerCapture?.(e.pointerId);
+                    setYear(yearAt(e.clientX - rect.left - nameW));
                   }}
+                  onPointerMove={(e) => {
+                    if (!dragging.current) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setYear(yearAt(e.clientX - rect.left - nameW));
+                  }}
+                  onPointerUp={() => (dragging.current = false)}
+                  onPointerCancel={() => (dragging.current = false)}
                 >
                   {/* Overlays behind the bars */}
                   {overlays.map((o) => (
@@ -605,12 +651,17 @@ export function LifelinePage() {
               </p>
             </section>
           )}
-          <AliveList
-            year={current}
-            byStatus={byStatus}
-            livingPrivate={shown.filter((p) => p.living).length}
-            projectId={projectId}
-          />
+          {d ? (
+            <AliveList
+              year={current}
+              byStatus={byStatus}
+              livingPrivate={shown.filter((p) => p.living).length}
+              projectId={projectId}
+            />
+          ) : (
+            // Don't show "0 alive" before the tree has loaded.
+            <p className="m-0 text-sm text-muted">Loading who was alive…</p>
+          )}
         </aside>
       </div>
     </div>

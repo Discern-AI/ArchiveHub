@@ -125,7 +125,7 @@ async def stream_chat_reply(request: HttpRequest, chat_id: UUID) -> HttpResponse
     if len(content) > MAX_MESSAGE_CHARS:
         return JsonResponse({"detail": "Message is too long."}, status=422)
 
-    toolkit = ToolKit(user=user)
+    toolkit = ToolKit(user=user, project_id=chat.project_id)
     raw_content, attached = None, []
     selected = body.get("record")
     if selected:

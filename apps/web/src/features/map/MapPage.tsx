@@ -725,9 +725,10 @@ export function MapPage() {
                   <p className="mt-1 mb-1 text-sm text-muted">
                     Dashed outlines on the map: conservation areas (blue), scheduled monuments
                     (brown), parks and gardens (green), battlefields (red). The year is when each
-                    was designated. From Historic England, Open Government Licence. England only for
-                    now: Wales, Scotland and Northern Ireland keep their own lists, not connected
-                    yet.
+                    was designated. From each nation's own list: Historic England, Historic
+                    Environment Scotland and, for Wales, Cadw and DataMapWales (Open Government
+                    Licence). Northern Ireland isn't connected yet. Outlines are a guide: the
+                    official designation record is what counts.
                   </p>
                   <ul className="m-0 flex flex-col gap-1 pl-5 text-sm">
                     {areas.data!.features.map((a) => (

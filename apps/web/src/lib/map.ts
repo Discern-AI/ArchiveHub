@@ -202,6 +202,7 @@ export interface ProtectedArea {
     designated: string;
     url: string;
     authority: string;
+    nation?: "england" | "scotland" | "wales";
   };
 }
 

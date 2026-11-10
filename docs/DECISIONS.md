@@ -248,3 +248,14 @@ Northern Ireland now appears with England, Scotland and Wales on the time map's 
 - Northern Ireland's list gives the date range a building was built, not a listing date, so these show as "Built 1840 - 1859" and the panel explains the difference. There's no stable public page per building, so each links to DfC's Historic Environment map viewer and shows its HB reference.
 - Until the import is run, the map says Northern Ireland's list hasn't been loaded. Refreshing it monthly is an owner action.
 
+## ADR-047 — Protected areas for Scotland and Wales from their own services
+
+**Status:** Accepted (2026-11-10)
+
+The protected areas layer now covers Great Britain, not just England.
+- **Scotland:** Historic Environment Scotland's INSPIRE MapServers for conservation areas (compiled from the local authorities), scheduled monuments, gardens and designed landscapes, and Inventory battlefields. Their metadata licenses the data under OGL v3 with a set credit line, which we show. These services don't page, so results are cut at our limit.
+- **Wales:** DataMapWales WFS layers for Cadw's scheduled monuments and registered historic parks and gardens (with Cadw's credit line), and the Welsh Government's conservation areas. All OGL. There's no Welsh battlefields layer to show.
+- Each view only asks the nations it touches (a few rough boxes per nation, kept clear of Northern Ireland); border views ask both. The credit shown matches the nations asked, and a nation that fails says so by name.
+- Northern Ireland isn't connected: DfC's service is for its own viewer and states no licence (ADR-046), so the map says so. All-capitals names are shown in title case.
+- The panel says outlines are a guide and the official designation record is what counts, as HES asks.
+

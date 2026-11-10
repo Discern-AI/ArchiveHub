@@ -602,3 +602,53 @@ def test_ni_import_refuses_other_coordinates(ref, tmp_path):
     path.write_text(json.dumps({"type": "FeatureCollection", "features": []}), encoding="utf-8")
     with pytest.raises(CommandError, match="Irish Grid"):
         call_command("import_ni_listed_buildings", file=str(path))
+
+
+def test_protected_areas_in_scotland_and_wales_from_their_own_services(alice_client, monkeypatch):
+    from django.core.cache import cache
+
+    from timemap import areas
+
+    cache.clear()
+    seen = []
+    shape = {"type": "Polygon", "coordinates": [[[-3.2, 55.95], [-3.19, 55.95], [-3.19, 55.96], [-3.2, 55.95]]]}  # fmt: skip
+
+    def fake(url, params, timeout=10.0, headers=None):
+        seen.append((url, params))
+        if url.startswith(areas.HES):
+            props = {"DES_REF": "SM90", "DES_TITLE": "CULLODEN MUIR", "DESIGNATED": 0,
+                     "LINK": "https://portal.historicenvironment.scot/designation/SM90",
+                     "LOCAL_AUTH": "Highland"}  # fmt: skip
+        else:
+            props = {"SAMNumber": "GM427", "Name": "Cooking Mound", "DesignationDate": "1983-03-01T00:00:00Z",
+                     "Report": "http://cadwpublic-api.azurewebsites.net/reports/sam/FullReport?id=221",
+                     "UnitaryAuthority": "Cardiff", "sitename": "Pierhead",
+                     "designation_date": "1984-06-01"}  # fmt: skip
+        return {"features": [{"geometry": shape, "properties": props}]}
+
+    monkeypatch.setattr(areas, "http_get_json", fake)
+    scot = alice_client.get("/api/v1/map/areas", {"bbox": "-3.22,55.94,-3.16,55.97"}).json()
+    assert {u for u, _ in seen} == {
+        layer.url for layer in areas.LAYERS if layer.nation == "scotland"
+    }
+    assert all("resultRecordCount" not in p for _, p in seen)  # HES doesn't page
+    first = scot["features"][0]["properties"]
+    assert first["name"] == "Culloden Muir" and first["designated"] == "1970"
+    assert first["nation"] == "scotland" and first["authority"] == "Highland"
+    assert "SC045925" in scot["attribution"] and "Historic England" not in scot["attribution"]
+
+    seen.clear()
+    wales = alice_client.get("/api/v1/map/areas", {"bbox": "-4.10,52.40,-4.05,52.43"}).json()
+    assert {u for u, _ in seen} == {areas.WALES_WFS}
+    assert {p["typeNames"] for _, p in seen} == {
+        layer.url for layer in areas.LAYERS if layer.nation == "wales"
+    }
+    by_kind = {f["properties"]["kind"]: f["properties"] for f in wales["features"]}
+    assert by_kind["scheduled_monument"]["designated"] == "1983"
+    assert by_kind["conservation_area"]["designated"] == "1984"
+    assert "Cadw" in wales["attribution"]
+
+    seen.clear()
+    belfast = alice_client.get("/api/v1/map/areas", {"bbox": "-5.95,54.58,-5.90,54.61"}).json()
+    assert seen == [] and belfast["features"] == []
+    assert belfast["notes"] == ["Northern Ireland's protected areas aren't connected yet."]

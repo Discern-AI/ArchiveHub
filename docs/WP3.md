@@ -2,7 +2,7 @@
 
 **Gate (SPEC §12):** a user can browse a source, save a record and ask the assistant about it.
 
-**Status (5 Nov 2026):** built and tested. Browsing, saving and sending a record to the assistant work end to end in tests; the assistant's actual answer needs API credit, as in WP2.
+**Status (5 Nov 2026):** built and tested. Browsing, saving and sending a record to the assistant work end to end in tests; the assistant's real answers were checked with the WP2 evaluation on 10 Nov 2026.
 
 ## What was built
 

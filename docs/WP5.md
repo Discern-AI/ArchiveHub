@@ -46,7 +46,7 @@ In the live end-to-end run on the same laptop, live words trailed speech by abou
 ## Known limits
 
 - **No speaker separation:** every line is labelled with the narrator. Correct speakers on the interview page; automatic speaker separation can be evaluated later.
-- **Notes and responses are untested against the real API** (the account has no credit). The request format follows the API reference; the error path (no credit) was exercised for real.
+- **Notes and the closing response were checked against the real API** on 10 Nov 2026 with a synthetic three-line transcript: structured people, places, dates and questions citing real lines, and a response that noticed a possible inconsistency in the story. Still to see in a full live interview.
 - **One transcription at a time per server process.** Fine for the pilot; a separate speech service or GPU is needed for many simultaneous interviews.
 - Interview audio isn't listed in the Archive yet; it's on the interview page, linked from the chat.
 - Credits for interviews are not yet counted (ADR-027). Duration and AI token use are recorded per interview for cost-per-interview figures.

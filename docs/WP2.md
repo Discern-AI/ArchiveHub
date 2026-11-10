@@ -2,7 +2,7 @@
 
 **Gate (SPEC §12):** the Pigeons question returns sources, the conflict and next steps, with no invented facts.
 
-**Status (5 Nov 2026):** built and tested offline. The gate itself is measured by `run_evals`, which needs API credit and has not been run yet.
+**Status (10 Nov 2026): gate met.** `run_evals --live` passed 6/6 against the real API (claude-opus-5-5): the Pigeons question returns its sources, the 5 vs 69 Cheap Street conflict and next steps; the "when did it close?" trap and the unknown pub are answered honestly, with no invented citations or links.
 
 ## What was built
 

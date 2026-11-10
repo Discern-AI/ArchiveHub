@@ -17,7 +17,7 @@ Last updated: 7 Nov 2026.
 
 | # | Action | Why it matters | Where | Cost | Then |
 |---|---|---|---|---|---|
-| 1 | **Add credit to the Anthropic API account** | The assistant's real answers, the WP2 evaluation, handwriting reading and interview notes have never run against the real API (the account has no credit). Everything else is tested; these aren't | console.anthropic.com → Billing | Pay as you go | Run `python manage.py run_evals` (WP2 gate) and try a chat |
+| 1 | ~~Add credit to the Anthropic API account~~ **Done 10 Nov 2026**: evaluation 6/6, interview notes, responses and handwriting all work for real | The assistant's real answers, the WP2 evaluation, handwriting reading and interview notes have never run against the real API (the account has no credit). Everything else is tested; these aren't | console.anthropic.com → Billing | Pay as you go | Run `python manage.py run_evals` (WP2 gate) and try a chat |
 | 2 | **Email The National Archives** for Discovery API access | Unlocks the Royal Berkshire Archives' catalogue and ~2,500 others | Draft: OUTREACH.md §1 (add the server's IP address) | Free | `TNA_DISCOVERY_ENABLED=true` |
 | 3 | **Create a MapTiler account and key** | Historic OS maps on the time map (needed for the WP6 gate) | maptiler.com (free plan for the pilot) | Free now; paid plan before launch | `MAPTILER_KEY`; restrict the key to our domains in MapTiler |
 | 4 | **Email the National Library of Scotland** | Confirms commercial use of their historic maps, which the time map depends on | Draft: OUTREACH.md §2 | Free | Record the answer in the register |
@@ -87,9 +87,9 @@ Drafts for the first two are in OUTREACH.md §5–6. Full list: SOURCE_REGISTER.
 
 | Area | What's needed | Gate |
 |---|---|---|
-| Assistant (WP2–3) | API credit, then `python manage.py run_evals` and a few real questions about Cheap Street | WP2: the Pigeons question answered with sources, the conflict and next steps |
+| Assistant (WP2–3) | **Done:** `run_evals --live` 6/6 on 10 Nov 2026. Try your own questions in the app | WP2: the Pigeons question answered with sources, the conflict and next steps |
 | Record (WP4) | Import a real GEDCOM and a folder of family documents (with family consent), then correct them | WP4 |
-| Handwriting reading | API credit, then one real letter | — |
+| Handwriting reading | Works on a synthetic letter; try one real old letter | — |
 | Interviews (WP5) | **Five real interviews** with older relatives or volunteers, with consent | WP5 |
 | Speech spike | ~10 consented 2–5 minute recordings (half from speakers over 70, local accents) with careful transcripts, then `python manage.py speech_spike` | Confirms ADR-028 |
 | Interviews on phones | Try an interview on an iPhone (Safari) and an Android phone | — |

@@ -32,7 +32,7 @@
 ## Known limits
 
 - Credits are estimated and recorded but not yet deducted (ADR-027; ledger in WP8).
-- AI handwriting reading is untested against the real API (no credit yet); its request format matches the API reference.
+- AI handwriting reading was checked against the real API on 10 Nov 2026 with a synthetic script-font letter: transcribed exactly, and an instruction written in the letter was copied as text, not obeyed. Still to try on a real old letter.
 - The family chart shows one person's ancestors (up to three generations), partners and children, not the whole tree at once.
 - Audio and video are stored but not transcribed (WP5).
 - Search over files is simple word matching.

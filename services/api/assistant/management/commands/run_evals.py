@@ -81,7 +81,9 @@ class Command(BaseCommand):
 
         self.stdout.write(f"\n{len(cases) - failures}/{len(cases)} passed.")
         if options["report"]:
-            Path(options["report"]).write_text(json.dumps(report, indent=2, ensure_ascii=False))
+            Path(options["report"]).write_text(
+                json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
             self.stdout.write(f"Report written to {options['report']}.")
 
     async def ask(self, question: str, user) -> tuple[str, ToolKit]:

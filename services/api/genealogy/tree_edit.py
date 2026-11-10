@@ -21,7 +21,7 @@ from history.models import Assertion, AssertionEvidence, Decision, Person
 
 from .changes import Recorder
 from .exporter import current_values
-from .models import ChangeKind, ExternalId, RelationKind, Relationship, Residence
+from .models import ChangeKind, ExternalId, GalleryTag, RelationKind, Relationship, Residence
 
 
 class MergeRefused(Exception):
@@ -176,6 +176,14 @@ def merge(project, keep: Person, other: Person, leave_out: set[str], user):
         rec.before_change(res)
         res.person = keep
         res.save(update_fields=["person", "updated_at"])
+    for t in GalleryTag.objects.filter(person=other):
+        if GalleryTag.objects.filter(item=t.item, person=keep).exists():
+            rec.before_delete(t)
+            t.delete()
+        else:
+            rec.before_change(t)
+            t.person = keep
+            t.save(update_fields=["person", "updated_at"])
     for x in ExternalId.objects.filter(person=other):
         rec.before_change(x)
         x.person = keep

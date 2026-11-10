@@ -19,11 +19,23 @@ from projects.permissions import editable_projects, visible_projects
 
 from .changes import blockers, undo
 from .exporter import current_values, export_gedcom, export_gedzip
+from .gallery import (
+    family_gallery,
+    person_gallery,
+    reorder,
+    suggest_people,
+    unplaced_images,
+    year_of,
+)
+from .gallery import item_json as gallery_item_json
 from .health import check_tree
+from .life_story import life_story
 from .lifeline import lifeline
 from .models import (
     ChangeSet,
     ExternalId,
+    GalleryItem,
+    GalleryTag,
     OverlayEvent,
     OverlayKind,
     OverlayPreset,
@@ -505,3 +517,144 @@ def delete_view(request: HttpRequest, project_id: UUID, person_id: UUID, payload
     cs = delete_people(project, people, request.user)
     audit(request.user, "tree.delete", project, people=len(people))
     return {"change_set": str(cs.id), "summary": cs.summary}
+
+
+# --- Life Story and galleries -------------------------------------------------------
+
+
+@router.get("/projects/{project_id}/people/{person_id}/life-story")
+def life_story_view(request: HttpRequest, project_id: UUID, person_id: UUID) -> dict[str, Any]:
+    """The person's life in order, from the tree's own facts, with sources and gaps."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    return life_story(project, _tree_person(project, person_id))
+
+
+@router.get("/projects/{project_id}/people/{person_id}/gallery")
+def person_gallery_view(
+    request: HttpRequest, project_id: UUID, person_id: UUID
+) -> list[dict[str, Any]]:
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    return person_gallery(project, _tree_person(project, person_id))
+
+
+@router.get("/projects/{project_id}/gallery")
+def family_gallery_view(request: HttpRequest, project_id: UUID) -> list[dict[str, Any]]:
+    """Every picture in the family's galleries, oldest first."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    return family_gallery(project)
+
+
+class TagIn(Schema):
+    person_id: UUID
+    relation: Literal["shows", "about", "context"] = "shows"
+
+
+class GalleryIn(Schema):
+    file_id: UUID
+    caption: str = ""
+    date_text: str = ""
+    place_text: str = ""
+    tags: list[TagIn] = []
+
+
+def _item_out(project, item: GalleryItem) -> dict[str, Any]:
+    people = list(Person.objects.filter(pk__in=item.tags.values("person_id")))
+    names = {p.id: p.name for p in people}
+    return gallery_item_json(item, names)
+
+
+@router.post("/projects/{project_id}/gallery", response={201: dict})
+def add_to_gallery(request: HttpRequest, project_id: UUID, payload: GalleryIn):
+    """Put a picture from the Archive into galleries, tagged to people. Adding the same
+    picture again adds the new tags to it."""
+    from archive.models import FileAsset, FileKind
+
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    f = get_object_or_404(FileAsset, pk=payload.file_id, project=project)
+    if f.kind not in (FileKind.IMAGE, FileKind.PDF):
+        raise HttpError(422, "Only pictures and scanned documents can go in a gallery.")
+    item, _ = GalleryItem.objects.get_or_create(
+        project=project, file=f, defaults={"created_by": request.user}
+    )
+    for field in ("caption", "date_text", "place_text"):
+        value = getattr(payload, field).strip()
+        if value:
+            setattr(item, field, value[:500])
+    item.year = year_of(item.date_text) or item.year
+    item.save()
+    for t in payload.tags:
+        person = _tree_person(project, t.person_id)
+        last = GalleryTag.objects.filter(person=person).count()
+        GalleryTag.objects.update_or_create(
+            item=item, person=person, defaults={"relation": t.relation, "order": last}
+        )
+    return Status(201, _item_out(project, item))
+
+
+class GalleryEdit(Schema):
+    caption: str | None = None
+    date_text: str | None = None
+    place_text: str | None = None
+
+
+@router.patch("/projects/{project_id}/gallery/{item_id}")
+def edit_gallery_item(request: HttpRequest, project_id: UUID, item_id: UUID, payload: GalleryEdit):
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    item = get_object_or_404(GalleryItem, pk=item_id, project=project)
+    for field in ("caption", "date_text", "place_text"):
+        value = getattr(payload, field)
+        if value is not None:
+            setattr(item, field, value.strip()[:500])
+    item.year = year_of(item.date_text)
+    item.save()
+    return _item_out(project, item)
+
+
+@router.post("/projects/{project_id}/gallery/{item_id}/tags", response={201: dict})
+def tag_person(request: HttpRequest, project_id: UUID, item_id: UUID, payload: TagIn):
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    item = get_object_or_404(GalleryItem, pk=item_id, project=project)
+    person = _tree_person(project, payload.person_id)
+    GalleryTag.objects.update_or_create(
+        item=item, person=person,
+        defaults={"relation": payload.relation,
+                  "order": GalleryTag.objects.filter(person=person).count()},
+    )  # fmt: skip
+    return Status(201, _item_out(project, item))
+
+
+@router.delete("/projects/{project_id}/gallery/{item_id}/tags/{person_id}", response={204: None})
+def untag_person(request: HttpRequest, project_id: UUID, item_id: UUID, person_id: UUID):
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    item = get_object_or_404(GalleryItem, pk=item_id, project=project)
+    GalleryTag.objects.filter(item=item, person_id=person_id).delete()
+    return Status(204, None)
+
+
+@router.delete("/projects/{project_id}/gallery/{item_id}", response={204: None})
+def remove_from_galleries(request: HttpRequest, project_id: UUID, item_id: UUID):
+    """Take a picture out of every gallery. The file stays in the Archive."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    get_object_or_404(GalleryItem, pk=item_id, project=project).delete()
+    return Status(204, None)
+
+
+class OrderIn(Schema):
+    item_ids: list[UUID]
+
+
+@router.put("/projects/{project_id}/people/{person_id}/gallery/order")
+def order_gallery(request: HttpRequest, project_id: UUID, person_id: UUID, payload: OrderIn):
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    person = _tree_person(project, person_id)
+    reorder(person, [str(i) for i in payload.item_ids])
+    return person_gallery(project, person)
+
+
+@router.get("/projects/{project_id}/photo-suggestions")
+def photo_suggestions(
+    request: HttpRequest, project_id: UUID, folder_id: UUID | None = None
+) -> list[dict[str, Any]]:
+    """Pictures in the Archive not yet in a gallery, with who each might show and why."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    return suggest_people(project, unplaced_images(project, folder_id))

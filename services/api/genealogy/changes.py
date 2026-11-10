@@ -19,7 +19,7 @@ from django.utils import timezone
 
 from history.models import Assertion, AssertionEvidence, Decision, Person
 
-from .models import ChangeSet, ExternalId, Relationship, Residence
+from .models import ChangeSet, ExternalId, GalleryTag, Relationship, Residence
 
 
 def _label(obj: Model) -> str:
@@ -103,6 +103,7 @@ def person_bundle(person: Person) -> list[Model]:
         *Residence.objects.filter(person=person),
         *ExternalId.objects.filter(person=person),
         *Decision.objects.filter(subject_type=ct, subject_id=person.id),
+        *GalleryTag.objects.filter(person=person),
     ]
 
 

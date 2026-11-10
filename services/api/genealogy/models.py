@@ -164,3 +164,48 @@ class ChangeSet(BaseModel):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class GalleryItem(BaseModel):
+    """A picture from the project's Archive placed in family galleries: a photo, or an
+    image of a document. One picture can be tagged to several people."""
+
+    project = models.ForeignKey("projects.Project", on_delete=models.CASCADE, related_name="+")
+    file = models.ForeignKey("archive.FileAsset", on_delete=models.CASCADE, related_name="+")
+    caption = models.CharField(max_length=500, blank=True)
+    date_text = models.CharField(
+        max_length=100, blank=True, help_text="As known, e.g. 'about 1920'"
+    )
+    year = models.IntegerField(null=True, blank=True, help_text="For ordering by decade")
+    place_text = models.CharField(max_length=300, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["project", "file"], name="unique_gallery_file")
+        ]
+
+
+class TagRelation(models.TextChoices):
+    SHOWS = "shows", "Shows them"
+    ABOUT = "about", "About them (a document or record)"
+    CONTEXT = "context", "Their world (not them)"
+
+
+class GalleryTag(BaseModel):
+    """Who a picture is linked to, how, and where it sits in their gallery."""
+
+    item = models.ForeignKey(GalleryItem, on_delete=models.CASCADE, related_name="tags")
+    person = models.ForeignKey("history.Person", on_delete=models.CASCADE, related_name="+")
+    relation = models.CharField(
+        max_length=10, choices=TagRelation.choices, default=TagRelation.SHOWS
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["item", "person"], name="unique_gallery_tag")
+        ]

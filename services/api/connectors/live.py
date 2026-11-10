@@ -741,16 +741,40 @@ class OSNamesConnector(LiveConnector):
 # --- British National Grid to WGS84 -----------------------------------------------------
 
 
+# Transverse Mercator grids: ellipsoid (a, b), scale f0, true origin (degrees), false
+# origin (e0, n0), and a position-vector Helmert to WGS84 (tx, ty, tz in metres; rx, ry,
+# rz in arc seconds; scale in ppm).
+BRITISH_GRID = {
+    "a": 6377563.396, "b": 6356256.909, "f0": 0.9996012717,  # Airy 1830 (OSGB36)
+    "lat0": 49.0, "lon0": -2.0, "e0": 400000.0, "n0": -100000.0,
+    "helmert": (446.448, -125.157, 542.060, 0.1502, 0.2470, 0.8421, -20.4894),
+}  # fmt: skip
+IRISH_GRID = {
+    "a": 6377340.189, "b": 6356034.447, "f0": 1.000035,  # Airy Modified 1849 (TM75)
+    "lat0": 53.5, "lon0": -8.0, "e0": 200000.0, "n0": 250000.0,
+    "helmert": (482.53, -130.596, 564.557, -1.042, -0.214, -0.631, 8.15),
+}  # fmt: skip
+
+
 def bng_to_wgs84(easting: float, northing: float) -> tuple[float, float]:
-    """OSGB36 grid to WGS84 latitude/longitude, via a Helmert transform (about 5 m).
+    """OSGB36 (British National Grid) to WGS84 latitude/longitude (about 5 m)."""
+    return grid_to_wgs84(easting, northing, BRITISH_GRID)
+
+
+def irish_grid_to_wgs84(easting: float, northing: float) -> tuple[float, float]:
+    """Irish Grid (TM75, EPSG:29902) to WGS84 latitude/longitude (a few metres)."""
+    return grid_to_wgs84(easting, northing, IRISH_GRID)
+
+
+def grid_to_wgs84(easting: float, northing: float, grid: dict) -> tuple[float, float]:
+    """A Transverse Mercator grid reference to WGS84, via a Helmert transform.
 
     Formulae from Ordnance Survey's "A guide to coordinates systems in Great Britain".
     Good enough for placing a pin; not for surveying.
     """
-    a, b = 6377563.396, 6356256.909  # Airy 1830
-    f0 = 0.9996012717
-    lat0, lon0 = math.radians(49), math.radians(-2)
-    n0, e0 = -100000.0, 400000.0
+    a, b, f0 = grid["a"], grid["b"], grid["f0"]
+    lat0, lon0 = math.radians(grid["lat0"]), math.radians(grid["lon0"])
+    n0, e0 = grid["n0"], grid["e0"]
     e2 = 1 - (b * b) / (a * a)
     n = (a - b) / (a + b)
 
@@ -788,16 +812,16 @@ def bng_to_wgs84(easting: float, northing: float) -> tuple[float, float]:
     phi = lat - vii * de**2 + viii * de**4 - ix * de**6
     lam = lon0 + x_ * de - xi * de**3 + xii * de**5 - xiia * de**7
 
-    # OSGB36 geodetic -> cartesian (Airy 1830, height 0).
+    # Grid datum geodetic -> cartesian (height 0).
     nu_a = a / math.sqrt(1 - e2 * math.sin(phi) ** 2)
     x1 = nu_a * math.cos(phi) * math.cos(lam)
     y1 = nu_a * math.cos(phi) * math.sin(lam)
     z1 = (1 - e2) * nu_a * math.sin(phi)
 
-    # Helmert OSGB36 -> WGS84.
-    tx, ty, tz = 446.448, -125.157, 542.060
-    s = -20.4894e-6
-    rx, ry, rz = (math.radians(v / 3600) for v in (0.1502, 0.2470, 0.8421))
+    # Helmert -> WGS84.
+    tx, ty, tz, *rot, ppm = grid["helmert"]
+    s = ppm * 1e-6
+    rx, ry, rz = (math.radians(v / 3600) for v in rot)
     x2 = tx + (1 + s) * x1 - rz * y1 + ry * z1
     y2 = ty + rz * x1 + (1 + s) * y1 - rx * z1
     z2 = tz - ry * x1 + rx * y1 + (1 + s) * z1

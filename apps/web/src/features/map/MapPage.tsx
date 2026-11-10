@@ -173,7 +173,9 @@ function FeatureDetail({
       <DateLine f={f} />
       {f.kind === "listed_building" && (
         <p className="m-0 text-sm text-muted">
-          The date it was listed, not built. The listing entry often describes its age.
+          {f.date_role === "built"
+            ? "The date range it was built in, from the Historic Buildings Record."
+            : "The date it was listed, not built. The listing entry often describes its age."}
           {typeof f.extra.credit === "string" && (
             <span className="block text-xs">{f.extra.credit}</span>
           )}
@@ -763,9 +765,10 @@ export function MapPage() {
                     Listed buildings standing today ({features.data!.listed_buildings!.length})
                   </summary>
                   <p className="mt-1 mb-1 text-sm text-muted">
-                    From each nation's own list: Historic England, Historic Environment Scotland and
-                    Cadw (Northern Ireland not connected yet). Shown for every year: the date is
-                    when a building was listed, not when it was built, so check whether it stood in{" "}
+                    From each nation's own list: Historic England, Historic Environment Scotland,
+                    Cadw and, for Northern Ireland, the Department for Communities. Shown for every
+                    year. In Great Britain the date is when a building was listed, not built; in
+                    Northern Ireland it's the date range it was built in. Check whether it stood in{" "}
                     {year}.
                   </p>
                   <ul className="m-0 flex list-none flex-col gap-1 p-0">

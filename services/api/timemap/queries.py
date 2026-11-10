@@ -82,7 +82,7 @@ class MapFeature:
     date_display: str
     year_from: int | None
     year_to: int | None
-    date_role: str  # event | made | record_covers | map_survey | listed | undated
+    date_role: str  # event | made | built | record_covers | map_survey | listed | undated
     latitude: float
     longitude: float
     precision: str
@@ -332,7 +332,7 @@ LISTED_CACHE_SECONDS = 24 * 3600  # the Heritage List is updated daily
 
 
 def _listed_buildings(bbox: BBox) -> tuple[list[MapFeature], list[str]]:
-    """Listed buildings standing today in England, Scotland and Wales (OGL, live).
+    """Listed buildings standing today across the UK (OGL; Northern Ireland from our copy).
 
     Shown whatever year is chosen: a listing date isn't a build date, so these aren't
     filtered by year, and the panel says so.
@@ -354,17 +354,22 @@ def _listed_buildings(bbox: BBox) -> tuple[list[MapFeature], list[str]]:
     features = []
     for b in cached["buildings"]:
         england = b["nation"] == "england"
+        built = b.get("built", "")
+        role = "listed" if b["listed"] else "built" if built else "undated"
+        summary = f"{b['grade']} listed building" if b["grade"] else "Listed building"
+        if b.get("ref"):
+            summary += f" ({b['ref']})"
         features.append(
             MapFeature(
                 id=f"listed:{b['id']}",
                 layer=PUBLIC,
                 kind="listed_building",
                 title=b["title"],
-                summary=f"{b['grade']} listed building" if b["grade"] else "Listed building",
-                date_display=b["listed"],
+                summary=summary,
+                date_display=b["listed"] or built,
                 year_from=None,
                 year_to=None,
-                date_role="listed",
+                date_role=role,
                 latitude=b["latitude"],
                 longitude=b["longitude"],
                 precision="exact",
@@ -373,6 +378,7 @@ def _listed_buildings(bbox: BBox) -> tuple[list[MapFeature], list[str]]:
                 extra={
                     "nation": b["nation"],
                     "credit": CREDITS[b["nation"]],
+                    **({"address": b["address"]} if b.get("address") else {}),
                     # England's list has a connector, so its buildings can be saved.
                     **(
                         {"connector": "historic-england", "record_id": b["id"].split(":", 1)[1]}

@@ -1,8 +1,11 @@
-"""Listed buildings across Great Britain, live from each nation's own list (all OGL).
+"""Listed buildings across the UK, from each nation's own list (all OGL).
 
 England: Historic England's National Heritage List. Scotland: Historic Environment
-Scotland. Wales: Cadw (via DataMapWales). Each building keeps its own list's grade or
-category, listing date, link and credit. A listing date is not a build date.
+Scotland. Wales: Cadw (via DataMapWales). These three are asked live. Northern Ireland:
+the Department for Communities' list from Open Data NI, imported monthly (there's no
+open live service), with the date range each was built rather than a listing date.
+Each building keeps its own list's grade or category, date, link and credit. A listing
+date is not a build date.
 """
 
 from __future__ import annotations
@@ -31,12 +34,18 @@ CREDITS = {
     "right. Open Government Licence.",
     "wales": "Designated Historic Asset GIS Data, The Welsh Historic Environment Service "
     "(Cadw). Open Government Licence.",
+    "northern_ireland": "Listed Buildings Northern Ireland, Department for Communities "
+    "Historic Environment Division, via Open Data NI. Open Government Licence.",
 }
 SOURCES = {
     "england": "National Heritage List for England (Historic England)",
     "scotland": "Historic Environment Scotland",
     "wales": "Cadw (Welsh Historic Environment Service)",
+    "northern_ireland": "Department for Communities, Historic Environment Division",
 }
+NI_VIEWER = "https://www.communities-ni.gov.uk/services/historic-environment-map-viewer"
+# Roughly Northern Ireland, to say when its list hasn't been imported.
+NI_BOX = BBox(-8.25, 54.0, -5.4, 55.35)
 _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 
 
@@ -157,6 +166,37 @@ def _wales(b: BBox, limit: int) -> tuple[list[dict], bool]:
     return out[:limit], len(out) > limit
 
 
+def _northern_ireland(b: BBox, limit: int) -> tuple[list[dict], bool]:
+    from connectors.models import DatasetRow
+
+    rows = list(
+        DatasetRow.objects.filter(dataset__key="ni-listed-buildings")
+        .filter(b.q())
+        .order_by("external_id")[: limit + 1]
+    )
+    out = [
+        {
+            "nation": "northern_ireland",
+            "id": f"ni:{r.external_id}",
+            "title": r.title,
+            "grade": f"Grade {r.fields.get('grade')}" if r.fields.get("grade") else "",
+            "listed": "",
+            "built": r.fields.get("built", ""),
+            "ref": r.external_id,
+            "address": r.fields.get("address", ""),
+            "url": NI_VIEWER,
+            "latitude": r.latitude,
+            "longitude": r.longitude,
+        }
+        for r in rows
+    ]
+    return out[:limit], len(out) > limit
+
+
+def _overlaps(a: BBox, b: BBox) -> bool:
+    return a.west < b.east and b.west < a.east and a.south < b.north and b.south < a.north
+
+
 FETCHERS = {"england": _england, "scotland": _scotland, "wales": _wales}
 
 
@@ -173,4 +213,14 @@ def listed_in(b: BBox, limit: int = 300) -> tuple[list[dict], bool, list[str]]:
             continue
         buildings += found
         more = more or over
+    # Northern Ireland is our own copy, so it's read here rather than in the pool.
+    if _overlaps(b, NI_BOX):
+        from connectors.models import Dataset
+
+        if Dataset.objects.filter(key="ni-listed-buildings").exists():
+            found, over = _northern_ireland(b, limit)
+            buildings += found
+            more = more or over
+        else:
+            notes.append("Northern Ireland's listed buildings haven't been loaded here yet.")
     return buildings, more, notes

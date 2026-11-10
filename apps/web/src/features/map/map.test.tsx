@@ -353,7 +353,7 @@ describe("Listed buildings", () => {
     );
     renderAt("/map");
     await userEvent.click(await screen.findByText("Listed buildings standing today (1)"));
-    expect(screen.getByText(/listed, not when it was built/)).toBeInTheDocument();
+    expect(screen.getByText(/listed, not built; in Northern Ireland/)).toBeInTheDocument();
     await userEvent.click(await screen.findByText("pin No. 6 CHEAP STREET"));
     expect(screen.getByText("Listed")).toBeInTheDocument();
     expect(screen.getByText(/The date it was listed, not built/)).toBeInTheDocument();

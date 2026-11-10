@@ -27,7 +27,7 @@ Last updated: 7 Nov 2026.
 
 | Service | What it adds | Where to sign up | Setting | Cost and terms | Status |
 |---|---|---|---|---|---|
-| Anthropic API | The assistant, handwriting, interview notes | console.anthropic.com | `ANTHROPIC_API_KEY` (already set; needs credit) | Pay as you go | **Needs credit** |
+| Anthropic API | The assistant, handwriting, interview notes | console.anthropic.com | `ANTHROPIC_API_KEY` (set) | Pay as you go | **Done** (credit added 10 Nov 2026) |
 | MapTiler | NLS historic OS maps | maptiler.com | `MAPTILER_KEY` | Free plan non-commercial; paid before launch | To do |
 | OpenAlex | Academic research (works now on a small shared budget) | openalex.org/settings/api | `OPENALEX_API_KEY` | Free | To do |
 | GeoNames | Place names worldwide | geonames.org (create account, switch on free web services) | `GEONAMES_USERNAME` | Free; CC BY | To do |
@@ -116,7 +116,8 @@ Drafts for the first two are in OUTREACH.md §5–6. Full list: SOURCE_REGISTER.
 
 - **Restart your dev servers** on ports 8000 and 5173: they're running code from before WP6. Database changes are already applied to `db.sqlite3`.
 - Optional installs: Tesseract (printed-text OCR), `pip install -r requirements-speech.txt` (speech models, ~600 MB).
-- New machines need the old map names import (download ~311 MB; see docs/WP3.md).
+- New machines need the old map names import (download ~311 MB; see docs/WP3.md). The whole of Great Britain takes about 28 minutes.
+- **Northern Ireland listed buildings** are a monthly download, not a live service. Each month (or before launch), download the GeoJSON from Open Data NI ("Listed Buildings Northern Ireland") and run `python manage.py import_ni_listed_buildings --file <path>`. Until it's run, the map says Northern Ireland's list hasn't been loaded.
 - ESLint's development-only advisories (minimatch) wait for a typescript-eslint update.
 
 ## 8. Decisions waiting on you

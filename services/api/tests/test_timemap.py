@@ -531,3 +531,74 @@ def test_one_list_down_is_said_plainly(ref, alice_client, three_lists, monkeypat
     nations = {b["extra"]["nation"] for b in data["listed_buildings"]}
     assert nations == {"england", "wales"}
     assert any("Historic Environment Scotland couldn't be loaded" in n for n in data["notes"])
+
+
+BELFAST = "-5.935,54.590,-5.920,54.600"
+
+
+def _ni_geojson(tmp_path):
+    import json
+
+    def building(ref, grade, x, y, address="St Malachy's Church\n24 Alfred Street\nBelfast"):
+        return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [x, y]},
+                "properties": {"HB_ref": ref, "CurrentGra": grade, "Address": address,
+                               "Date_Const": "1840 - 1859", "Townland": "Town Parks",
+                               "Council": "Belfast", "CurrentUse": "Church"}}  # fmt: skip
+
+    data = {
+        "type": "FeatureCollection",
+        "crs": {"type": "name", "properties": {"name": "EPSG:29902"}},
+        "features": [
+            building("HB26/30/023 A", "A", 334051.4509, 373755.7695),
+            building("HB26/30/999", "Record Only", 334060.0, 373760.0),  # not listed
+            building("HB26/30/998", "Delisted", 334070.0, 373770.0),
+            {"type": "Feature", "geometry": None, "properties": {"HB_ref": "HB1", "CurrentGra": "A"}},
+        ],
+    }  # fmt: skip
+    path = tmp_path / "hb.geojson"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    return path
+
+
+def test_northern_ireland_listed_buildings_from_the_import(
+    ref, alice_client, three_lists, tmp_path
+):
+    from django.core.management import call_command
+
+    before = features(alice_client, bbox=BELFAST, listed="true")
+    assert any(
+        "Northern Ireland's listed buildings haven't been loaded" in n for n in before["notes"]
+    )
+
+    call_command("import_ni_listed_buildings", file=str(_ni_geojson(tmp_path)))
+    row = DatasetRow.objects.get(dataset__key="ni-listed-buildings")
+    assert row.external_id == "HB26/30/023 A" and row.title == "St Malachy's Church"
+    # Irish Grid converted to the same place DfC's own service gives.
+    assert abs(row.latitude - 54.594262) < 1e-5 and abs(row.longitude + 5.926802) < 1e-5
+
+    from django.core.cache import cache
+
+    cache.clear()
+    data = features(alice_client, bbox=BELFAST, listed="true")
+    ni = [b for b in data["listed_buildings"] if b["extra"]["nation"] == "northern_ireland"]
+    assert len(ni) == 1
+    b = ni[0]
+    assert b["summary"] == "Grade A listed building (HB26/30/023 A)"
+    assert b["date_role"] == "built" and b["date_display"] == "1840 - 1859"
+    assert "Open Data NI" in b["extra"]["credit"] and "Department for Communities" in b["source"]
+    assert b["extra"]["address"] == "St Malachy's Church, 24 Alfred Street, Belfast"
+    assert not any("haven't been loaded" in n for n in data["notes"])
+    # Away from Northern Ireland nothing is said about it.
+    cache.clear()
+    assert not any("Northern Ireland" in n for n in features(alice_client, listed="true")["notes"])
+
+
+def test_ni_import_refuses_other_coordinates(ref, tmp_path):
+    import json
+
+    from django.core.management import CommandError, call_command
+
+    path = tmp_path / "wgs.geojson"
+    path.write_text(json.dumps({"type": "FeatureCollection", "features": []}), encoding="utf-8")
+    with pytest.raises(CommandError, match="Irish Grid"):
+        call_command("import_ni_listed_buildings", file=str(path))

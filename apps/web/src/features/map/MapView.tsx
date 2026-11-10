@@ -55,7 +55,7 @@ function pinElement(group: MapFeature[], selectedId: string | null): HTMLButtonE
   const what = isPrivate ? "private" : isListed ? "listed building" : "public record";
   const label = many
     ? `${group.length} ${isPrivate ? "private items" : isListed ? "listed buildings" : "public records"} here`
-    : `${f.title}${f.date_display ? `, ${isListed ? "listed " : ""}${f.date_display}` : ""} (${what})`;
+    : `${f.title}${f.date_display ? `, ${f.date_role === "listed" ? "listed " : f.date_role === "built" ? "built " : ""}${f.date_display}` : ""} (${what})`;
   el.setAttribute("aria-label", label);
   el.title = label;
   el.dataset.layer = f.layer;

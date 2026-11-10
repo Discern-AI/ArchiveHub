@@ -236,3 +236,15 @@ Something found through a connector (a Gazette notice, a museum record, a catalo
 - Rejected uploads and imported GEDCOM files are left out: an imported tree is evidence for every claim it made, but copying it into the zip would bring living people back in.
 - File names are cleaned to stay inside `media/` and numbered if they clash; a file backing several people is stored once.
 - The download is audited like the other GEDCOM exports, with the number of files included.
+
+## ADR-046 — Northern Ireland's listed buildings from the open download
+
+**Status:** Accepted (2026-11-10)
+
+Northern Ireland now appears with England, Scotland and Wales on the time map's listed buildings layer.
+- The source is "Listed Buildings Northern Ireland" on Open Data NI (Department for Communities, Historic Environment Division), under the Open Government Licence, published monthly as GeoJSON. DfC also has a public ArcGIS service, but it describes itself as for DfC's own map viewer and states no licence, so we don't call it; we used it only to check our coordinate conversion.
+- `import_ni_listed_buildings` keeps the listed grades (A, B+, B1, B2, B) and leaves out "Record Only" and delisted entries, which aren't listed buildings. 9,201 imported from the November 2026 file.
+- The file is in Irish Grid (TM75). It's converted with the same Transverse Mercator and Helmert method as the British National Grid, using Irish Grid parameters; checked against DfC's own positions in Belfast and Fermanagh (under 1 m).
+- Northern Ireland's list gives the date range a building was built, not a listing date, so these show as "Built 1840 - 1859" and the panel explains the difference. There's no stable public page per building, so each links to DfC's Historic Environment map viewer and shows its HB reference.
+- Until the import is run, the map says Northern Ireland's list hasn't been loaded. Refreshing it monthly is an owner action.
+

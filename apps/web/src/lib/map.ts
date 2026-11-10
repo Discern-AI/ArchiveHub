@@ -17,7 +17,8 @@ export interface MapLayers {
   historic: HistoricLayer[];
 }
 
-export type DateRole = "event" | "made" | "record_covers" | "map_survey" | "listed" | "undated";
+export type DateRole =
+  "event" | "made" | "built" | "record_covers" | "map_survey" | "listed" | "undated";
 
 export interface MapFeature {
   id: string;
@@ -117,6 +118,7 @@ export interface SearchResponse {
 export const DATE_ROLE_LABELS: Record<DateRole, string> = {
   event: "Happened",
   made: "Made or taken",
+  built: "Built",
   record_covers: "Record covers",
   listed: "Listed",
   map_survey: "Map surveyed",

@@ -1181,5 +1181,35 @@
     "review_status": "page_read",
     "plan": "Live connector (WP6); set OPENALEX_API_KEY for production.",
     "last_checked": "2026-11-07"
+  },
+  {
+    "key": "ni-historic-buildings",
+    "name": "Listed Buildings Northern Ireland",
+    "kind": "dataset",
+    "holder": "Department for Communities, Historic Environment Division",
+    "url": "https://www.opendatani.gov.uk/dataset/listed-buildings-northern-ireland",
+    "description": "Every listed building in Northern Ireland, from the Historic Buildings Record: grade, address, date range of construction and location.",
+    "coverage_area": "Northern Ireland",
+    "period_from": null,
+    "period_to": null,
+    "record_types": [
+      "listed buildings",
+      "buildings"
+    ],
+    "tags": [
+      "buildings",
+      "places",
+      "heritage"
+    ],
+    "access_type": "hosted",
+    "cost": "free",
+    "licence": "Open Government Licence",
+    "conditions": "Published monthly on Open Data NI as GeoJSON (Irish Grid). We import the listed grades (A, B+, B1, B2, B); 'Record Only' and delisted entries are left out.",
+    "storage_policy": "full_copy",
+    "status_label": "downloadable_dataset",
+    "tier": "A",
+    "review_status": "page_read",
+    "plan": "Imported with import_ni_listed_buildings and shown on the time map with the other UK lists (ADR-046).",
+    "last_checked": "2026-11-10"
   }
 ]

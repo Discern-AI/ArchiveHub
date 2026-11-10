@@ -13,7 +13,7 @@ from typing import Any
 from .gedcom import EVENTS, Node
 
 # Individual tags the importer turns into people, facts and relationships.
-USED_INDI = {"NAME", "SEX", "OCCU", "FAMS", "FAMC", *EVENTS}
+USED_INDI = {"NAME", "SEX", "OCCU", "FAMS", "FAMC", "RESI", *EVENTS}
 USED_FAM = {"HUSB", "WIFE", "CHIL", "MARR"}
 TAG_NAMES = {
     "RESI": "residences",

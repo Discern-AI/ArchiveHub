@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router";
 import { api, archiveApi, type PersonBrief } from "../../lib/api";
 import { AnswerEvidence } from "./AnswerEvidence";
+import { ChangeHistory } from "./ChangeHistory";
 import { FamilyPlaces } from "./FamilyPlaces";
 import { TreeChart } from "./TreeChart";
 import { TreeHealth } from "./TreeHealth";
@@ -109,6 +110,7 @@ export function FamilyPage() {
       </label>
       {projectId && !!people.data?.length && <TreeChart projectId={projectId} />}
       {projectId && !!people.data?.length && <TreeHealth projectId={projectId} />}
+      {projectId && <ChangeHistory projectId={projectId} />}
       {projectId && <FamilyPlaces projectId={projectId} />}
       {people.isError && <p className="text-warning">This family tree couldn't be loaded.</p>}
       {people.data?.length === 0 && (

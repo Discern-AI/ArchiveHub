@@ -1,4 +1,5 @@
 import { ImportReport } from "./ImportReport";
+import { ImportTree } from "./ImportTree";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -93,18 +94,23 @@ export function FileDetail({
           {d.status_detail && <p className="m-0">{d.status_detail}</p>}
           <p className="m-0 text-[13px] text-muted">{d.scan_note}</p>
 
-          {d.can_process.length > 0 && !waiting && (
+          {d.can_process.some((p) => p.kind === "gedcom_import") && !waiting && (
+            <ImportTree fileId={d.id} projectId={projectId} onImported={refresh} />
+          )}
+          {d.can_process.some((p) => p.kind !== "gedcom_import") && !waiting && (
             <div className="flex flex-wrap gap-2">
-              {d.can_process.map((p) => (
-                <button
-                  key={p.kind}
-                  type="button"
-                  onClick={() => run(() => archiveApi.requestJob(d.id, p.kind))}
-                  className="min-h-11 cursor-pointer rounded-lg border border-accent bg-surface px-3 font-medium text-accent"
-                >
-                  {p.label}
-                </button>
-              ))}
+              {d.can_process
+                .filter((p) => p.kind !== "gedcom_import")
+                .map((p) => (
+                  <button
+                    key={p.kind}
+                    type="button"
+                    onClick={() => run(() => archiveApi.requestJob(d.id, p.kind))}
+                    className="min-h-11 cursor-pointer rounded-lg border border-accent bg-surface px-3 font-medium text-accent"
+                  >
+                    {p.label}
+                  </button>
+                ))}
             </div>
           )}
 
@@ -151,7 +157,7 @@ export function FileDetail({
             .filter((j) => j.kind === "gedcom_import" && j.status === "done")
             .slice(0, 1)
             .map((j) => (
-              <ImportReport key={j.id} result={j.result} />
+              <ImportReport key={j.id} result={j.result} projectId={projectId} onUndone={refresh} />
             ))}
 
           {d.jobs.length > 0 && (

@@ -30,8 +30,8 @@ GED = """0 HEAD
 def test_report_says_what_was_left_behind():
     r = import_report(parse(GED))
     assert r["gedcom_version"] == "5.5.1" and r["made_by"] == "Ancestry.com Family Trees"
+    # Residences are imported now (WP9), so they aren't listed as left behind.
     assert r["other_facts_not_imported"] == {
-        "residences": 2,
         "military service (non-standard tag)": 1,
         "divorces": 1,
     }

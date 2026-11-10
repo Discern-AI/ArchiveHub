@@ -1,4 +1,7 @@
-/** What a GEDCOM import brought across, and what it left behind. */
+/** What a GEDCOM import brought across, what it left behind, and a one-step undo. */
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ApiError } from "../../lib/api";
+import { treeApi } from "../../lib/tree";
 
 export interface GedcomReport {
   gedcom_version: string;
@@ -12,9 +15,28 @@ export interface GedcomReport {
   other_facts_not_imported: Record<string, number>;
 }
 
-export function ImportReport({ result }: { result: Record<string, unknown> }) {
+export function ImportReport({
+  result,
+  projectId,
+  onUndone,
+}: {
+  result: Record<string, unknown>;
+  projectId?: string;
+  onUndone?: () => void;
+}) {
+  const qc = useQueryClient();
+  const changeId = typeof result.change_set === "string" ? result.change_set : null;
+  const undo = useMutation({
+    mutationFn: () => treeApi.undo(projectId!, changeId!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["trees", projectId] });
+      qc.invalidateQueries({ queryKey: ["changes", projectId] });
+      onUndone?.();
+    },
+  });
   const r = result.report as GedcomReport | undefined;
   if (!r) return null;
+  const health = result.health as { count: number } | undefined;
   const left: string[] = [];
   if (r.source_citations_not_imported)
     left.push(`${r.source_citations_not_imported} source citations`);
@@ -43,7 +65,38 @@ export function ImportReport({ result }: { result: Record<string, unknown> }) {
       ) : (
         <p className="m-0">Nothing was left out.</p>
       )}
+      {result.mode === "update" && (
+        <p className="m-0">
+          Updated {String(result.updated)} people and added {String(result.added)}.{" "}
+          {Number(result.not_in_file_count) === 1 && "1 person not in this file was kept."}
+          {Number(result.not_in_file_count) > 1 &&
+            `${String(result.not_in_file_count)} people not in this file were kept.`}
+        </p>
+      )}
+      {health && (
+        <p className="m-0">
+          {health.count === 0
+            ? "The health check found nothing to look at."
+            : `The health check found ${health.count} things worth a second look. See "Check this tree" on the family page.`}
+        </p>
+      )}
       {r.media_note && <p className="m-0 text-muted">{r.media_note}</p>}
+      {changeId && projectId && !undo.isSuccess && (
+        <button
+          type="button"
+          onClick={() => undo.mutate()}
+          disabled={undo.isPending}
+          className="min-h-11 cursor-pointer self-start rounded-lg border border-control bg-surface px-3"
+        >
+          {undo.isPending ? "Undoing…" : "Undo this import"}
+        </button>
+      )}
+      {undo.isSuccess && <p className="m-0">The import was undone. The file is still here.</p>}
+      {undo.isError && (
+        <p className="m-0 text-warning">
+          {undo.error instanceof ApiError ? undo.error.message : "The import couldn't be undone."}
+        </p>
+      )}
     </section>
   );
 }

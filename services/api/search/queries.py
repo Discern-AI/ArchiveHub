@@ -22,7 +22,7 @@ from django.db.models import Q
 
 from archive.models import Derivative, FileAsset, FileKind
 from connectors.base import ConnectorError
-from connectors.models import DatasetRow
+from connectors.models import Dataset, DatasetRow
 from connectors.sources import get_connector
 from history.models import Organisation, Person, Place, Source, SourceRecord
 from history.queries import terms
@@ -199,6 +199,11 @@ def _records(words) -> Group:
     )
 
 
+def _map_names_scope() -> str:
+    ds = Dataset.objects.filter(key="old-map-names").only("import_scope").first()
+    return ds.import_scope if ds and ds.import_scope else "not imported on this server"
+
+
 def _map_names(words) -> Group:
     # Titles are stored lower-cased and indexed; all words must appear in the name.
     qs = DatasetRow.objects.filter(dataset__key="old-map-names").filter(
@@ -209,7 +214,7 @@ def _map_names(words) -> Group:
         "map_names",
         "Names on the c.1900 map",
         "public",
-        "Old map names (OS six-inch, c.1900), Newbury and West Berkshire",
+        f"Old map names (OS six-inch, c.1900), {_map_names_scope()}",
         qs,
         lambda r: Result(
             id=f"name:{r.external_id}",

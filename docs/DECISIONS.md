@@ -206,3 +206,13 @@ For a person who has died, ArchiveHub lists the records that could exist (civil 
 ## ADR-042 — GEDCOM 7.0 export alongside 5.5.1
 **Status:** Accepted · 2026-11-10
 Trees export as GEDCOM 5.5.1 (default, most widely read) or GEDCOM 7.0 (`?version=7.0`), following FamilySearch's specification as read on 10 Nov 2026: the header gives `GEDC.VERS 7.0` with no `CHAR` (UTF-8 only) or `FORM`; no `CONC` (long text uses `CONT`); a leading `@` in text is doubled; dates must follow GEDCOM 7's grammar (ABT/CAL/EST/BEF/AFT, BET…AND, FROM…TO), and any wording that doesn't (e.g. "summer 1952") is kept unchanged as a `PHRASE` under an empty `DATE`. Corrections are exported as the current values, as before. GedZip (media bundled with the tree) waits until people and archive files are linked as media.
+
+## ADR-043 — ArchiveHub covers everywhere; Newbury is the pilot data, not the boundary
+**Status:** Accepted · 2026-11-10 · decided by the owner
+The product is for anywhere people's history happened. Newbury and West Berkshire stay the first place with hand-checked records and the first partners, but nothing is limited to them:
+- **Old map names** import the whole of Great Britain by default (`--pilot` keeps the small West Berkshire import for development). On Postgres a trigram index keeps "contains" searches quick across the millions of labels.
+- **The map** opens where you last were, or on the whole UK the first time, and "Go to a place" finds our places, any name on the c.1900 map in Great Britain, and anywhere in the world through GeoNames when it's set up.
+- **Listed buildings** come from all three nations' official lists, each with its own grade or category, link and credit (OGL): Historic England, Historic Environment Scotland and Cadw (via DataMapWales). Northern Ireland isn't connected yet; protected areas are England only for now, and the map says so.
+- **The record guide** names the county record office for any county it recognises and links The National Archives' Find an archive; Royal Berkshire Archives is named only for Berkshire places.
+- **"What else is known here?"** reads the street from a building's name anywhere; The Gazette is searched only when the town is known (our places or GeoNames), because a street name alone matches everywhere. Old map labels were tried for this and rejected: they can't tell a town from a field name.
+- The assistant's instructions and tool descriptions describe this scope, and say plainly that ArchiveHub's own checked records are still mostly from the Newbury pilot.

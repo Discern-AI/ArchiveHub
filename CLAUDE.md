@@ -1,6 +1,6 @@
 # ArchiveHub — rules for coding assistants
 
-ArchiveHub is a chat-first platform for family and local history (Record, Research, Home, Connect), piloting in Newbury and West Berkshire.
+ArchiveHub is a chat-first platform for family and local history (Record, Research, Home, Connect), for anywhere; its pilot data and first partners are in Newbury and West Berkshire. Don't build anything that only works there (ADR-043).
 
 ## Read first
 - `docs/SPEC.md` — the merged specification and build plan (WP1–WP8).

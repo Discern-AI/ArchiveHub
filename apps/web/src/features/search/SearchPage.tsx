@@ -135,7 +135,7 @@ export function SearchPage() {
           type="search"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="e.g. Pigeons, Cheap Street, Spracklen"
+          placeholder="A name, a street, a pub, a place"
           className="min-h-11 flex-1 rounded-lg border border-control bg-surface px-3"
         />
         <button

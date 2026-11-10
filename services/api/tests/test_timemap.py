@@ -288,66 +288,6 @@ def test_bbox_contains():
     assert box.contains(51.4, -1.32) and not box.contains(52, -1.32) and box.small
 
 
-def test_listed_buildings_layer_is_live_cached_and_opt_in(ref, alice_client, monkeypatch):
-    from django.core.cache import cache
-
-    from connectors.sources import get_connector
-
-    cache.clear()
-    seen = []
-    connector = get_connector("historic-england")
-
-    def fake_query(where, extra):
-        seen.append(extra)
-        return {
-            "features": [
-                {
-                    "attributes": {
-                        "ListEntry": 1220923,
-                        "Name": "No. 6 CHEAP STREET",
-                        "Grade": "II",
-                        "ListDate": 431308800000,
-                        "hyperlink": "https://historicengland.org.uk/listing/the-list/list-entry/1220923",
-                    },
-                    "geometry": {"points": [[-1.3214, 51.3984]]},
-                }
-            ],
-            "exceededTransferLimit": True,
-        }
-
-    monkeypatch.setattr(connector, "_query", fake_query)
-    assert features(alice_client)["listed_buildings"] == []  # off unless asked
-    data = features(alice_client, listed="true", year_from=1850, year_to=1860)
-    building = data["listed_buildings"][0]
-    assert building["date_role"] == "listed" and building["date_display"] == "1983"
-    assert building["layer"] == "public" and building["url"].endswith("1220923")
-    assert any("first 300 listed buildings" in n for n in data["notes"])
-    assert seen[0]["geometryType"] == "esriGeometryEnvelope"
-    features(alice_client, listed="true", year_from=1900, year_to=1910)
-    assert len(seen) == 1  # same area: served from the cache, whatever the year
-    wide = features(alice_client, bbox="-2,51,-1,52", listed="true")
-    assert wide["listed_buildings"] == [] and any(
-        "Zoom in to see listed" in n for n in wide["notes"]
-    )
-
-
-def test_listed_buildings_unavailable_is_said_plainly(ref, alice_client, monkeypatch):
-    from django.core.cache import cache
-
-    from connectors.base import Unavailable
-    from connectors.sources import get_connector
-
-    cache.clear()
-
-    def down(where, extra):
-        raise Unavailable("down")
-
-    monkeypatch.setattr(get_connector("historic-england"), "_query", down)
-    data = features(alice_client, listed="true")
-    assert data["listed_buildings"] == []
-    assert any("couldn't be loaded" in n for n in data["notes"])
-
-
 def test_what_else_is_known_here(ref, alice, alice_client, project, monkeypatch):
     from connectors.base import ConnectorRecord, Page
     from connectors.sources import get_connector
@@ -453,3 +393,141 @@ def test_protected_areas_are_live_cached_and_labelled(alice_client, monkeypatch)
     wide = alice_client.get("/api/v1/map/areas", {"bbox": "-3,50,-1,52"}).json()
     assert wide["features"] == [] and "Zoom in" in wide["notes"][0]
     assert alice_client.get("/api/v1/map/areas", {"bbox": "x"}).status_code == 422
+
+
+def test_go_to_any_place(ref, alice_client, settings):
+    ds = Dataset.objects.create(
+        key="old-map-names", name="Old map names", source=Source.objects.get(key="gb1900")
+    )
+    for n, (title, lat) in enumerate(
+        (("EDINBURGH", 55.95), ("Edinburgh Road", 51.5), ("EDINBURGHSHIRE", 55.9))
+    ):
+        DatasetRow.objects.create(dataset=ds, external_id=f"e{n}", title=title,
+                                  title_lower=title.lower(), latitude=lat, longitude=-3.19)  # fmt: skip
+    settings.GEONAMES_USERNAME = ""
+    found = alice_client.get("/api/v1/map/places", {"q": "Edinburgh"}).json()
+    assert found[0]["name"] == "Edinburgh" and found[0]["kind"] == "town"
+    assert found[0]["latitude"] == 55.95 and "c.1900" in found[0]["geocode_source"]
+    assert [f["name"] for f in found][1:] == ["Edinburghshire", "Edinburgh Road"]
+    # Our own places still come first.
+    assert alice_client.get("/api/v1/map/places", {"q": "Cheap"}).json()[0]["key"] == "cheap-street"
+
+
+def test_what_is_here_outside_our_places(ref, alice_client, monkeypatch, settings):
+    from connectors.base import Page
+    from connectors.sources import get_connector
+    from timemap.nearby import street_from_name
+
+    assert street_from_name("8, CHEAP STREET") == "Cheap Street"
+    assert street_from_name("12 and 14 HIGH STREET") == "High Street"
+    assert street_from_name("Barn at Manor Farm, Church Lane") == "Church Lane"
+    assert street_from_name("THE OLD RECTORY") == ""
+
+    sent = []
+    monkeypatch.setattr(
+        get_connector("the-gazette"),
+        "search",
+        lambda query, cursor=None, page_size=25: sent.append(query) or Page(records=[]),
+    )
+    settings.GEONAMES_USERNAME = ""
+    url = "/api/v1/map/nearby"
+    york = {"lat": 53.959, "lng": -1.081, "name": "23, STONEGATE STREET"}
+    data = alice_client.get(url, york).json()
+    assert data["gazette"] is None and sent == []  # no town known: don't guess
+    assert any("can't tell which town" in n for n in data["notes"])
+
+    settings.GEONAMES_USERNAME = "geo-user"
+    monkeypatch.setattr(get_connector("geonames"), "nearest_place", lambda lat, lng: "York")
+    data = alice_client.get(url, york).json()
+    assert sent == ['"Stonegate Street" York']
+    assert any("with York" in n for n in data["notes"])
+
+
+@pytest.fixture
+def three_lists(monkeypatch):
+    """England, Scotland and Wales answer from stand-ins; returns the requests made."""
+    from django.core.cache import cache
+
+    from timemap import listed
+
+    cache.clear()
+    seen = []
+
+    def fake(url, params, timeout=10.0, headers=None):
+        seen.append((url, params))
+        if url == listed.ENGLAND:
+            return {
+                "features": [{
+                    "attributes": {"ListEntry": 1220923, "Name": "No. 6 CHEAP STREET", "Grade": "II",
+                                   "ListDate": 431308800000,
+                                   "hyperlink": "https://historicengland.org.uk/listing/the-list/list-entry/1220923"},
+                    "geometry": {"points": [[-1.3214, 51.3984]]},
+                }],
+                "exceededTransferLimit": True,
+            }  # fmt: skip
+        if url == listed.SCOTLAND:
+            point = {"attributes": {"DES_REF": "LB3006", "DES_TITLE": "12-16 BANK STREET", "CATEGORY": "B",
+                                    "DESIGNATED": 156038400000,
+                                    "LINK": "https://portal.historicenvironment.scot/designation/LB3006"},
+                     "geometry": {"x": -3.1931, "y": 55.9498}}  # fmt: skip
+            return {"features": [point, point]}  # one building, two points
+        return {
+            "features": [{
+                "properties": {"RecordNumber": 13662, "Name": "Cardiff Castle", "Grade": "I",
+                               "DesignationDate": "1952-02-12T00:00:00Z",
+                               "Report": "http://cadwpublic-api.azurewebsites.net/reports/x"},
+                "geometry": {"type": "MultiPoint", "coordinates": [[-3.1822, 51.4817]]},
+            }]
+        }  # fmt: skip
+
+    monkeypatch.setattr(listed, "http_get_json", fake)
+    return seen
+
+
+def test_listed_buildings_from_all_three_lists(ref, alice_client, three_lists):
+    from timemap import listed
+
+    assert features(alice_client)["listed_buildings"] == []  # off unless asked
+    data = features(alice_client, listed="true", year_from=1850, year_to=1860)
+    by_nation = {b["extra"]["nation"]: b for b in data["listed_buildings"]}
+    england, scotland, wales = by_nation["england"], by_nation["scotland"], by_nation["wales"]
+    assert england["date_role"] == "listed" and england["date_display"] == "1983"
+    assert (
+        england["summary"] == "Grade II listed building"
+        and england["extra"]["record_id"] == "1220923"
+    )
+    assert (
+        scotland["summary"] == "Category B listed building" and scotland["date_display"] == "1974"
+    )
+    assert "connector" not in scotland["extra"]  # nothing to save it with yet
+    assert wales["title"] == "Cardiff Castle" and wales["date_display"] == "1952"
+    assert "Cadw" in wales["source"] and "Open Government Licence" in wales["extra"]["credit"]
+    assert sum(1 for b in data["listed_buildings"] if b["extra"]["nation"] == "scotland") == 1
+    assert any("Showing up to 300" in n for n in data["notes"])
+    wales_bbox = next(p for u, p in three_lists if u == listed.WALES)["bbox"]
+    assert wales_bbox.endswith(",CRS:84") and wales_bbox.startswith("-1.335")
+    before = len(three_lists)
+    features(alice_client, listed="true", year_from=1900, year_to=1910)
+    assert len(three_lists) == before  # same area: cached, whatever the year
+    wide = features(alice_client, bbox="-2,51,-1,52", listed="true")
+    assert wide["listed_buildings"] == [] and any(
+        "Zoom in to see listed" in n for n in wide["notes"]
+    )
+
+
+def test_one_list_down_is_said_plainly(ref, alice_client, three_lists, monkeypatch):
+    from connectors.base import Unavailable
+    from timemap import listed
+
+    real = listed.http_get_json
+
+    def scotland_down(url, params, timeout=10.0, headers=None):
+        if url == listed.SCOTLAND:
+            raise Unavailable("down")
+        return real(url, params, timeout=timeout, headers=headers)
+
+    monkeypatch.setattr(listed, "http_get_json", scotland_down)
+    data = features(alice_client, listed="true")
+    nations = {b["extra"]["nation"] for b in data["listed_buildings"]}
+    assert nations == {"england", "wales"}
+    assert any("Historic Environment Scotland couldn't be loaded" in n for n in data["notes"])

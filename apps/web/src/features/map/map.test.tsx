@@ -252,6 +252,45 @@ describe("Time map", () => {
   });
 });
 
+describe("Going anywhere", () => {
+  it("finds a place anywhere and moves the map there", async () => {
+    const calls = installFetch(
+      routes({
+        "GET /api/v1/map/places": (url) =>
+          json(
+            url.searchParams.get("q") === "Edinburgh"
+              ? [
+                  {
+                    id: "name:e0",
+                    key: "name:e0",
+                    name: "Edinburgh",
+                    kind: "town",
+                    latitude: 55.95,
+                    longitude: -3.19,
+                    precision: "town",
+                    geocode_source: "Old map names (OS six-inch, c.1900)",
+                    note: "",
+                  },
+                ]
+              : [],
+          ),
+        "GET /api/v1/map/features": () =>
+          json({ public: [], private: [], map_names: [], listed_buildings: [], notes: [] }),
+      }),
+    );
+    renderAt("/map");
+    await userEvent.type(await screen.findByLabelText("Go to a place"), "Edinburgh");
+    await userEvent.click(screen.getByRole("button", { name: "Go" }));
+    const found = await screen.findByRole("list", { name: "Places found" });
+    await userEvent.click(within(found).getByRole("button", { name: /Edinburgh/ }));
+    await waitFor(() =>
+      expect(calls.some((c) => c.path.includes("/map/features") && c.path.includes("55.9"))).toBe(
+        true,
+      ),
+    );
+  });
+});
+
 describe("Listed buildings", () => {
   it("shows listed buildings as their own layer, with the listing date explained", async () => {
     const listedBuilding = feature({

@@ -104,3 +104,22 @@ def test_assistant_tool_cites_checked_guidance():
     gro = next(r for r in data["steps"][0]["routes"] if "GRO" in r["record"])
     cited = kit.cited_in(f"The GRO index is free [{gro['cite']}].")
     assert cited[0]["url"].startswith("https://www.gro.gov.uk/")
+
+
+def test_record_office_for_anywhere():
+    assert record_office_for("Newbury, Berkshire").startswith("Royal Berkshire Archives")
+    assert record_office_for("Swindon, Wiltshire, England").startswith(
+        "The Wiltshire record office"
+    )
+    assert record_office_for("Tenby, Pembrokeshire, Wales").startswith(
+        "The Pembrokeshire record office"
+    )
+    assert "Find an archive" in record_office_for("Somewhere, Atlantis")
+    steps = where_to_look(
+        {"birth": {"year": 1820, "place": "Swindon, Wiltshire"}},
+        record_office_for("Swindon, Wiltshire"),
+    )
+    parish = next(s for s in steps if s.event == "baptism").routes[0]
+    assert (
+        parish.holder.startswith("The Wiltshire record office") and "find-an-archive" in parish.url
+    )

@@ -7,6 +7,7 @@ where one would be if it does (ADR-041).
 
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
@@ -145,8 +146,8 @@ def _church(event: str, year: int, place: str, county_office: str) -> list[Route
             "visit",
             "Many county record offices have licensed their registers to subscription "
             "sites; the originals can be seen at the record office.",
-            TNA_BMD,
-            "The National Archives",
+            FIND_AN_ARCHIVE,
+            "The National Archives: Find an archive",
         ),
         Route(
             "FreeREG transcriptions",
@@ -221,12 +222,37 @@ def _census(year: int, place: str = "") -> list[Route]:
     ]
 
 
+FIND_AN_ARCHIVE = "https://discovery.nationalarchives.gov.uk/find-an-archive"
+FIND_IT = "(find it in The National Archives' Find an archive)"
+# Historic and current counties, to name the right record office in the guide.
+COUNTIES = [
+    "Bedfordshire", "Berkshire", "Buckinghamshire", "Cambridgeshire", "Cheshire", "Cornwall",
+    "Cumberland", "Cumbria", "Derbyshire", "Devon", "Dorset", "Durham", "Essex",
+    "Gloucestershire", "Hampshire", "Herefordshire", "Hertfordshire", "Huntingdonshire", "Kent",
+    "Lancashire", "Leicestershire", "Lincolnshire", "London", "Middlesex", "Norfolk",
+    "Northamptonshire", "Northumberland", "Nottinghamshire", "Oxfordshire", "Rutland",
+    "Shropshire", "Somerset", "Staffordshire", "Suffolk", "Surrey", "Sussex", "Warwickshire",
+    "Westmorland", "Wiltshire", "Worcestershire", "Yorkshire",
+    "Anglesey", "Brecknockshire", "Caernarfonshire", "Cardiganshire", "Carmarthenshire",
+    "Denbighshire", "Flintshire", "Glamorgan", "Merionethshire", "Monmouthshire",
+    "Montgomeryshire", "Pembrokeshire", "Radnorshire",
+    "Aberdeenshire", "Argyll", "Ayrshire", "Fife", "Inverness-shire", "Lanarkshire",
+    "Midlothian", "Perthshire", "Renfrewshire", "Stirlingshire",
+    "Antrim", "Armagh", "Down", "Fermanagh", "Londonderry", "Tyrone",
+]  # fmt: skip
+
+
 def record_office_for(place: str) -> str:
-    """The record office for a place we know; otherwise a general pointer."""
+    """The record office to try for a place: named for Berkshire (checked); otherwise the
+    county's own record office, which The National Archives' Find an archive lists."""
     low = place.lower()
     if any(w in low for w in ("berkshire", "newbury", "reading", "hungerford", "thatcham")):
         return "Royal Berkshire Archives (Berkshire Record Office)"
-    return "The county record office for the parish"
+    words = set(re.findall(r"[a-z-]+", low))
+    for county in COUNTIES:
+        if county.lower() in words or county.lower() in low.split(","):
+            return f"The {county} record office {FIND_IT}"
+    return f"The county record office for the parish {FIND_IT}"
 
 
 def where_to_look(

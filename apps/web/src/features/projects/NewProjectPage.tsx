@@ -45,7 +45,7 @@ export function NewProjectPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={200}
-          placeholder="For example: The Pigeons, Newbury"
+          placeholder="For example: The Carter family, or the pubs of our high street"
           className="min-h-11 rounded-lg border border-control bg-surface px-3 font-normal"
         />
       </label>

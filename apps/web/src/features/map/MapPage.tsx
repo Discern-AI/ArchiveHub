@@ -28,7 +28,20 @@ const SPANS: [string, number | null][] = [
   ["Any date", null],
 ];
 // Cheap Street, Newbury: where the pilot starts (SPEC §5).
-const START = { lat: 51.400484, lng: -1.323134, zoom: 16 };
+// With nothing else to go on, show the whole of the UK; then remember where people were.
+const START = { lat: 54.2, lng: -2.6, zoom: 5.4 };
+const VIEW_KEY = "archivehub.map.view";
+
+function rememberedView(): View | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(VIEW_KEY) ?? "null");
+    return v && Number.isFinite(v.lat) && Number.isFinite(v.lng) && Number.isFinite(v.zoom)
+      ? v
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 const select = "min-h-11 rounded-lg border border-control bg-surface px-2 font-normal";
 
@@ -161,6 +174,9 @@ function FeatureDetail({
       {f.kind === "listed_building" && (
         <p className="m-0 text-sm text-muted">
           The date it was listed, not built. The listing entry often describes its age.
+          {typeof f.extra.credit === "string" && (
+            <span className="block text-xs">{f.extra.credit}</span>
+          )}
         </p>
       )}
       <p className="m-0 text-sm text-muted">
@@ -233,8 +249,22 @@ export function MapPage() {
   const [view, setView] = useState<View>(() =>
     params.get("lat") && params.get("lng") && Number.isFinite(urlLat) && Number.isFinite(urlLng)
       ? { lat: urlLat, lng: urlLng, zoom: 17 }
-      : START,
+      : (rememberedView() ?? START),
   );
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [placeSearch, setPlaceSearch] = useState("");
+  const placeResults = useQuery({
+    queryKey: ["map-place-search", placeSearch],
+    queryFn: () => mapApi.places(placeSearch),
+    enabled: placeSearch.length >= 2,
+  });
+  function goTo(lat: number, lng: number, kind: string) {
+    const next = { lat, lng, zoom: kind === "town" || kind.startsWith("city") ? 14 : 16.5 };
+    setView(next);
+    setBbox(boxAround(next.lat, next.lng));
+    setPlaceSearch("");
+    setPlaceQuery("");
+  }
   const [bbox, setBbox] = useState<BBox>(() => boxAround(view.lat, view.lng));
   const [year, setYear] = useState(() => {
     const y = Number(params.get("year"));
@@ -333,6 +363,11 @@ export function MapPage() {
         : v,
     );
     setBbox(b);
+    try {
+      localStorage.setItem(VIEW_KEY, JSON.stringify(v));
+    } catch {
+      // Private browsing or blocked storage: the map just starts from the default.
+    }
   }, []);
 
   function chooseYear(y: number) {
@@ -367,27 +402,61 @@ export function MapPage() {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2 border-b border-line bg-surface px-4 py-3">
         <h1 className="m-0 mr-2 font-serif text-[28px] font-semibold">Time map</h1>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Place
-          <select
-            value={placeKey ?? ""}
-            onChange={(e) => {
-              const next = new URLSearchParams(params);
-              next.set("place", e.target.value);
-              setParams(next);
-            }}
-            className={select}
-          >
-            <option value="" disabled>
-              Choose a place
-            </option>
-            {places.data?.map((p) => (
-              <option key={p.key} value={p.key}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setPlaceSearch(placeQuery.trim());
+          }}
+          className="relative flex flex-col gap-1 text-sm font-medium"
+        >
+          <label htmlFor="map-place">Go to a place</label>
+          <div className="flex gap-1">
+            <input
+              id="map-place"
+              type="search"
+              value={placeQuery}
+              onChange={(e) => setPlaceQuery(e.target.value)}
+              placeholder="Town, village or street"
+              className={`${select} w-56`}
+            />
+            <button
+              type="submit"
+              className="min-h-11 cursor-pointer rounded-lg border border-control bg-surface px-3 font-medium"
+            >
+              Go
+            </button>
+          </div>
+          {placeSearch && (
+            <div className="absolute top-full left-0 z-30 mt-1 w-80 rounded-lg border border-line bg-surface p-2 shadow-lg">
+              {placeResults.isPending && <p className="m-0 p-2 text-muted">Looking…</p>}
+              {placeResults.data?.length === 0 && (
+                <p className="m-0 p-2 text-muted">No place by that name found.</p>
+              )}
+              <ul aria-label="Places found" className="m-0 flex list-none flex-col p-0">
+                {placeResults.data?.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onClick={() => goTo(p.latitude, p.longitude, p.kind)}
+                      className="flex min-h-11 w-full cursor-pointer flex-col items-start rounded-lg border-0 bg-transparent px-2 py-1 text-left font-normal hover:bg-tint"
+                    >
+                      <span className="font-medium">{p.name}</span>
+                      <span className="text-xs text-muted">{p.geocode_source || p.kind}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() => setPlaceSearch("")}
+                className="min-h-11 cursor-pointer border-0 bg-transparent px-2 text-accent"
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </form>
         <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-sm font-medium">
           <span>
             Year: <output className="font-serif text-lg font-semibold">{year}</output>
@@ -654,7 +723,9 @@ export function MapPage() {
                   <p className="mt-1 mb-1 text-sm text-muted">
                     Dashed outlines on the map: conservation areas (blue), scheduled monuments
                     (brown), parks and gardens (green), battlefields (red). The year is when each
-                    was designated. From Historic England, Open Government Licence.
+                    was designated. From Historic England, Open Government Licence. England only for
+                    now: Wales, Scotland and Northern Ireland keep their own lists, not connected
+                    yet.
                   </p>
                   <ul className="m-0 flex flex-col gap-1 pl-5 text-sm">
                     {areas.data!.features.map((a) => (
@@ -692,9 +763,10 @@ export function MapPage() {
                     Listed buildings standing today ({features.data!.listed_buildings!.length})
                   </summary>
                   <p className="mt-1 mb-1 text-sm text-muted">
-                    From Historic England's National Heritage List. Shown for every year: the date
-                    is when a building was listed, not when it was built, so check whether it stood
-                    in {year}.
+                    From each nation's own list: Historic England, Historic Environment Scotland and
+                    Cadw (Northern Ireland not connected yet). Shown for every year: the date is
+                    when a building was listed, not when it was built, so check whether it stood in{" "}
+                    {year}.
                   </p>
                   <ul className="m-0 flex list-none flex-col gap-1 p-0">
                     {features

@@ -104,13 +104,76 @@ def _place_json(p: Place) -> dict[str, Any]:
 
 @router.get("/map/places")
 def places(request: HttpRequest, q: str = "") -> list[dict[str, Any]]:
-    """Places with a map location. Without a query, the pilot's starting places first."""
-    qs = Place.objects.select_related("parent").filter(latitude__isnull=False)
-    if q.strip():
-        qs = qs.filter(name__icontains=q.strip()[:100])
-    found = list(qs.order_by("name")[:20])
-    found.sort(key=lambda p: START_PLACES.index(p.key) if p.key in START_PLACES else 99)
-    return [_place_json(p) for p in found]
+    """Places to go to on the map. Without a query: our own places with records.
+
+    With a query, anywhere: our places, then names on the c.1900 map (Great Britain), then
+    GeoNames (worldwide) when it's set up. Only the place name is sent outside.
+    """
+    text = q.strip()[:100]
+    ours = Place.objects.select_related("parent").filter(latitude__isnull=False)
+    if not text:
+        found = list(ours.order_by("name")[:20])
+        found.sort(key=lambda p: START_PLACES.index(p.key) if p.key in START_PLACES else 99)
+        return [_place_json(p) for p in found]
+    out = [_place_json(p) for p in ours.filter(name__icontains=text).order_by("name")[:5]]
+    out += _old_map_places(text, 8)
+    if len(out) < 8:
+        out += _geonames_places(text, 8 - len(out))
+    return out[:12]
+
+
+def _old_map_places(text: str, limit: int) -> list[dict[str, Any]]:
+    from connectors.models import DatasetRow
+
+    low = text.lower()
+    rows = DatasetRow.objects.filter(dataset__key="old-map-names", title_lower__startswith=low)
+    rows = rows.exclude(latitude__isnull=True).order_by("title_lower")[:200]
+    # Exact names first, and capitals (towns and villages on the six-inch map) first.
+    ranked = sorted(
+        rows, key=lambda r: (r.title_lower != low, not r.title.isupper(), r.title_lower)
+    )
+    return [
+        {
+            "id": f"name:{r.external_id}",
+            "key": f"name:{r.external_id}",
+            "name": r.title.title() if r.title.isupper() else r.title,
+            "kind": "town" if r.title.isupper() else "map name",
+            "latitude": r.latitude,
+            "longitude": r.longitude,
+            "precision": "town" if r.title.isupper() else "inferred",
+            "geocode_source": "Old map names (OS six-inch, c.1900)",
+            "note": "",
+        }
+        for r in ranked[:limit]
+    ]
+
+
+def _geonames_places(text: str, limit: int) -> list[dict[str, Any]]:
+    from connectors.base import ConnectorError
+    from connectors.sources import get_connector
+
+    connector = get_connector("geonames")
+    if not connector.configured() or limit <= 0:
+        return []
+    try:
+        page = connector.search(text, page_size=limit)
+    except ConnectorError:
+        return []
+    return [
+        {
+            "id": f"geonames:{r.id}",
+            "key": f"geonames:{r.id}",
+            "name": f"{r.title}, {r.description.split(', ', 1)[-1]}" if r.description else r.title,
+            "kind": r.record_type,
+            "latitude": r.latitude,
+            "longitude": r.longitude,
+            "precision": "town",
+            "geocode_source": "GeoNames",
+            "note": "",
+        }
+        for r in page.records
+        if r.latitude is not None
+    ]
 
 
 def _year(value: int | None) -> int | None:

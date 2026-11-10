@@ -576,7 +576,7 @@ class TNADiscoveryConnector(LiveConnector):
     attribution = "The National Archives' Discovery catalogue"
     description = (
         "Catalogue descriptions from The National Archives and about 2,500 other UK "
-        "archives, including the Royal Berkshire Archives. Descriptions, not the documents."
+        "archives, including county record offices. Descriptions, not the documents."
     )
     api = "https://discovery.nationalarchives.gov.uk/API"
     min_interval = 1.0  # TNA asks for no more than one request a second
@@ -858,7 +858,8 @@ class HistoricEnglandConnector(OpenConnector):
     )
     description = (
         "Every listed building in England, with its grade, the date it was listed and an exact "
-        "location. Add a town to search near it, e.g. “Cheap Street Newbury”. The date is when "
+        "location (England only). Add a town to search near it, e.g. “High Street Ludlow”. "
+        "The date is when "
         "it was listed, not when it was built."
     )
     api = (
@@ -1103,6 +1104,17 @@ class GeoNamesConnector(LiveConnector):
             next_cursor=encode_cursor({"offset": offset + size}) if more else None,
             searched=f"GeoNames (live) for “{q}”",
         )
+
+    def nearest_place(self, lat: float, lng: float) -> str | None:
+        """The nearest populated place (towns and villages of 1,000 or more)."""
+        data = self._check(
+            self.get(
+                f"{self.api}/findNearbyPlaceNameJSON",
+                {"lat": lat, "lng": lng, "cities": "cities1000", "username": self.require_key()},
+            )
+        )
+        places = data.get("geonames") or []
+        return places[0].get("name") if places else None
 
     def get_record(self, record_id: str) -> ConnectorRecord:
         if not record_id.isdigit():

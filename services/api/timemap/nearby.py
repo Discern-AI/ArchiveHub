@@ -9,6 +9,7 @@ our records are placed at street level and modern house numbers may not match ol
 from __future__ import annotations
 
 import math
+import re
 from typing import Any
 
 from connectors.base import ConnectorError
@@ -88,9 +89,26 @@ def nearby(user, lat: float, lng: float, name: str = "") -> dict[str, Any]:
             f"Records are placed on {street.name} as a whole, so they may be about any "
             "building on it. Modern house numbers may not match old ones."
         )
-        gazette = _gazette(street)
+        town = street.parent.name if street.parent else ""
+        gazette = _gazette(street.name, town)
     elif name:
-        notes.append("No street we hold records for is named in this building's name.")
+        # Anywhere else: read the street from the building's name and find its town, so
+        # The Gazette can still be asked.
+        parsed = street_from_name(name)
+        town = town_near(lat, lng) if parsed else ""
+        if parsed and not town:
+            notes.append(
+                f"We don't hold records for {parsed} yet, and we can't tell which town it's "
+                "in, so The Gazette wasn't searched (a street name alone matches everywhere)."
+            )
+        elif parsed:
+            gazette = _gazette(parsed, town)
+            notes.append(
+                f"We don't hold records for {parsed} yet. The Gazette was searched for "
+                f"{parsed} with {town}, so notices may be about another street of that name."
+            )
+        else:
+            notes.append("No street we hold records for is named here.")
     return {
         "street": str(street) if street else None,
         "map_names": names,
@@ -101,11 +119,44 @@ def nearby(user, lat: float, lng: float, name: str = "") -> dict[str, Any]:
     }
 
 
-def _gazette(street: Place) -> dict[str, Any]:
-    """Gazette notices (100+ years old) mentioning the street. Only the street's name is
-    sent, which comes from public lists, never from the user."""
-    town = street.parent.name if street.parent else ""
-    query = f'"{street.name}" {town}'.strip()
+STREET_WORDS = (
+    "STREET|ROAD|LANE|HILL|SQUARE|PLACE|ROW|TERRACE|WAY|AVENUE|PARADE|WALK|GREEN|CRESCENT|"
+    "CLOSE|COURT|YARD|ALLEY|BRIDGE|QUAY|WHARF|GATE"
+)
+STREET = re.compile(rf"([A-Z][A-Z' .-]*?\b(?:{STREET_WORDS}))\b", re.IGNORECASE)
+
+
+def street_from_name(name: str) -> str:
+    """'8, CHEAP STREET' -> 'Cheap Street'; '' if no street is named."""
+    cleaned = re.sub(
+        r"^(?:no\.?\s*)?\d+[a-z]?(?:\s*(?:and|&|-)\s*\d+[a-z]?)?,?\s*", "", name.strip(), flags=re.I
+    )
+    m = STREET.search(cleaned)
+    if not m:
+        return ""
+    return " ".join(w.capitalize() for w in m.group(1).split())
+
+
+def town_near(lat: float, lng: float, km: float = 5.0) -> str:
+    """The town to name with a street: one of ours within reach, else GeoNames' nearest
+    populated place (when it's set up). Old map labels can't tell a town from a field
+    name reliably, so they aren't used for this. Empty if no town is known."""
+    for t in Place.objects.filter(kind="town", latitude__isnull=False):
+        if _metres(lat, lng, float(t.latitude), float(t.longitude)) <= km * 1000:
+            return t.name
+    connector = get_connector("geonames")
+    if not connector.configured():
+        return ""
+    try:
+        return connector.nearest_place(lat, lng) or ""
+    except ConnectorError:
+        return ""
+
+
+def _gazette(street: str, town: str) -> dict[str, Any]:
+    """Gazette notices (100+ years old) mentioning the street. Only the street's and town's
+    public names are sent, never anything of the user's."""
+    query = f'"{street}" {town}'.strip()
     connector = get_connector("the-gazette")
     try:
         page = connector.search(query, page_size=5)

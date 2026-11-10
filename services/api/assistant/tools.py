@@ -107,7 +107,8 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
     (
         "search_records",
         "Search the historical records ArchiveHub holds or has checked (currently a small, "
-        "hand-checked set for Cheap Street and central Newbury). Optionally limit by year. "
+        "hand-checked set, so far for Cheap Street and central Newbury). Optionally limit by "
+        "year. "
         "Returns numbered records with our summary of what each says, to cite.",
         SearchRecordsInput,
     ),
@@ -128,10 +129,10 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
         "search_connector",
         "Search a connected dataset. 'old-map-names': every label on the OS six-inch maps "
         "of about 1900 (streets, buildings, farms, abbreviations like P.H. for public "
-        "house) for Newbury and West Berkshire, with coordinates. 'wikidata': live search of "
+        "house) across Great Britain, with coordinates. 'wikidata': live search of "
         "Wikidata for people, places and organisations, useful context but not proof. "
         "'tna-discovery': catalogue descriptions from The National Archives and about 2,500 "
-        "UK archives incl. the Royal Berkshire Archives (descriptions, not documents). "
+        "UK archives, including county record offices (descriptions, not documents). "
         "'europeana': European museums, libraries and archives (photos, maps, documents). "
         "'geograph': photos of places in Britain, mostly since 2005; accepts place names or "
         "grid references like SU4767. 'os-names': today's place names, streets and "
@@ -139,7 +140,7 @@ TOOL_SPECS: list[tuple[str, str, type[BaseModel]]] = [
         "'digitalnz': New Zealand collections incl. Papers Past newspapers; 'dpla': US "
         "collections (useful for relatives who emigrated). 'historic-england': every "
         "listed building in England with grade, listing date and exact location; add a town "
-        "to search near it ('Cheap Street Newbury'); the listing date is not the build date. "
+        "to search near it ('High Street Ludlow'); the listing date is not the build date. "
         "'the-gazette': official notices (commissions, honours, bankruptcies, partnerships, "
         "deceased estates), only those at least 100 years old. 'geonames': place names "
         "worldwide with locations and other spellings. 'met-museum' and "
@@ -447,8 +448,9 @@ class ToolKit:
             self.log("Not found", f"No records in ArchiveHub {scope}")
         return {
             "results": [_record_brief(self, r) for r in records],
-            "coverage_note": "ArchiveHub currently holds a small checked set for Cheap Street "
-            "and central Newbury. Not finding something here doesn't mean it doesn't exist.",
+            "coverage_note": "ArchiveHub's own checked records are so far a small set for Cheap "
+            "Street and central Newbury; use the connected sources for anywhere else. Not "
+            "finding something here doesn't mean it doesn't exist.",
         }
 
     def _get_record(self, args: GetRecordInput) -> dict[str, Any]:

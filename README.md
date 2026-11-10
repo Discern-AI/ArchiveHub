@@ -1,6 +1,6 @@
 # ArchiveHub
 
-A chat-first platform where people preserve family and local history, research the past, publish their work and find the people who can help. Piloting in Newbury and West Berkshire.
+A chat-first platform where people preserve family and local history, research the past, publish their work and find the people who can help, wherever that history happened. The first hand-checked local records and partners are in Newbury and West Berkshire (ADR-043).
 
 **Status:** WP6 (Time map and Search). Open **Map** to move through Cheap Street by year, with public records and your private memories and photos kept visibly apart, and today's map alongside. **Search** looks across everything you're allowed to see and says what it searched. See [docs/WP6.md](docs/WP6.md), [WP5](docs/WP5.md), [WP4](docs/WP4.md), [WP3](docs/WP3.md) and [WP2](docs/WP2.md).
 

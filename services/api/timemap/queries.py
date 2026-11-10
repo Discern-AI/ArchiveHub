@@ -331,68 +331,62 @@ LISTED_LIMIT = 300
 LISTED_CACHE_SECONDS = 24 * 3600  # the Heritage List is updated daily
 
 
-def _listed_buildings(bbox: BBox) -> tuple[list[MapFeature], str]:
-    """Listed buildings standing today, from the National Heritage List (OGL, live).
+def _listed_buildings(bbox: BBox) -> tuple[list[MapFeature], list[str]]:
+    """Listed buildings standing today in England, Scotland and Wales (OGL, live).
 
     Shown whatever year is chosen: a listing date isn't a build date, so these aren't
     filtered by year, and the panel says so.
     """
     if not bbox.small:
-        return [], "Zoom in to see listed buildings."
+        return [], ["Zoom in to see listed buildings."]
     from django.core.cache import cache
 
-    from connectors.base import ConnectorError
-    from connectors.sources import get_connector
+    from .listed import CREDITS, SOURCES, listed_in
 
-    key = "nhle:" + ",".join(f"{v:.3f}" for v in (bbox.west, bbox.south, bbox.east, bbox.north))
+    key = "listed:" + ",".join(f"{v:.3f}" for v in (bbox.west, bbox.south, bbox.east, bbox.north))
     cached = cache.get(key)
+    notes: list[str] = []
     if cached is None:
-        connector = get_connector("historic-england")
-        try:
-            data = connector._query(
-                "1=1",
-                {
-                    "geometry": f"{bbox.west},{bbox.south},{bbox.east},{bbox.north}",
-                    "geometryType": "esriGeometryEnvelope",
-                    "inSR": 4326,
-                    "spatialRel": "esriSpatialRelIntersects",
-                    "resultRecordCount": LISTED_LIMIT,
+        buildings, more, notes = listed_in(bbox, LISTED_LIMIT)
+        cached = {"buildings": buildings, "more": more}
+        if not notes:  # don't keep a partial answer
+            cache.set(key, cached, LISTED_CACHE_SECONDS)
+    features = []
+    for b in cached["buildings"]:
+        england = b["nation"] == "england"
+        features.append(
+            MapFeature(
+                id=f"listed:{b['id']}",
+                layer=PUBLIC,
+                kind="listed_building",
+                title=b["title"],
+                summary=f"{b['grade']} listed building" if b["grade"] else "Listed building",
+                date_display=b["listed"],
+                year_from=None,
+                year_to=None,
+                date_role="listed",
+                latitude=b["latitude"],
+                longitude=b["longitude"],
+                precision="exact",
+                source=SOURCES[b["nation"]],
+                url=b["url"],
+                extra={
+                    "nation": b["nation"],
+                    "credit": CREDITS[b["nation"]],
+                    # England's list has a connector, so its buildings can be saved.
+                    **(
+                        {"connector": "historic-england", "record_id": b["id"].split(":", 1)[1]}
+                        if england
+                        else {}
+                    ),
                 },
             )
-        except ConnectorError:
-            return [], "Listed buildings couldn't be loaded from Historic England just now."
-        cached = {
-            "records": [connector._record(f).to_dict() for f in data.get("features", []) or []],
-            "more": bool(data.get("exceededTransferLimit")),
-        }
-        cache.set(key, cached, LISTED_CACHE_SECONDS)
-    features = [
-        MapFeature(
-            id=f"listed:{r['id']}",
-            layer=PUBLIC,
-            kind="listed_building",
-            title=r["title"],
-            summary=r["description"],
-            date_display=r["date_text"].removeprefix("Listed "),
-            year_from=None,
-            year_to=None,
-            date_role="listed",
-            latitude=r["latitude"],
-            longitude=r["longitude"],
-            precision="exact",
-            source="National Heritage List for England (Historic England)",
-            url=r["url"],
-            extra={"connector": "historic-england", "record_id": r["id"]},
         )
-        for r in cached["records"]
-        if r["latitude"] is not None and r["longitude"] is not None
-    ]
-    note = (
-        f"Showing the first {LISTED_LIMIT} listed buildings here; zoom in for more."
-        if cached["more"]
-        else ""
-    )
-    return features, note
+    if cached["more"]:
+        notes.append(
+            f"Showing up to {LISTED_LIMIT} listed buildings from each list; zoom in for more."
+        )
+    return features, notes
 
 
 def map_features(
@@ -429,9 +423,8 @@ def map_features(
     notes = [names_note] if names_note else []
     listed_buildings: list[MapFeature] = []
     if listed:
-        listed_buildings, listed_note = _listed_buildings(bbox)
-        if listed_note:
-            notes.append(listed_note)
+        listed_buildings, listed_notes = _listed_buildings(bbox)
+        notes += listed_notes
     unplaced = Place.objects.filter(
         Q(latitude__isnull=True) | Q(longitude__isnull=True), records__isnull=False
     ).distinct()

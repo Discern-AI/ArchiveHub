@@ -1,7 +1,8 @@
 """Import old OS map names from the GB1900 raw data dump (CC0) into a hosted dataset.
 
 python manage.py import_old_map_names --zip var/downloads/gb1900/GB1900_final_raw_dump_july_2018.zip
-python manage.py import_old_map_names --zip ... --all          # the whole of Great Britain
+                                                     # the whole of Great Britain (default)
+python manage.py import_old_map_names --zip ... --pilot        # only Newbury and West Berkshire
 python manage.py import_old_map_names --zip ... --bbox 51.3,-1.7,51.6,-0.9
 """
 
@@ -26,7 +27,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--zip", required=True, help="Path to the GB1900 raw dump zip")
         scope = parser.add_mutually_exclusive_group()
-        scope.add_argument("--all", action="store_true", help="Import all of Great Britain")
+        scope.add_argument(
+            "--all",
+            action="store_true",
+            help="All of Great Britain (the default; kept for scripts)",
+        )
+        scope.add_argument(
+            "--pilot", action="store_true", help="Only Newbury and West Berkshire (quick, small)"
+        )
         scope.add_argument("--bbox", help="min_lat,min_lon,max_lat,max_lon")
 
     def handle(self, *args, **opts):
@@ -39,8 +47,8 @@ class Command(BaseCommand):
                 "Run load_reference_data first (the directory needs the GB1900 entry)."
             )
 
-        if opts["all"]:
-            box, scope = None, "Great Britain"
+        if opts["pilot"]:
+            box, scope = WEST_BERKSHIRE, "Newbury and West Berkshire"
         elif opts["bbox"]:
             try:
                 box = tuple(float(v) for v in opts["bbox"].split(","))
@@ -51,7 +59,7 @@ class Command(BaseCommand):
                 ) from exc
             scope = f"area {opts['bbox']}"
         else:
-            box, scope = WEST_BERKSHIRE, "Newbury and West Berkshire"
+            box, scope = None, "Great Britain"
 
         self.stdout.write(f"Checking {path.name}…")
         digest = sha256(path)

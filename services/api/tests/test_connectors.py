@@ -66,7 +66,7 @@ def imported(tmp_path):
     load_all()
     path = tmp_path / "dump.zip"
     make_zip(path)
-    call_command("import_old_map_names", zip=str(path), stdout=io.StringIO())
+    call_command("import_old_map_names", zip=str(path), pilot=True, stdout=io.StringIO())
     return Dataset.objects.get(key="old-map-names")
 
 
@@ -240,5 +240,15 @@ def test_import_is_repeatable(imported, tmp_path):
     before = imported.rows.count()
     path = tmp_path / "again.zip"
     make_zip(path)
-    call_command("import_old_map_names", zip=str(path), stdout=io.StringIO())
+    call_command("import_old_map_names", zip=str(path), pilot=True, stdout=io.StringIO())
     assert Dataset.objects.get(key="old-map-names").rows.count() == before
+
+
+def test_import_covers_great_britain_by_default(tmp_path):
+    load_all()
+    path = tmp_path / "dump.zip"
+    make_zip(path)
+    call_command("import_old_map_names", zip=str(path), stdout=io.StringIO())
+    dataset = Dataset.objects.get(key="old-map-names")
+    assert dataset.import_scope == "Great Britain"
+    assert DatasetRow.objects.filter(dataset=dataset, title="Edinburgh").exists()

@@ -188,6 +188,85 @@ describe("Family chart", () => {
   });
 });
 
+describe("Evidence from saved finds", () => {
+  it("shows a fact's evidence and backs it with a saved find", async () => {
+    let attached = false;
+    const calls = installFetch({
+      ...base,
+      "GET /api/v1/projects/p1/people/a": () =>
+        json({
+          id: "a",
+          name: "Tom Sample",
+          living: false,
+          birth: "",
+          death: "",
+          parents: [],
+          partners: [],
+          children: [],
+          facts: [
+            {
+              question: "occupation",
+              disputed: false,
+              answers: [
+                {
+                  id: "c1",
+                  value: "Postman",
+                  status: "documented",
+                  method: "user",
+                  note: "",
+                  in_use: true,
+                  evidence: attached
+                    ? [
+                        {
+                          title: "The London Gazette, Issue 28538, Page 7207",
+                          url: "https://www.thegazette.co.uk/London/issue/28538/page/7207",
+                          what_it_says: "Named as a temporary postman.",
+                        },
+                      ]
+                    : [],
+                },
+              ],
+            },
+          ],
+        }),
+      "GET /api/v1/projects/p1/basket": () =>
+        json([
+          {
+            id: "b1",
+            connector: "the-gazette",
+            external_id: "London/issue/28538/page/7207",
+            title: "The London Gazette, Issue 28538, Page 7207",
+            url: "https://www.thegazette.co.uk/London/issue/28538/page/7207",
+            storage: "reference_only",
+            note: "",
+            created_at: "",
+          },
+        ]),
+      "POST /api/v1/projects/p1/claims/c1/evidence": () => {
+        attached = true;
+        return json({ added: 1 }, 201);
+      },
+    });
+    renderAt("/projects/p1/people/a");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Back this with a saved find" }),
+    );
+    await userEvent.selectOptions(await screen.findByLabelText("Saved find"), "b1");
+    await userEvent.type(
+      screen.getByLabelText("What it says (optional)"),
+      "Named as a temporary postman.",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Add as evidence" }));
+    const evidence = await screen.findByRole("list", { name: "Evidence" });
+    expect(within(evidence).getByRole("link", { name: /Issue 28538/ })).toBeInTheDocument();
+    expect(calls.find((c) => c.method === "POST")?.body).toEqual({
+      basket_item_id: "b1",
+      note: "Named as a temporary postman.",
+      stance: "supports",
+    });
+  });
+});
+
 describe("Tree health check", () => {
   it("lists things to check with links to the people, and changes nothing", async () => {
     const calls = installFetch({

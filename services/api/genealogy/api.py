@@ -14,7 +14,7 @@ from ninja.errors import HttpError
 
 from core.models import audit
 from history import queries
-from history.models import Assertion, LivingStatus, Method, Person
+from history.models import Assertion, AssertionEvidence, LivingStatus, Method, Person
 from projects.permissions import editable_projects, visible_projects
 
 from .exporter import current_values, export_gedcom
@@ -87,7 +87,13 @@ def person_detail(request: HttpRequest, project_id: UUID, person_id: UUID) -> di
                         "note": c.note,
                         "in_use": chosen.get(predicate.lower()) == c.id,
                         "evidence": [
-                            {"title": e.title, "url": e.url, "what_it_says": e.note}
+                            {
+                                "title": e.title,
+                                "url": e.url,
+                                "what_it_says": e.note,
+                                "source": e.source_name,
+                                "stance": e.stance,
+                            }
                             for e in c.evidence.all()
                         ],  # fmt: skip
                     }
@@ -99,11 +105,38 @@ def person_detail(request: HttpRequest, project_id: UUID, person_id: UUID) -> di
     }
 
 
+class EvidenceIn(Schema):
+    basket_item_id: UUID
+    note: str = ""
+    stance: Literal["supports", "disputes", "mentions"] = "supports"
+
+
 class CorrectionIn(Schema):
     predicate: str
     value: str
     status: Literal["documented", "remembered", "inferred"] = "remembered"
     note: str = ""
+    evidence: list[EvidenceIn] = []
+
+
+def _attach(project, claim: Assertion, items: list[EvidenceIn], user) -> int:
+    """Attach saved Research Basket items from the same project as evidence."""
+    from explorer.models import BasketItem
+
+    added = 0
+    for item in items:
+        saved = BasketItem.objects.filter(project=project, pk=item.basket_item_id).first()
+        if saved is None:
+            raise HttpError(422, "That saved item isn't in this project's Research Basket.")
+        _, created = AssertionEvidence.objects.get_or_create(
+            assertion=claim,
+            basket_item=saved,
+            defaults={"note": item.note.strip()[:2000], "stance": item.stance},
+        )
+        if created:
+            added += 1
+            audit(user, "evidence.add", claim, basket_item=str(saved.id))
+    return added
 
 
 @router.post("/projects/{project_id}/people/{person_id}/claims", response={201: dict})
@@ -127,7 +160,17 @@ def add_claim(request: HttpRequest, project_id: UUID, person_id: UUID, payload: 
         note=payload.note.strip()[:2000],
     )
     audit(request.user, "claim.add", a, predicate=predicate)
+    _attach(project, a, payload.evidence, request.user)
     return Status(201, {"id": str(a.id)})
+
+
+@router.post("/projects/{project_id}/claims/{claim_id}/evidence", response={201: dict})
+def add_evidence(request: HttpRequest, project_id: UUID, claim_id: UUID, payload: EvidenceIn):
+    """Back an existing fact with something saved to the Research Basket."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    claim = get_object_or_404(Assertion, pk=claim_id, project=project)
+    added = _attach(project, claim, [payload], request.user)
+    return Status(201, {"added": added})
 
 
 @router.get("/projects/{project_id}/people/{person_id}/where-to-look")

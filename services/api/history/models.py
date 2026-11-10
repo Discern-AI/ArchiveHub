@@ -334,7 +334,8 @@ class Stance(models.TextChoices):
 
 class AssertionEvidence(BaseModel):
     assertion = models.ForeignKey(Assertion, on_delete=models.CASCADE, related_name="evidence")
-    # Evidence is either a source record or one of the project's own files.
+    # Evidence is a source record, one of the project's own files, or a record saved to
+    # the project's Research Basket from any connected source.
     record = models.ForeignKey(
         SourceRecord, null=True, blank=True, on_delete=models.PROTECT, related_name="evidence"
     )
@@ -343,6 +344,13 @@ class AssertionEvidence(BaseModel):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
+        related_name="evidence",
+    )
+    basket_item = models.ForeignKey(
+        "explorer.BasketItem",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
         related_name="evidence",
     )
     location = models.CharField(max_length=100, blank=True, help_text="Where in the file")
@@ -357,26 +365,40 @@ class AssertionEvidence(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=["assertion", "record"], name="unique_evidence"),
             models.CheckConstraint(
-                condition=models.Q(record__isnull=False) | models.Q(file__isnull=False),
+                condition=models.Q(record__isnull=False)
+                | models.Q(file__isnull=False)
+                | models.Q(basket_item__isnull=False),
                 name="evidence_has_a_source",
             ),
         ]
 
     @property
     def title(self) -> str:
-        return self.record.title if self.record else f"{self.file.name} ({self.location})"
+        if self.record:
+            return self.record.title
+        if self.basket_item:
+            return self.basket_item.title
+        return f"{self.file.name} ({self.location})"
 
     @property
     def url(self) -> str:
-        return self.record.url if self.record else ""
+        if self.record:
+            return self.record.url
+        return self.basket_item.url if self.basket_item else ""
 
     @property
     def source_name(self) -> str:
-        return self.record.source.name if self.record else "Your file"
+        if self.record:
+            return self.record.source.name
+        return "Saved to your Research Basket" if self.basket_item else "Your file"
 
     @property
     def ref(self) -> str:
-        return self.record.key if self.record else f"file:{self.file_id}:{self.location}"
+        if self.record:
+            return self.record.key
+        if self.basket_item:
+            return f"basket:{self.basket_item_id}"
+        return f"file:{self.file_id}:{self.location}"
 
 
 class Decision(BaseModel):

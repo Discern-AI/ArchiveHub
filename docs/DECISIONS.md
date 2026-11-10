@@ -216,3 +216,13 @@ The product is for anywhere people's history happened. Newbury and West Berkshir
 - **The record guide** names the county record office for any county it recognises and links The National Archives' Find an archive; Royal Berkshire Archives is named only for Berkshire places.
 - **"What else is known here?"** reads the street from a building's name anywhere; The Gazette is searched only when the town is known (our places or GeoNames), because a street name alone matches everywhere. Old map labels were tried for this and rejected: they can't tell a town from a field name.
 - The assistant's instructions and tool descriptions describe this scope, and say plainly that ArchiveHub's own checked records are still mostly from the Newbury pilot.
+
+## ADR-044 — Saved finds can back a fact in the family tree
+
+**Status:** Accepted (2026-11-10)
+
+Something found through a connector (a Gazette notice, a museum record, a catalogue entry) can now be the evidence for a fact, not just a note in the Research Basket.
+- Evidence points at the basket item (`AssertionEvidence.basket_item`), alongside the existing record or file options; exactly one of the three is set. Title, link and source name come from the saved find, and follow the basket's storage rules: a source we may only link to stays a link and a label.
+- On a person's page each answer lists its evidence, and "Back this with a saved find" adds one from the project's basket, with an optional note of what it says. The assistant's cite_evidence can do the same.
+- A saved find that is backing a fact can't be removed from the basket until it's removed from the fact (409 with a plain message), so evidence never silently disappears.
+- Attaching evidence doesn't change a fact's status or merge anyone; the person still decides what the project uses.

@@ -260,7 +260,13 @@ export interface PersonDetail extends PersonBrief {
       method: string;
       note: string;
       in_use: boolean;
-      evidence: { title: string; url: string; what_it_says: string }[];
+      evidence: {
+        title: string;
+        url: string;
+        what_it_says: string;
+        source?: string;
+        stance?: string;
+      }[];
     }[];
   }[];
 }

@@ -113,9 +113,9 @@ def claims_about(user, subject_obj, predicate: str | None = None) -> dict[str, l
     qs = visible_assertions(user).filter(subject_type=ct, subject_id=subject_obj.pk)
     if predicate:
         qs = qs.filter(predicate__iexact=predicate)
-    qs = qs.prefetch_related("evidence__record__source", "evidence__file").order_by(
-        "predicate", "year_from"
-    )
+    qs = qs.prefetch_related(
+        "evidence__record__source", "evidence__file", "evidence__basket_item"
+    ).order_by("predicate", "year_from")
     grouped: dict[str, list[Assertion]] = defaultdict(list)
     for a in qs:
         grouped[a.predicate].append(a)

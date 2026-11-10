@@ -205,3 +205,51 @@ def test_tree_graph(imported, alice_client, bob_client, project):
     arthur_id = by_name["Arthur Sample"]["id"]
     assert {"from": arthur_id, "to": alice["id"], "kind": "parent"} in data["links"]
     assert bob_client.get(f"/api/v1/projects/{project.id}/tree-graph").status_code == 404
+
+
+def test_saved_finds_back_facts(imported, alice_client, bob, bob_client, project):
+    from explorer.models import BasketItem
+    from projects.models import ProjectMember, Role
+
+    tom = Person.objects.get(project=project, name="Tom Sample")
+    saved = BasketItem.objects.create(
+        project=project, connector="the-gazette", external_id="London/issue/28538/page/7207",
+        title="The London Gazette, Issue 28538, Page 7207",
+        url="https://www.thegazette.co.uk/London/issue/28538/page/7207", storage="reference_only",
+    )  # fmt: skip
+    other = Project.objects.create(owner=bob, title="Bob's")
+    elsewhere = BasketItem.objects.create(project=other, connector="x", external_id="1", title="Not yours",
+                                          storage="reference_only")  # fmt: skip
+    url = f"/api/v1/projects/{project.id}/people/{tom.id}/claims"
+    body = {"predicate": "occupation", "value": "Postman", "status": "documented", "note": "",
+            "evidence": [{"basket_item_id": str(saved.id), "note": "Named as a temporary postman."}]}  # fmt: skip
+    r = alice_client.post(url, body, content_type=JSON)
+    assert r.status_code == 201
+    claim_id = r.json()["id"]
+
+    page = alice_client.get(f"/api/v1/projects/{project.id}/people/{tom.id}").json()
+    occupation = next(f for f in page["facts"] if f["question"].lower() == "occupation")
+    ev = occupation["answers"][0]["evidence"][0]
+    assert ev["title"].startswith("The London Gazette") and ev["url"].endswith("/7207")
+    assert (
+        ev["what_it_says"] == "Named as a temporary postman."
+        and ev["source"] == "Saved to your Research Basket"
+    )
+
+    # Someone else's saved item can't be used, and the same item isn't attached twice.
+    add = f"/api/v1/projects/{project.id}/claims/{claim_id}/evidence"
+    assert (
+        alice_client.post(add, {"basket_item_id": str(elsewhere.id)}, content_type=JSON).status_code
+        == 422
+    )
+    assert alice_client.post(add, {"basket_item_id": str(saved.id)}, content_type=JSON).json() == {
+        "added": 0
+    }
+    # Viewers can't add evidence; a saved item backing a fact can't be removed.
+    ProjectMember.objects.create(project=project, user=bob, role=Role.VIEWER)
+    assert (
+        bob_client.post(add, {"basket_item_id": str(saved.id)}, content_type=JSON).status_code
+        == 404
+    )
+    r = alice_client.delete(f"/api/v1/projects/{project.id}/basket/{saved.id}")
+    assert r.status_code == 409 and "backing a fact" in r.json()["detail"]

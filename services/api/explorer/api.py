@@ -154,6 +154,8 @@ def add_to_basket(request: HttpRequest, project_id: UUID, payload: BasketIn):
 def remove_from_basket(request: HttpRequest, project_id: UUID, item_id: UUID):
     project = get_object_or_404(editable_projects(request.user), pk=project_id)
     item = get_object_or_404(BasketItem, pk=item_id, project=project)
+    if item.evidence.exists():
+        raise HttpError(409, "This is backing a fact in your family tree. Remove it there first.")
     audit(request.user, "basket.remove", item, title=item.title)
     item.delete()
     return Status(204, None)

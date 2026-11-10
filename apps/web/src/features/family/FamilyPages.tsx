@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router";
 import { api, archiveApi, type PersonBrief } from "../../lib/api";
+import { AnswerEvidence } from "./AnswerEvidence";
 import { FamilyPlaces } from "./FamilyPlaces";
 import { TreeChart } from "./TreeChart";
 import { TreeHealth } from "./TreeHealth";
@@ -203,6 +204,12 @@ export function PersonPage() {
                     {a.in_use ? ", used" : ""})
                   </span>
                   {a.note && <div className="text-sm font-normal text-muted">{a.note}</div>}
+                  <AnswerEvidence
+                    projectId={projectId!}
+                    personId={personId!}
+                    claimId={a.id}
+                    evidence={a.evidence}
+                  />
                 </li>
               ))}
             </ul>

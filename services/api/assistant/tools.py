@@ -253,6 +253,10 @@ class ToolKit:
     def cite_evidence(self, e) -> int:
         if e.record:
             return self.cite_record(e.record)
+        if e.basket_item_id:
+            return self.cite(
+                "basket", str(e.basket_item_id), e.title, e.url, "Your Research Basket"
+            )
         return self.cite("file", f"{e.file_id}:{e.location}", e.title, "", "Your Archive")
 
     def _explain_term(self, args: ExplainTermInput) -> dict[str, Any]:

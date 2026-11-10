@@ -58,3 +58,9 @@ Old map names on the map need the GB1900 import from WP3 (`import_old_map_names`
 - **Map pins need a mouse or touch to place;** keyboard users can place an item at the middle of the map and move the map with the arrow keys first.
 - **Two maps side by side** follow each other but aren't a swipe comparison; that can come if people ask for it.
 - Postgres was not available locally; CI runs the tests on Postgres.
+
+## Whole of Great Britain (10 Nov 2026)
+
+- `import_old_map_names` now imports all of Great Britain by default (`--pilot` keeps the small West Berkshire set). Measured on a laptop into SQLite: 2,666,338 labels in about 28 minutes, and the database grew to about 1.1 GB.
+- Map-area lookups stay instant at that size (1,037 labels in a central Edinburgh box in 0.01 s). A "contains" name search is quick when the word is common (Mill, Smithy: under 0.3 s) but slow on SQLite when it's rare (Inverness: 53 s), because SQLite has to read every row. Postgres, used in CI and production, has the trigram index (`connectors/migrations/0002`) for this; on SQLite, use `--pilot` or `--bbox` for development.
+- Listed buildings on the map now come from England, Scotland and Wales (ADR-043). Evidence for a fact can now be a saved find from the Research Basket (ADR-044).

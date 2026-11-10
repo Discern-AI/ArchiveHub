@@ -166,8 +166,10 @@ TOOL_SPECS.append(
     (
         "explain_term",
         "Explain an old term found in a record: money (guinea, shilling, 9/6, £ s d), Poor "
-        "Law words (union, guardians, settlement examination, overseer of the poor), or an "
-        "abbreviation written on an Ordnance Survey map (P.H., B.M., S.P). Returns checked "
+        "Law words (union, guardians, settlement examination, overseer of the poor), dates "
+        "(the 1752 calendar change, double dating like 1748/9, quarter days such as "
+        "Michaelmas, regnal years), banns, probate, Irish townlands, or an abbreviation "
+        "written on an Ordnance Survey map (P.H., B.M., S.P). Returns checked "
         "explanations with numbered sources to cite. Map abbreviations often have several "
         "meanings: give them all unless the context decides. An explanation describes the "
         "period, never a particular person.",

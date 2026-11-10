@@ -1,5 +1,5 @@
 {
- "_about": "Explanations in our own words, each checked against its source on 2026-11-07. Map abbreviations are from the National Library of Scotland's list compiled by Dr Richard Oliver; many have several meanings, and the map's context decides which.",
+ "_about": "Explanations in our own words, each checked against its source on the date given with it. Map abbreviations are from the National Library of Scotland's list compiled by Dr Richard Oliver; many have several meanings, and the map's context decides which.",
  "abbreviations": [
   {
    "abbr": "BM",
@@ -576,6 +576,139 @@
     }
    ],
    "checked_on": "2026-11-07"
+  },
+  {
+   "key": "calendar-change-1752",
+   "term": "Calendar change of 1752",
+   "also": [
+    "gregorian calendar",
+    "julian calendar",
+    "old style",
+    "new style",
+    "1752 calendar"
+   ],
+   "kind": "dates",
+   "meaning": "Great Britain changed from the Julian to the Gregorian calendar in September 1752. 2 September 1752 was followed straight away by 14 September, so eleven days were lost. Dates written before the change are in the older calendar, so they don't line up exactly with today's.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Julian and Gregorian calendars",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/datingdocuments/juliangregorian.aspx"
+    }
+   ],
+   "checked_on": "2026-11-10"
+  },
+  {
+   "key": "historical-and-civil-year",
+   "term": "New Year before 1752 (double dating)",
+   "also": [
+    "double dating",
+    "dual dating",
+    "civil year",
+    "historical year",
+    "year beginning lady day"
+   ],
+   "kind": "dates",
+   "meaning": "Until 1751, England and Wales counted each year as starting on Lady Day, 25 March; 1752 was the first year to start on 1 January. So a date between 1 January and 24 March before then belongs to the year we'd now call the next one, and is often written with both years, like 25 January 1748/9. Scotland started the year on 1 January from 1600.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Historical and civil years",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/datingdocuments/historicalandcivil.aspx"
+    }
+   ],
+   "checked_on": "2026-11-10"
+  },
+  {
+   "key": "quarter-days",
+   "term": "Quarter days",
+   "also": [
+    "quarter day",
+    "lady day",
+    "midsummer day",
+    "michaelmas"
+   ],
+   "kind": "dates",
+   "meaning": "The four days on which rents were traditionally paid in England, each a church feast: Lady Day (25 March), Midsummer Day (24 June), Michaelmas (29 September) and Christmas Day (25 December). Rent due 'at Michaelmas' was due on 29 September.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Feast days",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/datingdocuments/feastday.aspx"
+    }
+   ],
+   "checked_on": "2026-11-10"
+  },
+  {
+   "key": "regnal-year",
+   "term": "Regnal year",
+   "also": [
+    "regnal years",
+    "year of the reign"
+   ],
+   "kind": "dates",
+   "meaning": "Many documents are dated by the year of the reigning monarch rather than the calendar year, usually counted from the day they came to the throne. For example, 1 Henry V ran from 21 March 1413 to 20 March 1414, so one regnal year spans parts of two calendar years. To convert one you need the monarch's accession date, which handbooks of dates list.",
+   "sources": [
+    {
+     "title": "University of Nottingham, Manuscripts and Special Collections: Regnal years",
+     "url": "https://www.nottingham.ac.uk/manuscriptsandspecialcollections/researchguidance/datingdocuments/regnalyears.aspx"
+    }
+   ],
+   "checked_on": "2026-11-10"
+  },
+  {
+   "key": "banns",
+   "term": "Banns (of marriage)",
+   "also": [
+    "banns",
+    "marriage banns",
+    "banns of marriage"
+   ],
+   "kind": "church",
+   "meaning": "A public announcement in church that a couple intend to marry, giving anyone the chance to say why the marriage can't lawfully take place. In the Church of England today, banns are read on three Sundays in the three months before the wedding, in the parish where each of the couple lives and in the church where they marry. A banns entry shows a marriage was planned; look for the marriage itself to confirm it happened.",
+   "sources": [
+    {
+     "title": "Church of England: Reading of banns",
+     "url": "https://www.churchofengland.org/life-events/your-church-wedding/planning-your-ceremony/reading-banns"
+    }
+   ],
+   "checked_on": "2026-11-10"
+  },
+  {
+   "key": "probate",
+   "term": "Probate (a will 'proved')",
+   "also": [
+    "probate",
+    "proved",
+    "prerogative court of canterbury",
+    "pcc",
+    "prerogative court of york",
+    "executor"
+   ],
+   "kind": "records",
+   "meaning": "Probate is a court's approval of a will; once granted, the will is said to be 'proved' and the executor (the person named to carry out its wishes) can act. In England and Wales, until 12 January 1858, wills were proved by church and other courts. The most important was the Prerogative Court of Canterbury, covering the south of England and most of Wales; the Prerogative Court of York covered the north.",
+   "sources": [
+    {
+     "title": "The National Archives research guide: Wills 1384–1858",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/wills-1384-1858/"
+    }
+   ],
+   "checked_on": "2026-11-10"
+  },
+  {
+   "key": "townland",
+   "term": "Townland",
+   "also": [
+    "townlands",
+    "barony",
+    "baronies"
+   ],
+   "kind": "places",
+   "meaning": "The smallest land division in Ireland: counties are divided into baronies, baronies into civil parishes, and parishes into townlands, an ancient division older than the parishes and counties. There are about 62,000 townlands in Ireland and over 9,000 in Northern Ireland, from a few acres to several thousand. Land was let by townland, and the Tithe Applotment Books, censuses and valuations used them, so Irish records are usually arranged by townland. Spellings vary a lot, because Irish names were written down in English.",
+   "sources": [
+    {
+     "title": "Public Record Office of Northern Ireland: Local History 1, The Townland",
+     "url": "https://www.proni.gov.uk/files/proni/2025-12/Local%20History%20Series%201%20-%20The%20Townland.pdf"
+    }
+   ],
+   "checked_on": "2026-11-10"
   }
  ]
 }

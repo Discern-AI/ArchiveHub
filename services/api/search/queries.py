@@ -396,7 +396,7 @@ def _explanations(words) -> Group:
         label="Explanations of old terms",
         layer="public",
         searched=(
-            "ArchiveHub's checked explanations of old money, Poor Law terms and map abbreviations"
+            "ArchiveHub's checked explanations of old terms, old dates and map abbreviations"
         ),
         results=results,
         count=len(results),

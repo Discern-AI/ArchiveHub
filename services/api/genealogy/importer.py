@@ -17,7 +17,7 @@ from archive.processing import JobFailed, decode_text
 from history.models import Assertion, AssertionEvidence, LivingStatus, Method, Person
 
 from .gedcom import EVENTS, clean_name, parse, parse_date
-from .models import RelationKind, Relationship
+from .models import RelationKind, Relationship, Residence
 from .report import import_report
 
 PRESUMED_DEAD_AFTER = 110  # years since birth, when no death is recorded
@@ -98,6 +98,21 @@ def import_gedcom(f: FileAsset, user) -> dict:
                       parse_date(event.text("DATE")))  # fmt: skip
             if event.text("PLAC"):
                 claim(person, node.xref, f"{label} place", event.text("PLAC"))
+        # Every residence record, in file order; re-importing replaces this file's ones.
+        Residence.objects.filter(person=person, source_file=f).delete()
+        for i, resi in enumerate(node.all("RESI"), 1):
+            place = resi.text("PLAC") or resi.text("ADDR")
+            if not place:
+                continue
+            when = parse_date(resi.text("DATE")) if resi.text("DATE") else None
+            Residence.objects.create(
+                project=project, person=person, place_text=place[:300],
+                address=resi.text("ADDR")[:300] if resi.text("PLAC") else "",
+                date_text=when.text if when else "", year_from=when.year_from if when else None,
+                year_to=when.year_to if when else None,
+                date_precision=when.precision if when else "unknown",
+                source_file=f, external_id=f"{node.xref} RESI {i}"[:60],
+            )  # fmt: skip
         occupation = node.text("OCCU")
         if occupation:
             claim(person, node.xref, "occupation", occupation)

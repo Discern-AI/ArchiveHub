@@ -128,4 +128,7 @@ def load_cheap_street() -> dict[str, int]:
 def load_all() -> dict[str, int]:
     counts = {"sources": load_sources()}
     counts.update(load_cheap_street())
+    from genealogy.overlays import load_overlays
+
+    counts["overlays"] = load_overlays()
     return counts

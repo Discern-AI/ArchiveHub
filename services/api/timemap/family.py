@@ -33,7 +33,7 @@ def text_key(text: str) -> str:
 
 
 def tree_places(project) -> dict[str, str]:
-    """{text_key: text as written} for every event place in the project's trees."""
+    """{text_key: text as written} for every event and residence place in the project's trees."""
     ct = ContentType.objects.get_for_model(Person)
     texts = (
         Assertion.objects.filter(
@@ -44,6 +44,12 @@ def tree_places(project) -> dict[str, str]:
         .values_list("value", flat=True)
         .distinct()
     )
+    from genealogy.models import Residence
+
+    texts = [
+        *texts,
+        *Residence.objects.filter(project=project).values_list("place_text", flat=True),
+    ]
     return {text_key(t): t.strip() for t in texts if t.strip()}
 
 

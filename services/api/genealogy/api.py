@@ -19,7 +19,8 @@ from projects.permissions import editable_projects, visible_projects
 
 from .exporter import current_values, export_gedcom, export_gedzip
 from .health import check_tree
-from .models import RelationKind, Relationship
+from .lifeline import lifeline
+from .models import OverlayEvent, OverlayKind, OverlayPreset, RelationKind, Relationship
 from .record_guide import record_office_for, where_to_look
 
 router = Router()
@@ -270,3 +271,66 @@ def download_gedzip(request: HttpRequest, project_id: UUID) -> HttpResponse:
     response["Content-Disposition"] = f'attachment; filename="{safe.strip()}.gdz"'
     audit(request.user, "gedcom.export", project, version="gedzip", files=count)
     return response
+
+
+# --- Lifeline ---------------------------------------------------------------------
+
+
+@router.get("/projects/{project_id}/lifeline")
+def lifeline_view(request: HttpRequest, project_id: UUID) -> dict[str, Any]:
+    """Everyone as a span through time, their recorded places and the overlays."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    return lifeline(project, request.user)
+
+
+class MarkerIn(Schema):
+    title: str
+    year_from: int
+    year_to: int | None = None
+    note: str = ""
+
+
+def _marker(o: OverlayEvent) -> dict[str, Any]:
+    return {"id": str(o.id), "kind": o.kind, "title": o.title, "year_from": o.year_from,
+            "year_to": o.year_to, "date_text": o.date_text, "area": o.area, "note": o.note,
+            "source_title": "", "source_url": "", "builtin": False}  # fmt: skip
+
+
+@router.post("/projects/{project_id}/lifeline/markers", response={201: dict})
+def add_marker(request: HttpRequest, project_id: UUID, payload: MarkerIn):
+    """A marker of your own on the Lifeline, such as the year you were born."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    title = payload.title.strip()[:200]
+    end = payload.year_to
+    if not title:
+        raise HttpError(422, "Give the marker a name.")
+    if not (1 <= payload.year_from <= 2200) or (end is not None and end < payload.year_from):
+        raise HttpError(422, "Those years don't make sense.")
+    o = OverlayEvent.objects.create(
+        project=project, kind=OverlayKind.CUSTOM, title=title, year_from=payload.year_from,
+        year_to=end, note=payload.note.strip()[:1000], created_by=request.user,
+    )  # fmt: skip
+    return Status(201, _marker(o))
+
+
+@router.delete("/projects/{project_id}/lifeline/markers/{marker_id}", response={204: None})
+def delete_marker(request: HttpRequest, project_id: UUID, marker_id: UUID):
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    get_object_or_404(OverlayEvent, pk=marker_id, project=project).delete()
+    return Status(204, None)
+
+
+class PresetIn(Schema):
+    kinds: list[str]
+
+
+@router.put("/projects/{project_id}/lifeline/preset")
+def save_preset(request: HttpRequest, project_id: UUID, payload: PresetIn) -> dict[str, Any]:
+    """Which layers you have switched on, remembered per project."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    allowed = {k.value for k in OverlayKind} | {"family"}
+    kinds = [k for k in dict.fromkeys(payload.kinds) if k in allowed]
+    OverlayPreset.objects.update_or_create(
+        project=project, user=request.user, defaults={"kinds": kinds}
+    )
+    return {"kinds": kinds}

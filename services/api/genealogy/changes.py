@@ -17,7 +17,7 @@ from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
 
-from history.models import Assertion, AssertionEvidence, Person
+from history.models import Assertion, AssertionEvidence, Decision, Person
 
 from .models import ChangeSet, ExternalId, Relationship, Residence
 
@@ -67,6 +67,8 @@ class Recorder:
             # Made and removed in the same change: nothing to restore.
             self.items = [i for i in self.items if (i["model"], i["pk"]) != key]
             return
+        if key in self._seen:
+            return  # already copied (e.g. a link between two people being removed)
         self._seen.add(key)
         self.items.append(
             {"action": "deleted", "model": key[0], "pk": key[1], "before": snapshot(obj)}
@@ -100,6 +102,7 @@ def person_bundle(person: Person) -> list[Model]:
         *links,
         *Residence.objects.filter(person=person),
         *ExternalId.objects.filter(person=person),
+        *Decision.objects.filter(subject_type=ct, subject_id=person.id),
     ]
 
 

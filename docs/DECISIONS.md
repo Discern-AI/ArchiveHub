@@ -270,3 +270,13 @@ The owner's two update documents ([updates/](updates/)) add to SPEC.md without r
 - **Evidence labels:** our documented, remembered, inferred and disputed stay; "corroborated" and "contextual" may be added when a feature needs them.
 - **Scope:** Berkshire, Oxford and Newbury examples in the documents are pilot data, not limits (ADR-043).
 
+## ADR-049 — Tree changes are undoable change sets; trees keep their own IDs
+
+**Status:** Accepted (2026-11-10)
+
+- **Change sets.** Imports, updates from a new export, merges and removals each save a `ChangeSet`: the rows created, a JSON copy of each row before it was changed, and a full copy of each row removed. Undo removes the created rows, puts back the removed ones and restores the changed ones, in one transaction. It's refused, with the reason, when a later change set touches the same rows or the user has since added facts to people the change created, so undo never silently loses work.
+- **Facts are removed explicitly.** Claims and decisions point at people generically, so they don't cascade when a person is deleted; removal and merge delete or move them explicitly (found by a test: removal had left orphaned facts).
+- **Tree identity.** `ExternalId(project, system, external_id)` records each person's ID in a tree, with `system = gedcom:<first file>`. Updating from a new export matches on that, so two different trees that both use @I1@ never collide. An ID match is trusted only when the names share a word; otherwise the person is added as new and the mismatch is reported. Earlier imports were given IDs by data migration.
+- **Previews are real imports, rolled back.** The import preview runs the importer and the health check inside a transaction that's then rolled back, so it can't drift from what the import really does.
+- **Nothing is automatic.** Merges happen only when a person chooses, fact by fact; removals keep cut-off people unless they're ticked. Updates never remove people who've disappeared from a newer export: they're kept and listed.
+

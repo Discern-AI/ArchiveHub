@@ -75,6 +75,14 @@ export function TreeHealth({ projectId }: { projectId: string }) {
                         {p.name}
                       </Link>
                     ))}
+                    {f.kind === "duplicates" && f.people.length === 2 && (
+                      <Link
+                        to={`/projects/${projectId}/people/${f.people[0].id}?merge=${f.people[1].id}`}
+                        className="font-semibold"
+                      >
+                        Compare and merge
+                      </Link>
+                    )}
                   </span>
                 </li>
               ))}

@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 import { api, archiveApi, type PersonBrief } from "../../lib/api";
 import { AnswerEvidence } from "./AnswerEvidence";
 import { ChangeHistory } from "./ChangeHistory";
 import { FamilyPlaces } from "./FamilyPlaces";
+import { MergePanel, RemovePanel } from "./MergeAndRemove";
 import { TreeChart } from "./TreeChart";
 import { TreeHealth } from "./TreeHealth";
 import { WhereToLook } from "./WhereToLook";
@@ -135,6 +136,9 @@ const STATUS_LABEL: Record<string, string> = {
 
 export function PersonPage() {
   const { projectId, personId } = useParams();
+  // "Compare and merge" from the health check opens the merge with the other record chosen.
+  const [search] = useSearchParams();
+  const mergeWith = search.get("merge") ?? "";
   const qc = useQueryClient();
   const person = useQuery({
     queryKey: ["person", projectId, personId],
@@ -304,6 +308,31 @@ export function PersonPage() {
         )}
       </form>
       {projectId && personId && <WhereToLook projectId={projectId} personId={personId} />}
+      {projectId && personId && (
+        <section
+          aria-label="Tidy the tree"
+          className="flex flex-col gap-2 border-t border-line pt-4"
+        >
+          <h2 className="m-0 text-xl font-semibold">Tidy the tree</h2>
+          <details open={!!mergeWith} className="rounded-lg border border-line bg-surface p-3">
+            <summary className="min-h-11 cursor-pointer py-2 font-medium">
+              Merge a duplicate into this person
+            </summary>
+            <MergePanel
+              key={`${personId}-${mergeWith}`}
+              projectId={projectId}
+              personId={personId}
+              initialOther={mergeWith}
+            />
+          </details>
+          <details className="rounded-lg border border-line bg-surface p-3">
+            <summary className="min-h-11 cursor-pointer py-2 font-medium">
+              Remove this person
+            </summary>
+            <RemovePanel projectId={projectId} personId={personId} />
+          </details>
+        </section>
+      )}
     </div>
   );
 }

@@ -31,6 +31,7 @@ from .models import (
     Relationship,
 )
 from .record_guide import record_office_for, where_to_look
+from .tree_edit import MergeRefused, delete_people, delete_preview, merge, merge_preview
 
 router = Router()
 SUMMARY = ("birth date", "birth place", "death date", "death place")
@@ -437,3 +438,70 @@ def undo_change(request: HttpRequest, project_id: UUID, change_id: UUID) -> dict
     counts = undo(cs, request.user)
     audit(request.user, "tree.undo", project, change=str(cs.id), kind=cs.kind)
     return {**_change_json(cs), "result": counts}
+
+
+# --- Merging and removing people ---------------------------------------------------
+
+
+def _tree_person(project, person_id):
+    return get_object_or_404(Person, pk=person_id, project=project)
+
+
+@router.get("/projects/{project_id}/people/{person_id}/merge-preview")
+def merge_preview_view(
+    request: HttpRequest, project_id: UUID, person_id: UUID, other: UUID
+) -> dict[str, Any]:
+    """What merging another person into this one would do. Nothing is changed."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    try:
+        return merge_preview(
+            project, _tree_person(project, person_id), _tree_person(project, other)
+        )
+    except MergeRefused as exc:
+        raise HttpError(422, str(exc)) from exc
+
+
+class MergeIn(Schema):
+    other: UUID
+    leave_out: list[UUID] = []
+
+
+@router.post("/projects/{project_id}/people/{person_id}/merge")
+def merge_view(request: HttpRequest, project_id: UUID, person_id: UUID, payload: MergeIn):
+    """Merge another person into this one, leaving out the facts the user chose."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    keep = _tree_person(project, person_id)
+    try:
+        cs = merge(project, keep, _tree_person(project, payload.other),
+                   {str(i) for i in payload.leave_out}, request.user)  # fmt: skip
+    except MergeRefused as exc:
+        raise HttpError(422, str(exc)) from exc
+    audit(request.user, "tree.merge", project, keep=str(keep.id), other=str(payload.other))
+    return {"change_set": str(cs.id), "summary": cs.summary, "person": str(keep.id)}
+
+
+@router.get("/projects/{project_id}/people/{person_id}/delete-preview")
+def delete_preview_view(request: HttpRequest, project_id: UUID, person_id: UUID):
+    """What removing this person would take with it, and who would be cut off."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    return delete_preview(project, _tree_person(project, person_id))
+
+
+class DeleteIn(Schema):
+    # People cut off by the removal that the user also wants removed.
+    also: list[UUID] = []
+
+
+@router.post("/projects/{project_id}/people/{person_id}/delete")
+def delete_view(request: HttpRequest, project_id: UUID, person_id: UUID, payload: DeleteIn):
+    """Remove a person (and any cut-off people chosen), undoably."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    person = _tree_person(project, person_id)
+    allowed = {p["id"] for group in delete_preview(project, person)["stranded"] for p in group}
+    extra = [str(i) for i in payload.also]
+    if any(i not in allowed for i in extra):
+        raise HttpError(422, "Only people cut off by this removal can be removed with it.")
+    people = [person, *Person.objects.filter(project=project, pk__in=extra)]
+    cs = delete_people(project, people, request.user)
+    audit(request.user, "tree.delete", project, people=len(people))
+    return {"change_set": str(cs.id), "summary": cs.summary}

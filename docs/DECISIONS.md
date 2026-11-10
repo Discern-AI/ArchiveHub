@@ -226,3 +226,13 @@ Something found through a connector (a Gazette notice, a museum record, a catalo
 - On a person's page each answer lists its evidence, and "Back this with a saved find" adds one from the project's basket, with an optional note of what it says. The assistant's cite_evidence can do the same.
 - A saved find that is backing a fact can't be removed from the basket until it's removed from the fact (409 with a plain message), so evidence never silently disappears.
 - Attaching evidence doesn't change a fact's status or merge anyone; the person still decides what the project uses.
+
+## ADR-045 — GedZip export: GEDCOM 7 with evidence files, never for living people
+
+**Status:** Accepted (2026-11-10)
+
+"GEDCOM 7 with files" downloads a GedZip (`.gdz`): `gedcom.ged` at the root plus the files used as evidence, under `media/`, each linked from the person with a GEDCOM 7 multimedia record (FILE, FORM media type, TITL).
+- Only files backing facts about people who have died are included. Unknown counts as living, as everywhere else, so their files stay out.
+- Rejected uploads and imported GEDCOM files are left out: an imported tree is evidence for every claim it made, but copying it into the zip would bring living people back in.
+- File names are cleaned to stay inside `media/` and numbered if they clash; a file backing several people is stored once.
+- The download is audited like the other GEDCOM exports, with the number of files included.

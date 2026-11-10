@@ -17,7 +17,7 @@ from history import queries
 from history.models import Assertion, AssertionEvidence, LivingStatus, Method, Person
 from projects.permissions import editable_projects, visible_projects
 
-from .exporter import current_values, export_gedcom
+from .exporter import current_values, export_gedcom, export_gedzip
 from .health import check_tree
 from .models import RelationKind, Relationship
 from .record_guide import record_office_for, where_to_look
@@ -255,4 +255,18 @@ def download_gedcom(
     safe = "".join(ch for ch in project.title if ch.isalnum() or ch in " -_")[:60] or "family"
     response["Content-Disposition"] = f'attachment; filename="{safe.strip()}.ged"'
     audit(request.user, "gedcom.export", project, version=version)
+    return response
+
+
+@router.get("/projects/{project_id}/gedzip", response=None)
+def download_gedzip(request: HttpRequest, project_id: UUID) -> HttpResponse:
+    """GEDCOM 7 with the evidence files for people who have died, in one .gdz file."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    if not Person.objects.filter(project=project).exists():
+        raise HttpError(404, "This project has no family tree to export.")
+    data, count = export_gedzip(project)
+    response = HttpResponse(data, content_type="application/zip")
+    safe = "".join(ch for ch in project.title if ch.isalnum() or ch in " -_")[:60] or "family"
+    response["Content-Disposition"] = f'attachment; filename="{safe.strip()}.gdz"'
+    audit(request.user, "gedcom.export", project, version="gedzip", files=count)
     return response

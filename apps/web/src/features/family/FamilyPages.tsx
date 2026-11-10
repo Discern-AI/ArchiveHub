@@ -79,6 +79,15 @@ export function FamilyPage() {
               GEDCOM 7
             </a>
           )}
+          {!!people.data?.length && (
+            <a
+              href={`/api/v1/projects/${projectId}/gedzip`}
+              className="flex min-h-11 items-center"
+              title="GEDCOM 7 with the files used as evidence for people who have died, in one zip (.gdz)"
+            >
+              GEDCOM 7 with files
+            </a>
+          )}
         </div>
       </div>
       <label className="flex flex-col gap-1 font-medium">

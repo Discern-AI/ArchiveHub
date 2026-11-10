@@ -253,3 +253,54 @@ def test_saved_finds_back_facts(imported, alice_client, bob, bob_client, project
     )
     r = alice_client.delete(f"/api/v1/projects/{project.id}/basket/{saved.id}")
     assert r.status_code == 409 and "backing a fact" in r.json()["detail"]
+
+
+def test_gedzip_includes_evidence_files_for_people_who_have_died(imported, alice_client, project):
+    import io
+    import zipfile
+
+    from history.models import AssertionEvidence, LivingStatus
+
+    def upload(name, data):
+        r = alice_client.post(
+            f"/api/v1/projects/{project.id}/files", {"file": SimpleUploadedFile(name, data)}
+        )
+        assert r.status_code == 201, r.content
+        return FileAsset.objects.get(pk=r.json()["id"])
+
+    def evidence_for(person, f):
+        claim = Assertion.objects.filter(project=project, subject_id=person.id).first()
+        AssertionEvidence.objects.create(assertion=claim, file=f)
+
+    dead = Person.objects.filter(project=project, living_status=LivingStatus.DECEASED).first()
+    maybe_living = (
+        Person.objects.filter(project=project).exclude(living_status=LivingStatus.DECEASED).first()
+    )
+    assert dead and maybe_living
+    letter = upload("letter.txt", b"Dear Tom, ...")
+    evidence_for(dead, letter)
+    evidence_for(maybe_living, upload("../secret note.txt", b"private"))
+
+    r = alice_client.get(f"/api/v1/projects/{project.id}/gedzip")
+    assert r.status_code == 200
+    assert r["Content-Disposition"].endswith('.gdz"')
+    z = zipfile.ZipFile(io.BytesIO(r.content))
+    # Only the dead person's file; paths stay inside media/.
+    assert sorted(z.namelist()) == ["gedcom.ged", "media/letter.txt"]
+    assert z.read("media/letter.txt") == b"Dear Tom, ..."
+    ged = z.read("gedcom.ged").decode()
+    assert "2 VERS 7.0" in ged
+    assert "0 @O1@ OBJE\n1 FILE media/letter.txt\n2 FORM " in ged
+    assert ged.count("1 OBJE @O1@") == 1
+    assert "secret" not in ged
+
+
+def test_media_paths_are_safe_and_unique():
+    from types import SimpleNamespace
+
+    from genealogy.exporter import _media_path
+
+    used: set = set()
+    assert _media_path(SimpleNamespace(name=r"..\..\evil.jpg"), used) == "media/evil.jpg"
+    assert _media_path(SimpleNamespace(name="evil.jpg"), used) == "media/evil (2).jpg"
+    assert _media_path(SimpleNamespace(name="a/b:c?.png"), used) == "media/b_c_.png"

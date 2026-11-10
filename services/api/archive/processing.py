@@ -186,7 +186,10 @@ def run_job(job_id) -> None:
         elif job.kind == JobKind.GEDCOM_IMPORT:
             from genealogy.importer import import_gedcom
 
-            job.result = import_gedcom(f, job.requested_by)
+            options = (job.result or {}).get("options", {})
+            job.result = import_gedcom(
+                f, job.requested_by, mode=options.get("mode", "new"), base=options.get("base", "")
+            )
         job.status = JobStatus.DONE
     except JobFailed as exc:
         job.status, job.error = JobStatus.FAILED, str(exc)[:500]

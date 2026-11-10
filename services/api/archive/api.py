@@ -230,6 +230,9 @@ def preview(request: HttpRequest, file_id: UUID) -> HttpResponse:
 
 class JobIn(Schema):
     kind: str
+    # For a family tree import: {"mode": "update", "base": "gedcom:<id>"} updates an
+    # earlier import of the same tree instead of adding it again.
+    options: dict[str, str] = {}
 
 
 @router.post("/files/{file_id}/jobs", response={201: JobOut})
@@ -243,9 +246,11 @@ def request_job(request: HttpRequest, file_id: UUID, payload: JobIn):
     except JobFailed as exc:
         raise HttpError(422, str(exc)) from exc
     needs_ok = payload.kind in EXPENSIVE
+    options = {k: str(v)[:100] for k, v in payload.options.items() if k in ("mode", "base")}
     job = ProcessingJob.objects.create(
         file=f, kind=payload.kind, requested_by=request.user, estimate_credits=credits,
         status=JobStatus.AWAITING_CONFIRMATION if needs_ok else JobStatus.QUEUED,
+        result={"options": options} if options else {},
     )  # fmt: skip
     if not needs_ok:
         confirm(job, request.user)

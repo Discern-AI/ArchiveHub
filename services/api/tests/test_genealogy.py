@@ -58,7 +58,10 @@ def test_parser_joins_continuations():
 def test_import_creates_people_relationships_and_claims(imported, project):
     f, job = imported
     report = job["result"].pop("report")
-    assert job["result"] == {"people": 5, "families": 2, "living_private": 2}
+    r = job["result"]
+    assert (r["people"], r["families"], r["living_private"]) == (5, 2, 2)
+    assert (r["mode"], r["added"], r["updated"]) == ("new", 5, 0) and r["change_set"]
+    assert r["health"]["count"] == 0  # checked after every import
     assert report["gedcom_version"] == "5.5.1" and report["made_by"] == "ArchiveHubTestData"
     assert report["notes_not_imported"] == 1  # Tom's "keen cyclist" note
     assert report["source_citations_not_imported"] == 0 and report["media_references"] == 0

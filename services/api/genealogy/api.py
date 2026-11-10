@@ -17,10 +17,19 @@ from history import queries
 from history.models import Assertion, AssertionEvidence, LivingStatus, Method, Person
 from projects.permissions import editable_projects, visible_projects
 
+from .changes import blockers, undo
 from .exporter import current_values, export_gedcom, export_gedzip
 from .health import check_tree
 from .lifeline import lifeline
-from .models import OverlayEvent, OverlayKind, OverlayPreset, RelationKind, Relationship
+from .models import (
+    ChangeSet,
+    ExternalId,
+    OverlayEvent,
+    OverlayKind,
+    OverlayPreset,
+    RelationKind,
+    Relationship,
+)
 from .record_guide import record_office_for, where_to_look
 
 router = Router()
@@ -334,3 +343,97 @@ def save_preset(request: HttpRequest, project_id: UUID, payload: PresetIn) -> di
         project=project, user=request.user, defaults={"kinds": kinds}
     )
     return {"kinds": kinds}
+
+
+# --- Imports, tree versions and undo ----------------------------------------------
+
+
+@router.get("/files/{file_id}/gedcom-preview")
+def gedcom_preview(
+    request: HttpRequest, file_id: UUID, mode: Literal["new", "update"] = "new", base: str = ""
+) -> dict[str, Any]:
+    """What importing this file would add, update and find wrong. Nothing is saved."""
+    from archive.models import FileAsset
+    from archive.processing import JobFailed
+
+    from .importer import preview
+
+    f = get_object_or_404(
+        FileAsset.objects.filter(project__in=editable_projects(request.user)), pk=file_id
+    )
+    try:
+        return preview(f, request.user, mode=mode, base=base)
+    except JobFailed as exc:
+        raise HttpError(422, str(exc)) from exc
+
+
+@router.get("/projects/{project_id}/trees")
+def imported_trees(request: HttpRequest, project_id: UUID) -> list[dict[str, Any]]:
+    """Family trees imported into this project, so a new export can update one."""
+    from django.db.models import Count
+
+    from archive.models import FileAsset
+
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    rows = (
+        ExternalId.objects.filter(project=project)
+        .values("system")
+        .annotate(people=Count("id"))
+        .order_by("system")
+    )
+    out = []
+    for row in rows:
+        file_id = row["system"].removeprefix("gedcom:")
+        first = FileAsset.objects.filter(pk=file_id).first() if len(file_id) == 36 else None
+        updates = ChangeSet.objects.filter(
+            project=project, details__tree=row["system"], undone_at__isnull=True
+        ).order_by("-created_at")
+        latest = updates.first()
+        out.append(
+            {
+                "tree": row["system"],
+                "first_file": first.name if first else "An earlier import",
+                "people": row["people"],
+                "last_updated": latest.created_at if latest else None,
+                "last_file": latest.details.get("file_name", "") if latest else "",
+            }
+        )
+    return out
+
+
+def _change_json(cs: ChangeSet) -> dict[str, Any]:
+    counts: dict[str, int] = {}
+    for i in cs.items:
+        counts[i["action"]] = counts.get(i["action"], 0) + 1
+    return {
+        "id": str(cs.id),
+        "kind": cs.kind,
+        "summary": cs.summary,
+        "created_at": cs.created_at,
+        "by": str(cs.user) if cs.user else "",
+        "undone_at": cs.undone_at,
+        "counts": counts,
+        "blocked": [] if cs.undone_at else blockers(cs),
+    }
+
+
+@router.get("/projects/{project_id}/changes")
+def list_changes(request: HttpRequest, project_id: UUID) -> list[dict[str, Any]]:
+    """Bulk changes to this tree, newest first, each with whether it can be undone."""
+    project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    return [_change_json(cs) for cs in ChangeSet.objects.filter(project=project)[:50]]
+
+
+@router.post("/projects/{project_id}/changes/{change_id}/undo")
+def undo_change(request: HttpRequest, project_id: UUID, change_id: UUID) -> dict[str, Any]:
+    """Undo a whole import, update, merge or deletion in one step."""
+    project = get_object_or_404(editable_projects(request.user), pk=project_id)
+    cs = get_object_or_404(ChangeSet, pk=change_id, project=project)
+    if cs.undone_at:
+        raise HttpError(409, "This change has already been undone.")
+    reasons = blockers(cs)
+    if reasons:
+        raise HttpError(409, " ".join(reasons))
+    counts = undo(cs, request.user)
+    audit(request.user, "tree.undo", project, change=str(cs.id), kind=cs.kind)
+    return {**_change_json(cs), "result": counts}

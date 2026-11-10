@@ -116,3 +116,51 @@ class OverlayPreset(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=["project", "user"], name="unique_overlay_preset")
         ]
+
+
+class ExternalId(BaseModel):
+    """A person's ID in another system, such as their @I12@ in one family tree. "system"
+    names the tree, so a new export of the same tree updates its people instead of adding
+    them again, and two trees that both use @I1@ never collide."""
+
+    project = models.ForeignKey("projects.Project", on_delete=models.CASCADE, related_name="+")
+    person = models.ForeignKey(
+        "history.Person", on_delete=models.CASCADE, related_name="external_ids"
+    )
+    system = models.CharField(max_length=80, help_text="e.g. gedcom:<first file's id>")
+    external_id = models.CharField(max_length=60)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "system", "external_id"], name="unique_external_id"
+            )
+        ]
+
+
+class ChangeKind(models.TextChoices):
+    IMPORT = "import", "Import"
+    UPDATE = "update", "Update from a new export"
+    MERGE = "merge", "Merge"
+    DELETE = "delete", "Delete"
+
+
+class ChangeSet(BaseModel):
+    """One bulk change to a tree that can be undone in one step: everything it created,
+    changed (with what was there before) and removed (with a full copy)."""
+
+    project = models.ForeignKey("projects.Project", on_delete=models.CASCADE, related_name="+")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    kind = models.CharField(max_length=10, choices=ChangeKind.choices)
+    summary = models.CharField(max_length=300)
+    details = models.JSONField(default=dict, blank=True)
+    items = models.JSONField(default=list, blank=True)
+    undone_at = models.DateTimeField(null=True, blank=True)
+    undone_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]

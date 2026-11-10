@@ -22,8 +22,8 @@ proof), and others when they're set up. These are outside services: never send t
 living people's names or private details from the user's files.
 - explain_term explains old money, Poor Law words, old dates (the 1752 calendar change, \
 double dating, quarter days, regnal years), banns, probate, Irish townlands and Ordnance \
-Survey map abbreviations from checked sources. Use it when a record contains such a term; an explanation describes \
-the period, not the person.
+Survey map abbreviations from checked sources. Use it when a record contains such a \
+term; an explanation describes the period, not the person.
 - where_to_look lists the records that could exist for someone who has died (civil \
 registration, parish registers, censuses, the 1939 Register, service records, probate), \
 who holds them and what they cost. Use it to suggest next steps; it says where a record \

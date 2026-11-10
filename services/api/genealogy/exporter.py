@@ -4,6 +4,7 @@ imported value. Living people are marked so other software can hide them."""
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 
 from django.contrib.contenttypes.models import ContentType
@@ -41,18 +42,48 @@ def _x(n: int, prefix: str) -> str:
     return f"@{prefix}{n}@"
 
 
-def export_gedcom(project) -> str:
+_DMY = r"(?:(?:\d{1,2} )?(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC) )?\d{1,4}(?: BCE)?"
+GEDCOM7_DATE = re.compile(
+    rf"(?:(?:ABT|CAL|EST|BEF|AFT) )?{_DMY}"
+    rf"|BET {_DMY} AND {_DMY}"
+    rf"|FROM {_DMY}(?: TO {_DMY})?"
+    rf"|TO {_DMY}"
+)
+POINTER_TAGS = {"FAMS", "FAMC", "HUSB", "WIFE", "CHIL"}
+
+
+def export_gedcom(project, version: str = "5.5.1") -> str:
+    """The project's tree as GEDCOM 5.5.1 (default) or GEDCOM 7.0, using current values."""
+    v7 = version == "7.0"
     people = list(Person.objects.filter(project=project).order_by("name"))
     ids = {p.id: _x(i, "I") for i, p in enumerate(people, 1)}
     values = current_values(project, list(ids))
-    lines = ["0 HEAD", "1 SOUR ArchiveHub", "2 NAME ArchiveHub", "1 GEDC", "2 VERS 5.5.1",
-             "2 FORM LINEAGE-LINKED", "1 CHAR UTF-8"]  # fmt: skip
+    if v7:
+        # GEDCOM 7 is UTF-8 only, so there's no CHAR line, and no FORM.
+        lines = ["0 HEAD", "1 GEDC", "2 VERS 7.0", "1 SOUR ArchiveHub", "2 NAME ArchiveHub"]
+    else:
+        lines = ["0 HEAD", "1 SOUR ArchiveHub", "2 NAME ArchiveHub", "1 GEDC", "2 VERS 5.5.1",
+                 "2 FORM LINEAGE-LINKED", "1 CHAR UTF-8"]  # fmt: skip
 
     def add(level: int, tag: str, value: str = "") -> None:
         value = value.replace("\r", "")
         first, *rest = value.split("\n") if value else [""]
+        if v7 and first.startswith("@") and tag not in POINTER_TAGS:
+            first = "@" + first  # GEDCOM 7: a leading @ in text is doubled
         lines.append(f"{level} {tag} {first}".rstrip())
         lines.extend(f"{level + 1} CONT {r}".rstrip() for r in rest)
+
+    def add_date(level: int, text: str) -> None:
+        if not v7:
+            add(level, "DATE", text)
+            return
+        normal = " ".join(text.upper().split())
+        if GEDCOM7_DATE.fullmatch(normal):
+            add(level, "DATE", normal)
+        else:
+            # Wording GEDCOM 7 can't parse ("summer 1952") is kept, unchanged, as a phrase.
+            add(level, "DATE")
+            add(level + 1, "PHRASE", text)
 
     couples: dict[frozenset, set] = defaultdict(set)
     rels = Relationship.objects.filter(project=project)
@@ -86,7 +117,7 @@ def export_gedcom(project) -> str:
             if d or pl:
                 add(1, tag)
                 if d:
-                    add(2, "DATE", d.date_text or d.value)
+                    add_date(2, d.date_text or d.value)
                 if pl:
                     add(2, "PLAC", pl.value)
         if p.living_status == LivingStatus.LIVING:

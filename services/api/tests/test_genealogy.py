@@ -151,3 +151,46 @@ def test_viewers_cannot_correct(imported, project, bob, bob_client):
     r = bob_client.post(f"/api/v1/projects/{project.id}/people/{arthur.id}/claims",
                         {"predicate": "name", "value": "X"}, content_type=JSON)  # fmt: skip
     assert r.status_code == 404
+
+
+def test_gedcom_7_export(imported, alice_client, project):
+    from genealogy.exporter import GEDCOM7_DATE, export_gedcom
+    from genealogy.gedcom import parse
+
+    r = alice_client.get(f"/api/v1/projects/{project.id}/gedcom", {"version": "7.0"})
+    assert r.status_code == 200
+    text = r.content.decode()
+    head = text.split("0 @", 1)[0]
+    assert "2 VERS 7.0" in head and "CHAR" not in head and "FORM" not in head
+    assert "CONC" not in text  # GEDCOM 7 removed CONC
+    assert "2 DATE ABT 1921" in text and "2 DATE BET 1990 AND 1992" in text
+    records = parse(text)
+    assert len([r for r in records if r.tag == "INDI"]) == 5
+    assert (
+        alice_client.get(f"/api/v1/projects/{project.id}/gedcom", {"version": "6"}).status_code
+        == 422
+    )
+    # 5.5.1 stays the default.
+    assert (
+        "2 VERS 5.5.1" in alice_client.get(f"/api/v1/projects/{project.id}/gedcom").content.decode()
+    )
+
+    # Wording GEDCOM 7 can't parse is kept as a phrase.
+    alice_client.post(
+        f"/api/v1/projects/{project.id}/people/{Person.objects.get(name='Tom Sample').id}/claims",
+        {"predicate": "birth date", "value": "summer 1952", "status": "remembered", "note": ""},
+        content_type=JSON,
+    )
+    text = export_gedcom(project, "7.0")
+    assert "2 DATE\n3 PHRASE summer 1952" in text
+    for good in (
+        "1921",
+        "14 MAR 1988",
+        "ABT 1921",
+        "BET 1990 AND 1992",
+        "FROM 1914 TO 1918",
+        "BEF FEB 1953",
+    ):
+        assert GEDCOM7_DATE.fullmatch(good), good
+    for bad in ("summer 1952", "c.1900", "1990-1992"):
+        assert not GEDCOM7_DATE.fullmatch(bad), bad

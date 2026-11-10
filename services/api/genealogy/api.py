@@ -164,12 +164,16 @@ def tree_health(request: HttpRequest, project_id: UUID) -> dict[str, Any]:
 
 
 @router.get("/projects/{project_id}/gedcom", response=None)
-def download_gedcom(request: HttpRequest, project_id: UUID) -> HttpResponse:
+def download_gedcom(
+    request: HttpRequest, project_id: UUID, version: Literal["5.5.1", "7.0"] = "5.5.1"
+) -> HttpResponse:
     project = get_object_or_404(visible_projects(request.user), pk=project_id)
     if not Person.objects.filter(project=project).exists():
         raise HttpError(404, "This project has no family tree to export.")
-    response = HttpResponse(export_gedcom(project), content_type="text/plain; charset=utf-8")
+    response = HttpResponse(
+        export_gedcom(project, version), content_type="text/plain; charset=utf-8"
+    )
     safe = "".join(ch for ch in project.title if ch.isalnum() or ch in " -_")[:60] or "family"
     response["Content-Disposition"] = f'attachment; filename="{safe.strip()}.ged"'
-    audit(request.user, "gedcom.export", project)
+    audit(request.user, "gedcom.export", project, version=version)
     return response

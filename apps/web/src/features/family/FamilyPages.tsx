@@ -68,6 +68,15 @@ export function FamilyPage() {
               Export GEDCOM
             </a>
           )}
+          {!!people.data?.length && (
+            <a
+              href={`/api/v1/projects/${projectId}/gedcom?version=7.0`}
+              className="flex min-h-11 items-center"
+              title="The newer GEDCOM standard, for software that reads it"
+            >
+              GEDCOM 7
+            </a>
+          )}
         </div>
       </div>
       <label className="flex flex-col gap-1 font-medium">

@@ -1,5 +1,6 @@
 import { ImportReport } from "./ImportReport";
 import { ImportTree } from "./ImportTree";
+import { ExplainRecord } from "../explain/ExplainRecord";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -171,6 +172,9 @@ export function FileDetail({
             </ul>
           )}
 
+          {d.texts.length > 0 && d.kind !== "gedcom" && (
+            <ExplainFile key={d.id} text={d.texts[0].text} />
+          )}
           {d.texts.map((t) => (
             <section key={t.id} className="flex flex-col gap-1">
               <h3 className="m-0 text-base font-semibold">{METHOD[t.method] ?? t.method}</h3>
@@ -234,5 +238,23 @@ export function FileDetail({
         </>
       )}
     </aside>
+  );
+}
+
+/** Built only when opened, so the file's text isn't on the page twice. */
+function ExplainFile({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="rounded-lg border border-line p-3">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="min-h-11 cursor-pointer border-0 bg-transparent p-0 font-medium text-accent"
+      >
+        {open ? "Close the explanation" : "Explain this record"}
+      </button>
+      {open && <ExplainRecord initialText={text.slice(0, 1500)} />}
+    </section>
   );
 }

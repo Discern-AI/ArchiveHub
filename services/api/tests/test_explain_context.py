@@ -94,3 +94,24 @@ def test_life_and_times_is_context_with_sources(alice_client, alice):
     OverlayEvent.objects.create(project=project, kind="custom", title="Gran born", year_from=1900)
     mine = alice_client.get("/api/v1/life-and-times", {"year": 1900, "project_id": project.id})
     assert "Gran born" in {h["title"] for h in mine.json()["happening"]}
+
+
+def test_assistant_tools_explain_and_give_context(alice):
+    import json
+
+    from assistant.tools import ToolKit
+
+    load_overlays()
+    kit = ToolKit(user=alice)
+    out, error = kit.run("explain_record", {"text": RECORD, "year": 1881, "place": "Reading"})
+    data = json.loads(out)
+    assert not error
+    terms = [w["term"] for w in data["what_the_words_mean"]]
+    assert "Workhouse" in terms and data["what_the_words_mean"][0]["cite"]
+    assert any("Royal Berkshire Archives" in m["text"] for m in data["where_to_find_out_more"])
+    out, error = kit.run("life_and_times", {"year": 1900})
+    ctx = json.loads(out)
+    assert not error and "£1 in 1900" in ctx["money"]["says"] and ctx["money"]["cite"]
+    assert "Boer War" in {h["title"] for h in ctx["happening"]}
+    cites = kit.cited_in(f"[{ctx['money']['cite']}]")
+    assert cites[0]["url"].startswith("https://www.ons.gov.uk/")

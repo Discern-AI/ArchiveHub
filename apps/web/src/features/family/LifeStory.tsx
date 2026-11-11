@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
 import { storyApi, type StoryEvent, type StorySource } from "../../lib/story";
+import { LifeAndTimes } from "../explain/LifeAndTimes";
 
 const STATUS: Record<StoryEvent["status"], string> = {
   documented: "",
@@ -95,6 +96,9 @@ export function LifeStoryView({
   const s = story.data;
   if (s.private) return <p className="rounded-lg bg-tint p-3">{s.note}</p>;
   const g = s.at_a_glance!;
+  const years = s
+    .chapters!.flatMap((c) => c.events.map((e) => e.year))
+    .filter((y): y is number => y !== null);
   return (
     <div className="flex flex-col gap-5">
       <section
@@ -148,6 +152,14 @@ export function LifeStoryView({
             See their family on the Lifeline
           </Link>
         </section>
+      )}
+      {years.length > 0 && (
+        <LifeAndTimes
+          from={Math.min(...years)}
+          to={Math.max(...years)}
+          projectId={projectId}
+          who={s.person.name.split(" ")[0]}
+        />
       )}
       {s.gaps!.length > 0 && (
         <section aria-label="What isn't known yet" className="flex flex-col gap-1">

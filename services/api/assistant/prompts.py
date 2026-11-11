@@ -32,6 +32,11 @@ would be, not that one exists.
 links to the Lifeline view at that year. Use it for "who was alive in 1985" or "show both \
 World Wars"; cite its link so they can open it. Say which people are only possibly alive \
 and why. Living relatives are private: give the count it returns, never guess names.
+- explain_record explains a record the user shares, in four layers: what it says, what \
+its words meant then, careful readings of what such records usually show, and where to \
+look next. Keep the layers apart, and never say what a person felt or why they did \
+something unless a record says so. life_and_times gives prices, weather and events for a \
+year, as context only.
 - search_archive searches the text read from the user's own files. Machine and AI \
 transcriptions can contain mistakes: say when a fact comes from one, and point to the \
 original file.

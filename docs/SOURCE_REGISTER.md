@@ -273,7 +273,8 @@ Sources that aren't family history but help describe the world people lived in, 
 | Met Office Daily Weather Reports (Digital Archive) | Daily UK weather maps and observations from the 1860s | Candidate | From: Claude. Scans; "Weather Rescue" volunteers transcribed many |
 | [Chronology of British Hydrological Events](https://www.cbhe.hydrology.org.uk/) | Floods, droughts and storms recorded over centuries | Candidate | From: Claude. Local events with sources |
 | [Environment Agency data](https://environment.data.gov.uk/) | River levels, rainfall, recorded flood outlines, hydrology | Candidate | OGL, open APIs |
-| [Hadley Centre observations](https://www.metoffice.gov.uk/hadobs/) | Central England Temperature from 1659 | Candidate | Downloads |
+| [Hadley Centre observations](https://www.metoffice.gov.uk/hadobs/) | Central England Temperature (HadCET), monthly from 1659 | **Hosted** (Life and times, WP12) | OGL with acknowledgement (checked 11 Nov 2026). Covers a roughly triangular area enclosed by Lancashire, London and Bristol, not a town. `refresh_context_data` |
+| [ONS long-run Retail Prices Index (CDKO)](https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/cdko/mm23) | Annual price index, 1800 to last year | **Hosted** (Life and times, WP12) | OGL v3. A price comparison, not wages or what any one thing cost. `refresh_context_data` |
 | [USGS earthquakes](https://earthquake.usgs.gov/fdsnws/event/1/) | Earthquakes worldwide | Candidate | Open API, public domain; rare in Britain |
 | NASA eclipse catalogues | Past eclipses | Candidate | Public domain |
 | SunCalc (see programs) | Where the sun was for a date, time and place | Program | Runs in the browser; for dating photos by their shadows |

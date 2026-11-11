@@ -66,6 +66,16 @@ class LifelineInput(_Input):
     project: str = Field(default="", max_length=200)
 
 
+class ExplainRecordInput(_Input):
+    text: str = Field(min_length=1, max_length=4000)
+    year: int | None = Field(default=None, ge=1000, le=2200)
+    place: str = Field(default="", max_length=200)
+
+
+class LifeAndTimesInput(_Input):
+    year: int = Field(ge=1000, le=2200)
+
+
 class SearchArchiveInput(_Input):
     query: str = Field(min_length=1, max_length=200)
 
@@ -210,6 +220,28 @@ TOOL_SPECS.append(
     )
 )
 
+TOOL_SPECS.append(
+    (
+        "explain_record",
+        "Explain a record's wording in four layers: what it says, what its words meant then "
+        "(checked explanations for the right period and place, e.g. a pre-1834 workhouse was "
+        "a parish one), careful general readings of what such records usually show, and where "
+        "to find out more (with the county record office). Use it when the user pastes or "
+        "selects a record. Present the readings as what was common, never as what happened "
+        "to this person.",
+        ExplainRecordInput,
+    )
+)
+TOOL_SPECS.append(
+    (
+        "life_and_times",
+        "Context for a year: how prices compared with now (ONS long-run price index, from "
+        "1800), the year's weather in central England (Met Office, from 1659), and wars, "
+        "laws and census nights. It's context about the world, not a fact about anyone.",
+        LifeAndTimesInput,
+    )
+)
+
 TOOL_LABELS = {
     "search_source_directory": "Searching the source directory",
     "search_records": "Searching records",
@@ -220,6 +252,8 @@ TOOL_LABELS = {
     "explain_term": "Looking up an old term",
     "where_to_look": "Working out where records would be",
     "lifeline": "Looking at the family Lifeline",
+    "explain_record": "Explaining the record",
+    "life_and_times": "Looking up life and times",
 }
 
 
@@ -401,6 +435,64 @@ class ToolKit:
             "note": "From the tree's own records. 'Possibly alive' means a date is approximate "
             "or a death isn't recorded. Living relatives are private: only counted.",
         }
+
+    def _explain_record(self, args: ExplainRecordInput) -> dict[str, Any]:
+        from genealogy.explain import explain_record
+
+        r = explain_record(args.text, args.year, args.place)
+
+        def cited(sources):
+            return [self.cite("guide", s["url"] or s["title"], s["title"], s["url"], s["title"])
+                    for s in sources if s.get("title")]  # fmt: skip
+
+        self.log("Searched", "ArchiveHub's checked explanations of record terms")
+        return {
+            "what_it_says": r["says"],
+            "what_the_words_mean": [
+                {
+                    "term": w["term"],
+                    "meaning": w["meaning"],
+                    "applies": w["applies"],
+                    "period_note": w["period_note"],
+                    "explained_by": w["contributed_by"],
+                    "cite": cited(w["sources"]),
+                }
+                for w in r["words"]
+            ],  # fmt: skip
+            "what_it_may_mean": [
+                {"text": m["text"], "cite": cited(m["sources"])} for m in r["may_mean"]
+            ],
+            "may_mean_label": r["may_mean_label"],
+            "where_to_find_out_more": [
+                {"text": m["text"], "cite": cited(m["sources"])} for m in r["find_out_more"]
+            ],
+            "sensitive_note": r["sensitive_note"],
+            "note": r["note"],
+        }
+
+    def _life_and_times(self, args: LifeAndTimesInput) -> dict[str, Any]:
+        from genealogy.context import life_and_times
+
+        r = life_and_times(args.year)
+        out: dict[str, Any] = {"year": args.year, "label": r["label"]}
+        for key in ("money", "weather"):
+            part = r[key]
+            if part.get("available"):
+                n = self.cite("data", part["source_url"], part["source"], part["source_url"],
+                              part["source"])  # fmt: skip
+                out[key] = {"says": part["sentence"], "rank": part.get("rank", ""),
+                            "caution": part["note"], "cite": n}  # fmt: skip
+            else:
+                out[key] = {"says": part["note"]}
+        out["happening"] = [
+            {"title": h["title"], "when": h["when"], "date": h["date_text"], "area": h["area"],
+             "cite": self.cite("guide", h["source_url"], h["source_title"], h["source_url"],
+                               h["source_title"]) if h["source_url"] else None}
+            for h in r["happening"]
+        ]  # fmt: skip
+        out["accounts"] = r["accounts"]["note"]
+        self.log("Searched", f"Life and times data for {args.year}")
+        return out
 
     def cite_connector(self, r: ConnectorRecord, source_name: str) -> int:
         connector = get_connector(r.connector)

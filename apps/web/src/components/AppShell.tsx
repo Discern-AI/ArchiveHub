@@ -7,6 +7,7 @@ import { Sidebar } from "./Sidebar";
 const TOP_NAV = [
   { to: "/search", label: "Search" },
   { to: "/map", label: "Map" },
+  { to: "/explain", label: "Explain" },
   { to: "/forums", label: "Forums" },
   { to: "/archive", label: "Archive" },
 ];

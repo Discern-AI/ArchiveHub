@@ -54,7 +54,7 @@ export function LifeAndTimes({
             Choose a year{" "}
             {who && age !== null && (
               <span className="font-normal text-muted">
-                ({who} was about {age})
+                ({age === 0 ? `the year ${who} was born` : `${who} was about ${age}`})
               </span>
             )}
           </span>

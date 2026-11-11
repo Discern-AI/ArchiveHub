@@ -209,3 +209,39 @@ class GalleryTag(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=["item", "person"], name="unique_gallery_tag")
         ]
+
+
+class ExplanationStatus(models.TextChoices):
+    PROPOSED = "proposed", "Waiting for review"
+    REVIEWED = "reviewed", "Reviewed"
+    REJECTED = "rejected", "Not used"
+
+
+class Explanation(BaseModel):
+    """An explanation of a term, institution or record type written by a user, archivist
+    or historian, with credit. It's shown in "Explain this record" only once reviewed,
+    and says who wrote it."""
+
+    term = models.CharField(max_length=200)
+    also = models.JSONField(default=list, blank=True, help_text="Other words that mean it")
+    meaning = models.TextField()
+    may_mean = models.TextField(blank=True)
+    where_to_look = models.TextField(blank=True)
+    area = models.CharField(max_length=200, blank=True)
+    period_from = models.IntegerField(null=True, blank=True)
+    period_to = models.IntegerField(null=True, blank=True)
+    sources = models.JSONField(default=list, blank=True, help_text='[{"title": "", "url": ""}]')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    credit = models.CharField(max_length=200, help_text="How they'd like to be credited")
+    status = models.CharField(
+        max_length=10, choices=ExplanationStatus.choices, default=ExplanationStatus.PROPOSED
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["term"]

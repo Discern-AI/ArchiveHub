@@ -513,19 +513,70 @@
    "key": "workhouse",
    "term": "Workhouse",
    "also": [
+    "workhouses",
     "union workhouse",
+    "union house",
     "workhouse master",
-    "matron"
+    "matron",
+    "poorhouse",
+    "poor house"
    ],
    "kind": "poor law",
-   "meaning": "The institution where poor people were housed and set to work. A workhouse master and matron supervised its day-to-day running for the board of guardians.",
+   "meaning": "From the Poor Law Amendment Act of 1834, parishes in England and Wales were combined into poor law unions, each with its own workhouse. A board of guardians, elected by ratepayers, ran each union, and a workhouse master and matron managed the workhouse day to day. Poor law unions continued until 1930.",
    "sources": [
     {
+     "title": "The National Archives research guide: Workhouse inmates and staff",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/workhouse-inmate-or-member-of-staff/"
+    },
+    {
      "title": "The National Archives research guide: Poverty and the Poor Laws",
-     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws"
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws/"
     }
    ],
-   "checked_on": "2026-11-07"
+   "checked_on": "2026-11-11",
+   "period_from": 1834,
+   "period_to": 1930,
+   "area": "England and Wales",
+   "before": "Before 1834 the poor laws were mostly run by each parish, under local magistrates, so a workhouse or poorhouse mentioned before then was a parish one, not a union workhouse.",
+   "may_mean": "A workhouse record shows the poor law was supporting someone at that time. People went into workhouses for many different reasons and for different lengths of time; this record alone doesn't say why they were there.",
+   "where_to_look": [
+    {
+     "text": "Admission and discharge books, and registers of births, baptisms and deaths, kept by the workhouse. They're at the local or county archive, and not all survive.",
+     "sources": [
+      {
+       "title": "The National Archives research guide: Workhouse inmates and staff",
+       "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/workhouse-inmate-or-member-of-staff/"
+      }
+     ]
+    },
+    {
+     "text": "The census, 1841 to 1921, which can show who was in a workhouse on census night.",
+     "sources": [
+      {
+       "title": "The National Archives research guide: Workhouse inmates and staff",
+       "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/workhouse-inmate-or-member-of-staff/"
+      }
+     ]
+    },
+    {
+     "text": "Poor law union correspondence at The National Archives (MH 12), which sometimes names individual paupers. Correspondence from 24 unions, 1834 to 1871, is catalogued in detail and online.",
+     "sources": [
+      {
+       "title": "The National Archives research guide: Workhouse inmates and staff",
+       "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/workhouse-inmate-or-member-of-staff/"
+      }
+     ]
+    },
+    {
+     "text": "You usually need the name of the poor law union, which may differ from the town the workhouse was in: Eton union's workhouse was in Slough.",
+     "sources": [
+      {
+       "title": "The National Archives research guide: Poverty and the Poor Laws",
+       "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws/"
+      }
+     ]
+    }
+   ]
   },
   {
    "key": "settlement",
@@ -709,6 +760,99 @@
     }
    ],
    "checked_on": "2026-11-10"
+  },
+  {
+   "key": "pauper",
+   "term": "Pauper",
+   "also": [
+    "paupers"
+   ],
+   "kind": "poor law",
+   "meaning": "In poor law records, someone being supported by the poor law. Before 1834 a pauper was a charge on their parish of settlement, generally the parish where they were born (for a married woman, her husband's parish of birth).",
+   "may_mean": "It describes their situation when the record was made, not their whole life.",
+   "where_to_look": [
+    {
+     "text": "Before 1834: the parish overseers' accounts, vestry minute books and settlement examinations, at the local or county archive.",
+     "sources": [
+      {
+       "title": "The National Archives research guide: Poverty and the Poor Laws",
+       "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws/"
+      }
+     ]
+    }
+   ],
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws/"
+    }
+   ],
+   "checked_on": "2026-11-11"
+  },
+  {
+   "key": "admitted-discharged",
+   "term": "Admitted and discharged (workhouse)",
+   "also": [
+    "admitted",
+    "discharged",
+    "admission",
+    "discharge",
+    "inmate",
+    "inmates"
+   ],
+   "kind": "poor law",
+   "meaning": "Workhouses kept admission and discharge books recording people coming in and leaving. With the workhouse's registers of births, baptisms and deaths, they're the main records of individual inmates.",
+   "period_from": 1834,
+   "area": "England and Wales",
+   "may_mean": "An admission date and a discharge date show when someone was in the workhouse, not why they came in or where they went next.",
+   "where_to_look": [
+    {
+     "text": "The workhouse's own registers at the local or county archive (not all survive), and the census for anyone there on census night.",
+     "sources": [
+      {
+       "title": "The National Archives research guide: Workhouse inmates and staff",
+       "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/workhouse-inmate-or-member-of-staff/"
+      }
+     ]
+    }
+   ],
+   "sources": [
+    {
+     "title": "The National Archives research guide: Workhouse inmates and staff",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/workhouse-inmate-or-member-of-staff/"
+    }
+   ],
+   "checked_on": "2026-11-11"
+  },
+  {
+   "key": "quarter-sessions-settlement",
+   "term": "Quarter sessions (settlement disputes)",
+   "also": [
+    "quarter sessions"
+   ],
+   "kind": "poor law",
+   "meaning": "Before 1834, if two parishes disagreed about which was responsible for a poor person (their place of settlement), the dispute could go to quarter sessions.",
+   "period_to": 1834,
+   "area": "England and Wales",
+   "may_mean": "A settlement dispute shows parishes disagreeing over who was responsible for someone's relief.",
+   "where_to_look": [
+    {
+     "text": "Quarter sessions records and settlement examinations, at the local or county archive.",
+     "sources": [
+      {
+       "title": "The National Archives research guide: Poverty and the Poor Laws",
+       "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws/"
+      }
+     ]
+    }
+   ],
+   "sources": [
+    {
+     "title": "The National Archives research guide: Poverty and the Poor Laws",
+     "url": "https://www.nationalarchives.gov.uk/help-with-your-research/research-guides/poverty-poor-laws/"
+    }
+   ],
+   "checked_on": "2026-11-11"
   }
  ]
 }

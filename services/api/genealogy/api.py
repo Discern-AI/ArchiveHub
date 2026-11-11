@@ -18,6 +18,8 @@ from history.models import Assertion, AssertionEvidence, LivingStatus, Method, P
 from projects.permissions import editable_projects, visible_projects
 
 from .changes import blockers, undo
+from .context import life_and_times
+from .explain import explain_record
 from .exporter import current_values, export_gedcom, export_gedzip
 from .gallery import (
     family_gallery,
@@ -33,6 +35,7 @@ from .life_story import life_story
 from .lifeline import lifeline
 from .models import (
     ChangeSet,
+    Explanation,
     ExternalId,
     GalleryItem,
     GalleryTag,
@@ -658,3 +661,87 @@ def photo_suggestions(
     """Pictures in the Archive not yet in a gallery, with who each might show and why."""
     project = get_object_or_404(editable_projects(request.user), pk=project_id)
     return suggest_people(project, unplaced_images(project, folder_id))
+
+
+# --- Explain this record, Life and times, offered explanations ---------------------
+
+
+class ExplainIn(Schema):
+    text: str
+    year: int | None = None
+    place: str = ""
+
+
+@router.post("/explain")
+def explain_view(request: HttpRequest, payload: ExplainIn) -> dict[str, Any]:
+    """What a record says, what its words meant, what it may mean, and where to look."""
+    text = payload.text.strip()
+    if not text:
+        raise HttpError(422, "Paste or choose the wording of the record.")
+    if len(text) > 8000:
+        raise HttpError(422, "That's too long to explain at once. Choose the part you need.")
+    if payload.year is not None and not 1000 <= payload.year <= 2200:
+        raise HttpError(422, "That year doesn't look right.")
+    return explain_record(text, payload.year, payload.place[:200])
+
+
+@router.get("/life-and-times")
+def life_and_times_view(
+    request: HttpRequest, year: int, project_id: UUID | None = None
+) -> dict[str, Any]:
+    """Prices, weather and what was happening in a year: context, not a fact about anyone."""
+    if not 1000 <= year <= 2200:
+        raise HttpError(422, "That year doesn't look right.")
+    project = None
+    if project_id:
+        project = get_object_or_404(visible_projects(request.user), pk=project_id)
+    return life_and_times(year, project)
+
+
+class ExplanationIn(Schema):
+    term: str
+    meaning: str
+    may_mean: str = ""
+    where_to_look: str = ""
+    area: str = ""
+    period_from: int | None = None
+    period_to: int | None = None
+    sources: list[dict[str, str]] = []
+    credit: str
+
+
+@router.post("/explanations", response={201: dict})
+def offer_explanation(request: HttpRequest, payload: ExplanationIn):
+    """Offer an explanation for others. It's shown, with your credit, once reviewed."""
+    if not payload.term.strip() or not payload.meaning.strip() or not payload.credit.strip():
+        raise HttpError(422, "Give the term, what it meant and how you'd like to be credited.")
+    if not payload.sources:
+        raise HttpError(422, "Add at least one source, so others can check it.")
+    sources = [
+        {"title": str(s.get("title", ""))[:300], "url": str(s.get("url", ""))[:500]}
+        for s in payload.sources[:10]
+        if s.get("title")
+    ]
+    e = Explanation.objects.create(
+        term=payload.term.strip()[:200],
+        meaning=payload.meaning.strip()[:4000],
+        may_mean=payload.may_mean.strip()[:2000],
+        where_to_look=payload.where_to_look.strip()[:2000],
+        area=payload.area.strip()[:200],
+        period_from=payload.period_from,
+        period_to=payload.period_to,
+        sources=sources,
+        author=request.user,
+        credit=payload.credit.strip()[:200],
+    )
+    audit(request.user, "explanation.offer", e, term=e.term)
+    note = "Thank you. It'll be shown, with your credit, once reviewed."
+    return Status(201, {"id": str(e.id), "status": e.status, "note": note})
+
+
+@router.get("/explanations/mine")
+def my_explanations(request: HttpRequest) -> list[dict[str, Any]]:
+    return [
+        {"id": str(e.id), "term": e.term, "status": e.get_status_display(), "credit": e.credit}
+        for e in Explanation.objects.filter(author=request.user)
+    ]

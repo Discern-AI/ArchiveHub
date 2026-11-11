@@ -8,6 +8,7 @@ const TOP_NAV = [
   { to: "/search", label: "Search" },
   { to: "/map", label: "Map" },
   { to: "/explain", label: "Explain" },
+  { to: "/lineages", label: "Lineages" },
   { to: "/forums", label: "Forums" },
   { to: "/archive", label: "Archive" },
 ];

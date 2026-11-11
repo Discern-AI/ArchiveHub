@@ -11,6 +11,7 @@ import { FamilyPage, PersonPage } from "../features/family/FamilyPages";
 import { LifelinePage } from "../features/lifeline/LifelinePage";
 import { FamilyGalleryPage } from "../features/family/Gallery";
 import { ExplainPage } from "../features/explain/ExplainRecord";
+import { LineagePage, LineagesPage } from "../features/lineages/LineagesPage";
 import { InterviewPage } from "../features/interview/InterviewPage";
 import { MapPage } from "../features/map/MapPage";
 import { SearchPage } from "../features/search/SearchPage";
@@ -49,6 +50,8 @@ export function AppRoutes() {
           <Route path="projects/:projectId/lifeline" element={<LifelinePage />} />
           <Route path="projects/:projectId/gallery" element={<FamilyGalleryPage />} />
           <Route path="explain" element={<ExplainPage />} />
+          <Route path="lineages" element={<LineagesPage />} />
+          <Route path="lineages/:type/:id" element={<LineagePage />} />
           <Route path="projects/:projectId/people/:personId" element={<PersonPage />} />
           <Route path="interviews/:interviewId" element={<InterviewPage />} />
           <Route path="homepage" element={<ComingSoon title="Homepage" pkg="WP7" />} />

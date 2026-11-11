@@ -8,6 +8,7 @@ import { FamilyPlaces } from "./FamilyPlaces";
 import { PersonGallery } from "./Gallery";
 import { LifeStoryView } from "./LifeStory";
 import { MergePanel, RemovePanel } from "./MergeAndRemove";
+import { OrderRecords } from "../lineages/OrderRecords";
 import { TreeChart } from "./TreeChart";
 import { TreeHealth } from "./TreeHealth";
 import { WhereToLook } from "./WhereToLook";
@@ -368,6 +369,12 @@ export function PersonPage() {
             )}
           </form>
           {projectId && personId && <WhereToLook projectId={projectId} personId={personId} />}
+          {projectId && personId && !p.living && (
+            <details className="rounded-lg border border-line bg-surface p-3">
+              <summary className="min-h-11 cursor-pointer py-2 font-medium">Order records</summary>
+              <OrderRecords projectId={projectId} personId={personId} />
+            </details>
+          )}
           {projectId && personId && (
             <section
               aria-label="Tidy the tree"

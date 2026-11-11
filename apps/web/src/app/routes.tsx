@@ -12,6 +12,8 @@ import { LifelinePage } from "../features/lifeline/LifelinePage";
 import { FamilyGalleryPage } from "../features/family/Gallery";
 import { LifeReportPage } from "../features/family/LifeReport";
 import { ExplainPage } from "../features/explain/ExplainRecord";
+import { HomepagePage } from "../features/homepage/HomepagePage";
+import { PostEditorPage } from "../features/homepage/PostEditor";
 import { LineagePage, LineagesPage } from "../features/lineages/LineagesPage";
 import { InterviewPage } from "../features/interview/InterviewPage";
 import { MapPage } from "../features/map/MapPage";
@@ -56,7 +58,8 @@ export function AppRoutes() {
           <Route path="lineages/:type/:id" element={<LineagePage />} />
           <Route path="projects/:projectId/people/:personId" element={<PersonPage />} />
           <Route path="interviews/:interviewId" element={<InterviewPage />} />
-          <Route path="homepage" element={<ComingSoon title="Homepage" pkg="WP7" />} />
+          <Route path="homepage" element={<HomepagePage />} />
+          <Route path="homepage/posts/:postId" element={<PostEditorPage />} />
           <Route path="profile" element={<ComingSoon title="Profile" pkg="WP8" />} />
           <Route path="settings" element={<ComingSoon title="Settings" pkg="a later package" />} />
           <Route path="*" element={<ComingSoon title="Page not found" />} />

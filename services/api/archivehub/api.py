@@ -10,6 +10,7 @@ from genealogy.api import router as genealogy_router
 from interviews.api import router as interviews_router
 from lineages.api import router as lineages_router
 from projects.api import router as projects_router
+from publishing.api import router as publishing_router
 from search.api import router as search_router
 from timemap.api import router as timemap_router
 
@@ -23,6 +24,7 @@ api.add_router("", interviews_router)
 api.add_router("", timemap_router)
 api.add_router("", lineages_router)
 api.add_router("", culture_router)
+api.add_router("", publishing_router)
 api.add_router("", search_router)
 
 

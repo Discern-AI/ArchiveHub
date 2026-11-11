@@ -17,6 +17,8 @@ export default defineConfig({
       "/_allauth": { target: API, changeOrigin: false },
       "/admin": { target: API, changeOrigin: false },
       "/static": { target: API, changeOrigin: false },
+      // Public homepages are server-rendered by Django.
+      "/h/": { target: API, changeOrigin: false },
       // Live interview audio (WebSocket).
       "/ws": { target: API.replace(/^http/, "ws"), ws: true, changeOrigin: false },
     },

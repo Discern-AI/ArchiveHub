@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ h.title }}{% endblock %}</title>
+<meta name="description" content="{% block description %}{{ h.tagline }}{% endblock %}">
+{% block head %}{% endblock %}
+<style>
+  :root { --ink:#14322c; --muted:#52635e; --line:#c9d3ce; --page:#f3f5f2; --accent:#1f5c4d; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--page); color:var(--ink); font:18px/1.6 Georgia, "Times New Roman", serif; }
+  header, main, footer { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+  header { padding-top: 32px; }
+  header a { color: inherit; text-decoration: none; }
+  h1 { font-size: 2.2rem; line-height: 1.2; margin: .4em 0; }
+  h2 { font-size: 1.5rem; margin-top: 1.6em; }
+  a { color: var(--accent); }
+  .tagline, .meta, .credit, footer { color: var(--muted); font-family: system-ui, sans-serif; font-size: .85rem; }
+  figure { margin: 1.5em 0; }
+  figure img { max-width: 100%; height: auto; border-radius: 6px; }
+  figcaption { font-family: system-ui, sans-serif; font-size: .9rem; color: var(--muted); }
+  blockquote { margin: 1em 0; padding-left: 1em; border-left: 4px solid var(--line); }
+  ul.posts { list-style: none; padding: 0; }
+  ul.posts li { padding: 12px 0; border-top: 1px solid var(--line); }
+  footer { padding: 40px 20px; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/h/{{ h.slug }}/"><strong>{{ h.title }}</strong></a>
+  {% if h.tagline %}<div class="tagline">{{ h.tagline }}</div>{% endif %}
+</header>
+<main>{% block main %}{% endblock %}</main>
+<footer>Published on ArchiveHub. The writer owns this work and can take it elsewhere at any time.</footer>
+</body>
+</html>

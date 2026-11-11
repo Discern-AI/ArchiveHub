@@ -76,6 +76,12 @@ class LifeAndTimesInput(_Input):
     year: int = Field(ge=1000, le=2200)
 
 
+class DraftPostInput(_Input):
+    title: str = Field(min_length=1, max_length=300)
+    body: str = Field(min_length=1, max_length=20000)
+    summary: str = Field(default="", max_length=500)
+
+
 class SearchArchiveInput(_Input):
     query: str = Field(min_length=1, max_length=200)
 
@@ -242,6 +248,19 @@ TOOL_SPECS.append(
     )
 )
 
+TOOL_SPECS.append(
+    (
+        "draft_post",
+        "Save a draft post on the user's homepage, only when they ask you to write one up. "
+        "Body uses a small Markdown subset: ## and ### headings, > quotes, - lists, **bold**, "
+        "*italic*, [text](https://...). It stays a draft: the user checks it (pictures' "
+        "rights, living people named) and publishes it themselves. You can't publish. Don't "
+        "name people who may be living unless the user has said they agree. Returns a link "
+        "to the draft.",
+        DraftPostInput,
+    )
+)
+
 TOOL_LABELS = {
     "search_source_directory": "Searching the source directory",
     "search_records": "Searching records",
@@ -254,6 +273,7 @@ TOOL_LABELS = {
     "lifeline": "Looking at the family Lifeline",
     "explain_record": "Explaining the record",
     "life_and_times": "Looking up life and times",
+    "draft_post": "Saving a draft post",
 }
 
 
@@ -493,6 +513,22 @@ class ToolKit:
         out["accounts"] = r["accounts"]["note"]
         self.log("Searched", f"Life and times data for {args.year}")
         return out
+
+    def _draft_post(self, args: DraftPostInput) -> dict[str, Any]:
+        from publishing.models import Homepage, Post, Source
+        from publishing.wordpress import _unique_slug
+
+        h = Homepage.objects.filter(owner=self.user).first()
+        if h is None:
+            return {"saved": False, "note": "The user hasn't set up a homepage yet. They can "
+                    "do that at /homepage, then ask again.", "link": "/homepage"}  # fmt: skip
+        p = Post.objects.create(homepage=h, title=args.title.strip(), body=args.body,
+                                summary=args.summary, source=Source.CHAT,
+                                slug=_unique_slug(h, args.title))  # fmt: skip
+        self.log("Saved", f"Draft post “{p.title}”")
+        return {"saved": True, "status": "draft", "link": f"/homepage/posts/{p.id}",
+                "note": "Saved as a draft. Nothing is public: the user checks and publishes "
+                "it from the link."}  # fmt: skip
 
     def cite_connector(self, r: ConnectorRecord, source_name: str) -> int:
         connector = get_connector(r.connector)

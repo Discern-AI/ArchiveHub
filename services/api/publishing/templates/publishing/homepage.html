@@ -1,0 +1,14 @@
+{% extends "publishing/base.html" %}
+{% block main %}
+<h1>{{ h.title }}</h1>
+{{ about|safe }}
+<h2>Posts</h2>
+{% if posts %}
+<ul class="posts">
+{% for p in posts %}
+  <li><a href="/h/{{ h.slug }}/{{ p.slug }}/">{{ p.title }}</a>
+  <div class="meta">{{ p.published_at|date:"j F Y" }}{% if p.summary %} · {{ p.summary }}{% endif %}</div></li>
+{% endfor %}
+</ul>
+{% else %}<p>Nothing published yet.</p>{% endif %}
+{% endblock %}

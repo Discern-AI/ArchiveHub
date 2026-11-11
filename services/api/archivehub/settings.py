@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "timemap",
     "lineages",
     "culture",
+    "publishing",
     "search",
 ]
 

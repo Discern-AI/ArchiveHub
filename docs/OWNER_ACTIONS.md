@@ -78,7 +78,7 @@ Drafts for the first two are in OUTREACH.md §5–6. Full list: SOURCE_REGISTER.
 | West Berkshire Historic Environment Record | Archaeology and buildings | Not contacted |
 | Newbury and Reading local studies libraries | Directories, maps, photos | Not contacted |
 | Museum of English Rural Life (Reading) | Rural life, Berkshire | Not contacted |
-| Local history societies (e.g. Newbury District Field Club) | Early historians for WP7 | Not contacted |
+| Local history societies, anywhere (e.g. Newbury District Field Club) | Three historians to move or publish work on a homepage (WP7 acceptance) | Not contacted |
 | Free UK Genealogy | FreeBMD, FreeCEN, FreeREG | Not contacted |
 | Wessex Film and Sound Archive | Regional film | Not contacted |
 | University of Leicester | Historical trade directories | Not contacted |

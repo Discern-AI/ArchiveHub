@@ -28,7 +28,7 @@ Filled in as packages are installed. Columns: package · version · licence · p
 | eslint, typescript-eslint, eslint-plugin-react-hooks, prettier | — | MIT | Dev: lint/format | 1 |
 | truststore | 0.10.5 | MIT | TLS verification via the OS trust store (ADR-022) | 3 |
 | pypdf | 6.21.4 | BSD-3 | PDF text layers and page counts | 4 |
-| defusedxml | 0.7.1 | PSF | Safe parsing of Word documents | 4 |
+| defusedxml | 0.7.1 | PSF | Safe parsing of Word documents and WordPress exports | 4, 7 |
 | Pillow | 13.0.0 | MIT-CMU (HPND) | Image checks, previews, EXIF removal | 4 |
 | Tesseract (optional binary) | — | Apache-2.0 | OCR when installed; not installed yet | 4 |
 | channels | 4.3.2 | BSD-3 | WebSockets for live interviews | 5 |

@@ -1,0 +1,14 @@
+{% extends "publishing/base.html" %}
+{% block title %}{{ p.title }} · {{ h.title }}{% endblock %}
+{% block description %}{{ p.summary }}{% endblock %}
+{% block head %}{% if p.original_url %}<link rel="canonical" href="{{ p.original_url }}">{% endif %}{% endblock %}
+{% block main %}
+<article>
+<h1>{{ p.title }}</h1>
+<div class="meta">
+  {{ p.published_at|date:"j F Y" }}
+  {% if p.original_url %} · First published at <a href="{{ p.original_url }}" rel="nofollow">{{ p.original_url }}</a>{% if p.first_published %} on {{ p.first_published|date:"j F Y" }}{% endif %}{% endif %}
+</div>
+{{ body|safe }}
+</article>
+{% endblock %}

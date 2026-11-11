@@ -280,3 +280,14 @@ The owner's two update documents ([updates/](updates/)) add to SPEC.md without r
 - **Previews are real imports, rolled back.** The import preview runs the importer and the health check inside a transaction that's then rolled back, so it can't drift from what the import really does.
 - **Nothing is automatic.** Merges happen only when a person chooses, fact by fact; removals keep cut-off people unless they're ticked. Updates never remove people who've disappeared from a newer export: they're kept and listed.
 
+
+## ADR-050 — Publishing: drafts first, checked, approved by the writer
+
+**Status:** Accepted (2026-11-11)
+
+- **Nothing is public by default.** A homepage is off until switched on; every post, including imported and chat-drafted ones, starts as a draft. Only the writer can publish; the assistant can only draft.
+- **The check before publishing** splits blockers (rights not stated, credit missing, picture not attached, empty post) from warnings (someone who may be living is named; a private Archive picture would become public). Blockers must be fixed; warnings must be ticked as checked. The check and the approver are stored with the post, and any edit returns it to draft.
+- **Safe rendering.** Posts are a small Markdown subset rendered on the server after escaping everything; links must be http(s). No HTML is accepted, including from WordPress.
+- **Pictures** are served only from the EXIF-stripped preview copy, only while attached to a published post on a live homepage. WordPress pictures aren't copied; they're linked until the writer uploads them and states their rights.
+- **Moving in and out.** WordPress imports keep the original address as canonical, the original date and redirects from old paths. A full export (Markdown, JSON details, original pictures, redirects) is always available.
+- **Addresses** follow the title until first published, then stay fixed.

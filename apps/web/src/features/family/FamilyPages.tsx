@@ -71,6 +71,14 @@ export function FamilyPage() {
               Lifeline
             </Link>
           )}
+          {!!people.data?.length && (
+            <Link
+              to={`/projects/${projectId}/gallery`}
+              className="flex min-h-11 items-center rounded-lg border border-accent px-4 font-semibold no-underline"
+            >
+              Gallery
+            </Link>
+          )}
           <Link to={`/archive?project=${projectId}`} className="flex min-h-11 items-center">
             Import a GEDCOM file
           </Link>

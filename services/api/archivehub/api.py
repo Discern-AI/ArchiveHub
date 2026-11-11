@@ -4,6 +4,7 @@ from ninja import NinjaAPI
 from ninja.security import django_auth
 
 from archive.api import router as archive_router
+from culture.api import router as culture_router
 from explorer.api import router as explorer_router
 from genealogy.api import router as genealogy_router
 from interviews.api import router as interviews_router
@@ -21,6 +22,7 @@ api.add_router("", genealogy_router)
 api.add_router("", interviews_router)
 api.add_router("", timemap_router)
 api.add_router("", lineages_router)
+api.add_router("", culture_router)
 api.add_router("", search_router)
 
 

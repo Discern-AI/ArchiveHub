@@ -131,4 +131,7 @@ def load_all() -> dict[str, int]:
     from genealogy.overlays import load_overlays
 
     counts["overlays"] = load_overlays()
+    from culture.report import load_items
+
+    counts["culture items"] = load_items()
     return counts

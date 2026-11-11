@@ -148,6 +148,10 @@ def test_life_story_in_order_with_sources_and_gaps(alice_client, project):
     assert s["gaps"] == []
     wars = {c["title"]: c for c in s["context"]}
     assert wars["First World War"]["age"] == "about 24 to 28"
+    census = [c for c in s["context"] if c["title"] == "Census"]
+    assert census[0]["date_text"] == "5 April 1891" and census[0]["age"] == "about 1"
+    assert census[0]["note"] == "They could appear in it."
+    assert "1931 census destroyed" not in wars  # not something they lived through
     assert "doesn't say they took part" in s["context_note"]
     # Living people's lives aren't told.
     young = person(project, "@I4@")

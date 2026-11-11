@@ -36,6 +36,7 @@ export interface LifeStory {
     date_text: string;
     area: string;
     age: string;
+    note?: string;
     source_title: string;
     source_url: string;
   }[];

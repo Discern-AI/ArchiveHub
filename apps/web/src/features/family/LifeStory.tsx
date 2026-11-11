@@ -137,7 +137,7 @@ export function LifeStoryView({
             {s.context!.map((c) => (
               <li key={c.title + c.date_text}>
                 {c.title}, {c.date_text}
-                {c.area ? ` (${c.area})` : ""}: they were {c.age}.{" "}
+                {c.area ? ` (${c.area})` : ""}: they were {c.age}.{c.note ? ` ${c.note}` : ""}{" "}
                 <a href={c.source_url} target="_blank" rel="noreferrer" className="text-sm">
                   Source ↗
                 </a>

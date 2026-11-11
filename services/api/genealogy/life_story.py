@@ -175,11 +175,18 @@ def life_story(project, person: Person) -> dict[str, Any]:
         add("family", int(years[0]) if years else None, sentence, people=[partner], kind="marriage",
             extra_sources=[file_source])  # fmt: skip
 
+    living_children = [c for c in children if c.living_status != LivingStatus.DECEASED]
+    if living_children:
+        n = len(living_children)
+        sentence = (
+            "Had a child who may still be living (details private)."
+            if n == 1
+            else f"Had {n} children who may still be living (details private)."
+        )
+        add("family", None, sentence, kind="child", extra_sources=[file_source])
     for child in children:
         cv = values.get(child.id, {})
         if child.living_status != LivingStatus.DECEASED:
-            add("family", None, "Had a child who may still be living (details private).",
-                kind="child", extra_sources=[file_source])  # fmt: skip
             continue
         word = {"M": "son", "F": "daughter"}.get(child.sex, "child")
         b = cv.get("birth date")
@@ -241,19 +248,27 @@ def life_story(project, person: Person) -> dict[str, Any]:
 
     context = []
     end = death_year or (_year(bur) if bur else None)
+
+    def age(years: int) -> str:
+        return "under 1" if years <= 0 else f"about {years}"
+
     if birth_year and end:
         for o in OverlayEvent.objects.filter(project=None, kind__in=["war", "law", "records"]):
             to = o.year_to or o.year_from
-            if o.year_from <= end and to >= birth_year:
-                a, b = max(o.year_from, birth_year) - birth_year, min(to, end) - birth_year
-                context.append({
-                    "title": o.title,
-                    "date_text": o.date_text,
-                    "area": o.area,
-                    "age": f"about {a}" if a == b else f"about {a} to {b}",
-                    "source_title": o.source_title,
-                    "source_url": o.source_url,
-                })  # fmt: skip
+            if not (o.year_from <= end and to >= birth_year):
+                continue
+            if o.kind == "records" and o.title != "Census":
+                continue  # registration starting, a census lost: not part of their life
+            a, b = max(o.year_from, birth_year) - birth_year, min(to, end) - birth_year
+            context.append({
+                "title": o.title,
+                "date_text": o.date_text,
+                "area": o.area,
+                "age": age(a) if a == b else f"{age(a)} to {b}",
+                "note": "They could appear in it." if o.title == "Census" else "",
+                "source_title": o.source_title,
+                "source_url": o.source_url,
+            })  # fmt: skip
 
     glance = {
         "born": f"{say_date(birth.date_text or birth.value) if birth else ''}"

@@ -5,6 +5,8 @@ import { api, archiveApi, type PersonBrief } from "../../lib/api";
 import { AnswerEvidence } from "./AnswerEvidence";
 import { ChangeHistory } from "./ChangeHistory";
 import { FamilyPlaces } from "./FamilyPlaces";
+import { PersonGallery } from "./Gallery";
+import { LifeStoryView } from "./LifeStory";
 import { MergePanel, RemovePanel } from "./MergeAndRemove";
 import { TreeChart } from "./TreeChart";
 import { TreeHealth } from "./TreeHealth";
@@ -137,8 +139,9 @@ const STATUS_LABEL: Record<string, string> = {
 export function PersonPage() {
   const { projectId, personId } = useParams();
   // "Compare and merge" from the health check opens the merge with the other record chosen.
-  const [search] = useSearchParams();
+  const [search, setSearch] = useSearchParams();
   const mergeWith = search.get("merge") ?? "";
+  const asked = search.get("view");
   const qc = useQueryClient();
   const person = useQuery({
     queryKey: ["person", projectId, personId],
@@ -168,6 +171,18 @@ export function PersonPage() {
   if (person.isPending) return <p className="p-8 text-muted">Loading…</p>;
   if (person.isError) return <p className="p-8 text-warning">This person couldn't be found.</p>;
   const p = person.data;
+  // Life Story first for people who have died; living people's stories aren't told.
+  const view =
+    asked === "story" || asked === "gallery" || asked === "facts"
+      ? asked
+      : p.living || mergeWith
+        ? "facts"
+        : "story";
+  const show = (v: string) => {
+    const next = new URLSearchParams(search);
+    next.set("view", v);
+    setSearch(next, { replace: true });
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-5 px-4 py-8 sm:px-12">
@@ -203,135 +218,174 @@ export function PersonPage() {
           last 110 years.
         </p>
       )}
-
-      <section aria-label="Facts" className="flex flex-col gap-2">
-        {p.facts.map((f) => (
-          <div key={f.question} className="rounded-lg border border-line bg-surface p-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="m-0 text-base font-semibold capitalize">{f.question}</h2>
-              {f.disputed && (
-                <span className="text-sm font-semibold text-warning">Versions differ</span>
-              )}
-            </div>
-            <ul className="m-0 mt-1 flex list-none flex-col gap-1 p-0">
-              {f.answers.map((a) => (
-                <li key={a.id} className={a.in_use ? "font-semibold" : ""}>
-                  {a.value}{" "}
-                  <span className="text-[13px] font-normal text-muted">
-                    ({STATUS_LABEL[a.status] ?? a.status}
-                    {a.method === "import"
-                      ? ", from the imported tree"
-                      : a.method === "user"
-                        ? ", your entry"
-                        : ""}
-                    {a.in_use ? ", used" : ""})
-                  </span>
-                  {a.note && <div className="text-sm font-normal text-muted">{a.note}</div>}
-                  <AnswerEvidence
-                    projectId={projectId!}
-                    personId={personId!}
-                    claimId={a.id}
-                    evidence={a.evidence}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </section>
-
-      <form
-        onSubmit={correct}
-        className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-4"
+      <div
+        role="tablist"
+        aria-label="Ways to see this person"
+        className="flex flex-wrap gap-2 border-b border-line"
       >
-        <h2 className="m-0 text-lg font-semibold">Add or correct a fact</h2>
-        <p className="m-0 text-sm text-muted">
-          Nothing is overwritten: your version is kept beside the original.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <label className="flex flex-col gap-1 text-sm font-medium">
-            Fact
-            <select
-              value={form.predicate}
-              onChange={(e) => setForm({ ...form, predicate: e.target.value })}
-              className="min-h-11 rounded-lg border border-control px-2 font-normal"
+        {(
+          [
+            ["story", "Life story"],
+            ["gallery", "Gallery"],
+            ["facts", "Facts and evidence"],
+          ] as const
+        ).map(([v, label]) => (
+          <button
+            key={v}
+            type="button"
+            role="tab"
+            aria-selected={view === v}
+            onClick={() => show(v)}
+            className={`-mb-px min-h-11 cursor-pointer border-0 border-b-2 bg-transparent px-3 font-medium ${view === v ? "border-accent text-ink" : "border-transparent text-muted"}`}
+          >
+            {label}
+          </button>
+        ))}
+        <Link to={`/projects/${projectId}/lifeline`} className="flex min-h-11 items-center px-3">
+          Lifeline
+        </Link>
+      </div>
+      {view === "story" && (
+        <LifeStoryView projectId={projectId!} personId={personId!} onFacts={() => show("facts")} />
+      )}
+      {view === "gallery" && <PersonGallery projectId={projectId!} personId={personId!} />}
+      {view === "facts" && (
+        <>
+          <section aria-label="Facts" className="flex flex-col gap-2">
+            {p.facts.map((f) => (
+              <div key={f.question} className="rounded-lg border border-line bg-surface p-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="m-0 text-base font-semibold capitalize">{f.question}</h2>
+                  {f.disputed && (
+                    <span className="text-sm font-semibold text-warning">Versions differ</span>
+                  )}
+                </div>
+                <ul className="m-0 mt-1 flex list-none flex-col gap-1 p-0">
+                  {f.answers.map((a) => (
+                    <li key={a.id} className={a.in_use ? "font-semibold" : ""}>
+                      {a.value}{" "}
+                      <span className="text-[13px] font-normal text-muted">
+                        ({STATUS_LABEL[a.status] ?? a.status}
+                        {a.method === "import"
+                          ? ", from the imported tree"
+                          : a.method === "user"
+                            ? ", your entry"
+                            : ""}
+                        {a.in_use ? ", used" : ""})
+                      </span>
+                      {a.note && <div className="text-sm font-normal text-muted">{a.note}</div>}
+                      <AnswerEvidence
+                        projectId={projectId!}
+                        personId={personId!}
+                        claimId={a.id}
+                        evidence={a.evidence}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+
+          <form
+            onSubmit={correct}
+            className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-4"
+          >
+            <h2 className="m-0 text-lg font-semibold">Add or correct a fact</h2>
+            <p className="m-0 text-sm text-muted">
+              Nothing is overwritten: your version is kept beside the original.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <label className="flex flex-col gap-1 text-sm font-medium">
+                Fact
+                <select
+                  value={form.predicate}
+                  onChange={(e) => setForm({ ...form, predicate: e.target.value })}
+                  className="min-h-11 rounded-lg border border-control px-2 font-normal"
+                >
+                  {[
+                    "name",
+                    "birth date",
+                    "birth place",
+                    "death date",
+                    "death place",
+                    "occupation",
+                  ].map((x) => (
+                    <option key={x} value={x}>
+                      {x}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex min-w-48 flex-1 flex-col gap-1 text-sm font-medium">
+                Value
+                <input
+                  required
+                  value={form.value}
+                  onChange={(e) => setForm({ ...form, value: e.target.value })}
+                  className="min-h-11 rounded-lg border border-control px-3 font-normal"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm font-medium">
+                This is
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="min-h-11 rounded-lg border border-control px-2 font-normal"
+                >
+                  <option value="remembered">Remembered</option>
+                  <option value="documented">Documented</option>
+                  <option value="inferred">Inferred</option>
+                </select>
+              </label>
+            </div>
+            <label className="flex flex-col gap-1 text-sm font-medium">
+              Where it comes from (optional)
+              <input
+                value={form.note}
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+                className="min-h-11 rounded-lg border border-control px-3 font-normal"
+              />
+            </label>
+            <button
+              type="submit"
+              className="min-h-11 cursor-pointer self-start rounded-lg bg-accent px-4 font-semibold text-white"
             >
-              {["name", "birth date", "birth place", "death date", "death place", "occupation"].map(
-                (x) => (
-                  <option key={x} value={x}>
-                    {x}
-                  </option>
-                ),
-              )}
-            </select>
-          </label>
-          <label className="flex min-w-48 flex-1 flex-col gap-1 text-sm font-medium">
-            Value
-            <input
-              required
-              value={form.value}
-              onChange={(e) => setForm({ ...form, value: e.target.value })}
-              className="min-h-11 rounded-lg border border-control px-3 font-normal"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm font-medium">
-            This is
-            <select
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
-              className="min-h-11 rounded-lg border border-control px-2 font-normal"
+              Save
+            </button>
+            {msg && (
+              <p role="status" className="m-0 font-medium text-accent">
+                {msg}
+              </p>
+            )}
+          </form>
+          {projectId && personId && <WhereToLook projectId={projectId} personId={personId} />}
+          {projectId && personId && (
+            <section
+              aria-label="Tidy the tree"
+              className="flex flex-col gap-2 border-t border-line pt-4"
             >
-              <option value="remembered">Remembered</option>
-              <option value="documented">Documented</option>
-              <option value="inferred">Inferred</option>
-            </select>
-          </label>
-        </div>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Where it comes from (optional)
-          <input
-            value={form.note}
-            onChange={(e) => setForm({ ...form, note: e.target.value })}
-            className="min-h-11 rounded-lg border border-control px-3 font-normal"
-          />
-        </label>
-        <button
-          type="submit"
-          className="min-h-11 cursor-pointer self-start rounded-lg bg-accent px-4 font-semibold text-white"
-        >
-          Save
-        </button>
-        {msg && (
-          <p role="status" className="m-0 font-medium text-accent">
-            {msg}
-          </p>
-        )}
-      </form>
-      {projectId && personId && <WhereToLook projectId={projectId} personId={personId} />}
-      {projectId && personId && (
-        <section
-          aria-label="Tidy the tree"
-          className="flex flex-col gap-2 border-t border-line pt-4"
-        >
-          <h2 className="m-0 text-xl font-semibold">Tidy the tree</h2>
-          <details open={!!mergeWith} className="rounded-lg border border-line bg-surface p-3">
-            <summary className="min-h-11 cursor-pointer py-2 font-medium">
-              Merge a duplicate into this person
-            </summary>
-            <MergePanel
-              key={`${personId}-${mergeWith}`}
-              projectId={projectId}
-              personId={personId}
-              initialOther={mergeWith}
-            />
-          </details>
-          <details className="rounded-lg border border-line bg-surface p-3">
-            <summary className="min-h-11 cursor-pointer py-2 font-medium">
-              Remove this person
-            </summary>
-            <RemovePanel projectId={projectId} personId={personId} />
-          </details>
-        </section>
+              <h2 className="m-0 text-xl font-semibold">Tidy the tree</h2>
+              <details open={!!mergeWith} className="rounded-lg border border-line bg-surface p-3">
+                <summary className="min-h-11 cursor-pointer py-2 font-medium">
+                  Merge a duplicate into this person
+                </summary>
+                <MergePanel
+                  key={`${personId}-${mergeWith}`}
+                  projectId={projectId}
+                  personId={personId}
+                  initialOther={mergeWith}
+                />
+              </details>
+              <details className="rounded-lg border border-line bg-surface p-3">
+                <summary className="min-h-11 cursor-pointer py-2 font-medium">
+                  Remove this person
+                </summary>
+                <RemovePanel projectId={projectId} personId={personId} />
+              </details>
+            </section>
+          )}
+        </>
       )}
     </div>
   );

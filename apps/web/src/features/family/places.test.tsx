@@ -128,7 +128,7 @@ describe("Where to look next", () => {
           ],
         }),
     });
-    renderAt("/projects/p1/people/a");
+    renderAt("/projects/p1/people/a?view=facts");
     await userEvent.click(await screen.findByRole("button", { name: "Where to look next" }));
     const panel = await screen.findByRole("region", { name: "Where to look next" });
     expect(
@@ -247,7 +247,7 @@ describe("Evidence from saved finds", () => {
         return json({ added: 1 }, 201);
       },
     });
-    renderAt("/projects/p1/people/a");
+    renderAt("/projects/p1/people/a?view=facts");
     await userEvent.click(
       await screen.findByRole("button", { name: "Back this with a saved find" }),
     );

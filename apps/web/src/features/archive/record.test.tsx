@@ -171,7 +171,7 @@ describe("Record", () => {
       },
     });
     const user = userEvent.setup();
-    renderAt("/projects/p1/people/a");
+    renderAt("/projects/p1/people/a?view=facts");
 
     expect(await screen.findByRole("heading", { name: "Arthur Sample" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Walter Sample/ })).toBeVisible();

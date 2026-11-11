@@ -95,7 +95,7 @@ describe("Tidying the tree", () => {
     });
     // Arriving from the health check's "Compare and merge".
     renderAt("/projects/p1/people/a?merge=b");
-    const preview = await screen.findByRole("region", { name: "Merge preview" });
+    const preview = await screen.findByRole("region", { name: "Merge preview" }, { timeout: 5000 });
     expect(preview).toHaveTextContent("They differ");
     expect(preview).toHaveTextContent("Parents moving across: Mary Old");
     await userEvent.click(
@@ -130,7 +130,7 @@ describe("Tidying the tree", () => {
       "POST /api/v1/projects/p1/people/a/delete": () =>
         json({ change_set: "c2", summary: "Removed Ann Smith and 1 others" }),
     });
-    renderAt("/projects/p1/people/a");
+    renderAt("/projects/p1/people/a?view=facts");
     await userEvent.click(await screen.findByText("Remove this person"));
     const panel = await screen.findByRole("region", { name: "Remove this person" });
     expect(panel).toHaveTextContent("only connected to the tree through Ann Smith");

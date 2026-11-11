@@ -79,7 +79,7 @@ def test_a_berkshire_labourers_report_has_three_licensed_culture_items(alice_cli
     for b in culture:
         item = CultureItem.objects.get(key=b["key"])
         assert item.status == "approved" and item.rights == "open"
-        assert b["why"] and "kind of work recorded for Thomas (Agricultural labourer)" in b["why"]
+        assert b["why"] and "kind of work recorded for Thomas (agricultural labourer)" in b["why"]
         assert b["label"].startswith("This shows their world, not them.")
         assert b["credit"] and b["licence"] and b["source_url"]
         assert b["image_url"] or b["text"]  # shown because the rights are open

@@ -10,6 +10,7 @@ import { ArchivePage } from "../features/archive/ArchivePage";
 import { FamilyPage, PersonPage } from "../features/family/FamilyPages";
 import { LifelinePage } from "../features/lifeline/LifelinePage";
 import { FamilyGalleryPage } from "../features/family/Gallery";
+import { LifeReportPage } from "../features/family/LifeReport";
 import { ExplainPage } from "../features/explain/ExplainRecord";
 import { LineagePage, LineagesPage } from "../features/lineages/LineagesPage";
 import { InterviewPage } from "../features/interview/InterviewPage";
@@ -49,6 +50,7 @@ export function AppRoutes() {
           <Route path="projects/:projectId/people" element={<FamilyPage />} />
           <Route path="projects/:projectId/lifeline" element={<LifelinePage />} />
           <Route path="projects/:projectId/gallery" element={<FamilyGalleryPage />} />
+          <Route path="projects/:projectId/people/:personId/report" element={<LifeReportPage />} />
           <Route path="explain" element={<ExplainPage />} />
           <Route path="lineages" element={<LineagesPage />} />
           <Route path="lineages/:type/:id" element={<LineagePage />} />

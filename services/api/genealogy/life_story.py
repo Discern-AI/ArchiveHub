@@ -196,10 +196,13 @@ def life_story(project, person: Person) -> dict[str, Any]:
     occ = v.get("occupation")
     if occ:
         job = occ.value.strip()
-        # "PUBLICAN" or "Publican" reads as "a publican"; longer titles may hold proper
-        # names ("Royal Navy officer"), so they're kept as written.
-        if job.isupper() or (" " not in job and job[1:].islower()):
+        # "PUBLICAN", "Publican" and "Agricultural labourer" read as "a publican"; a title with
+        # other capitals may hold a proper name ("Royal Navy officer"), so it's kept.
+        words = job.split()
+        if job.isupper():
             job = job.lower()
+        elif words and words[0][1:].islower() and all(w.islower() for w in words[1:]):
+            job = job[0].lower() + job[1:]  # "Agricultural labourer": just sentence case
         article = "an" if job[:1].lower() in "aeiou" else "a"
         add("work", None, f"Worked as {article} {job}.", [occ], kind="occupation")
     for r in Residence.objects.filter(person=person):

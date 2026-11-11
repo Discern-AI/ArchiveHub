@@ -101,6 +101,12 @@ export function LifeStoryView({
     .filter((y): y is number => y !== null);
   return (
     <div className="flex flex-col gap-5">
+      <Link
+        to={`/projects/${projectId}/people/${personId}/report`}
+        className="flex min-h-11 items-center self-start rounded-lg bg-accent px-4 font-semibold text-white no-underline hover:text-white"
+      >
+        Write their Life Report
+      </Link>
       <section
         aria-label="At a glance"
         className="grid grid-cols-2 gap-3 rounded-lg border border-line bg-surface p-4 sm:grid-cols-4"

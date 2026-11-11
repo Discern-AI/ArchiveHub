@@ -41,6 +41,8 @@ WORK = {
     "beer seller": ["inn"],
     "victualler": ["inn"],
 }
+SAY = {"plough": "a plough", "harvest": "the harvest", "inn": "an inn", "fields": "fields"}
+TEXT_KINDS = {"rhyme", "ballad", "tale", "song"}
 ENGLAND = {"england", "english", "british", "britain", "wales", "scotland"}
 
 
@@ -91,22 +93,29 @@ def match_items(project, person: Person, limit: int = 3) -> list[dict[str, Any]]
         shared = [s for s in item.subjects if s in work]
         if shared:
             score += 3
-            reasons.append(f"It shows {shared[0]}, the kind of work recorded for {first} "
-                           f"({f['occupation']}).")  # fmt: skip
+            reasons.append(f"It shows {SAY.get(shared[0], shared[0])}, the kind of work recorded "
+                           f"for {first} ({f['occupation'].lower()}).")  # fmt: skip
         if not shared:
             continue  # without a documented link to their life, it isn't chosen
+        # A traditional rhyme's printing date isn't when it was made up.
+        if item.kind in TEXT_KINDS:
+            made_word = f"This version was printed in {item.made_from}"
+        else:
+            made_word = f"It was made in {item.made_text}"
         if item.made_from and lived_from:
             made = item.made_from
             if lived_from <= made <= (lived_to or made):
                 score += 2
-                reasons.append(f"It was made in {item.made_text}, during {first}'s lifetime.")
+                reasons.append(f"{made_word}, during {first}'s lifetime.")
             elif abs(made - lived_from) <= 60:
                 score += 1
                 when = "before" if made < lived_from else "after"
-                reasons.append(f"It was made in {item.made_text}, about {abs(made - lived_from)} "
+                reasons.append(f"{made_word}, about {abs(made - lived_from)} "
                                f"years {when} {first} was born.")  # fmt: skip
             else:
-                reasons.append(f"It was made in {item.made_text}, a long way from {first}'s time.")
+                reasons.append(f"{made_word}, a long way from {first}'s time.")
+        if item.kind in TEXT_KINDS:
+            reasons.append("The rhyme itself is traditional and may be much older.")
         if item.country.lower() in ENGLAND:
             if in_england:
                 score += 2
